@@ -1,0 +1,21 @@
+{
+  "name": "epivox-app",
+  "version": "1.0.0",
+  "description": "Epivox - Plataforma Corporativa de Gamificación y Presentaciones Interactivas (Epiroc)",
+  "private": true,
+  "scripts": {
+    "start": "node server/dist/index.js",
+    "db:regen": "cd server && npx tsx db/regen.ts",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "cd client && npm run build && cd ../server && npm run build",
+    "format": "prettier --write \"**/*.{ts,tsx,css,html,json}\""
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "concurrently": "^9.2.1",
+    "prettier": "^3.3.3",
+    "typescript": "^5.4.5"
+  }
+}
