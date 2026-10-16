@@ -196,7 +196,7 @@ export const RegisterPage: React.FC = () => {
                     required
                     value={username}
                     onChange={(e) => setUsername(e.target.value.toLowerCase().trim())}
-                    placeholder="ej. juanp"
+                    placeholder="ej. jperez"
                     className="w-full pl-10 pr-4 py-2.5 bg-[#001E32] border border-[#425563] focus:border-[#FFC72C] rounded-xl text-xs text-white placeholder-[#ECEBE4]/40 outline-none transition"
                   />
                 </div>

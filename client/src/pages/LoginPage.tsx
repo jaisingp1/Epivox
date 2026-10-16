@@ -99,7 +99,7 @@ export const LoginPage: React.FC = () => {
                   required
                   value={loginValue}
                   onChange={(e) => setLoginValue(e.target.value)}
-                  placeholder="ej. jaisingp o correo@hotmail.com"
+                  placeholder="ej. jperez o jperez@correo.com"
                   className="w-full pl-10 pr-4 py-2.5 bg-[#001E32] border border-[#425563] focus:border-[#FFC72C] focus:ring-1 focus:ring-[#FFC72C] rounded-xl text-xs text-white placeholder-[#ECEBE4]/40 outline-none transition"
                 />
               </div>

@@ -16,8 +16,10 @@ import {
   Shield,
   Users,
   LogOut,
+  KeyRound,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import ChangePasswordModal from "./ChangePasswordModal";
 
 interface NavItem {
   name: string;
@@ -50,6 +52,7 @@ const baseNavItems: NavItem[] = [
 export const Sidebar: React.FC = () => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const { user, logout } = useAuth();
 
   const isActive = (path: string) => {
@@ -209,6 +212,19 @@ export const Sidebar: React.FC = () => {
           )}
         </div>
 
+        {/* Botón Cambiar Mi Contraseña */}
+        <button
+          type="button"
+          onClick={() => setIsPasswordModalOpen(true)}
+          title={collapsed ? "Cambiar Contraseña" : undefined}
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-[#ECEBE4]/70 hover:text-[#FFC72C] hover:bg-[#193750] transition border border-[#425563]/30 cursor-pointer ${
+            collapsed ? "justify-center" : ""
+          }`}
+        >
+          <KeyRound className="w-4 h-4 shrink-0 text-[#FFC72C]" />
+          {!collapsed && <span className="truncate">Cambiar Contraseña</span>}
+        </button>
+
         {/* Botón Cerrar Sesión */}
         <button
           type="button"
@@ -232,6 +248,12 @@ export const Sidebar: React.FC = () => {
           {!collapsed && <span className="truncate">Inicio</span>}
         </Link>
       </div>
+
+      {/* Modal para cambiar contraseña */}
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+      />
     </aside>
   );
 };

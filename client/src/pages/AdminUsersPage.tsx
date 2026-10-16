@@ -292,7 +292,7 @@ export const AdminUsersPage: React.FC = () => {
                     required
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder="persona@hotmail.com o usuario@epiroc.com"
+                    placeholder="jperez@correo.com o colega@empresa.com"
                     className="w-full pl-9 pr-3 py-2 bg-[#001E32] border border-[#425563] focus:border-[#FFC72C] rounded-xl text-xs text-white placeholder-[#ECEBE4]/40 outline-none transition"
                   />
                 </div>

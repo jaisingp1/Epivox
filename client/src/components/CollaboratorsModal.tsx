@@ -150,7 +150,7 @@ export const CollaboratorsModal: React.FC<CollaboratorsModalProps> = ({
                 required
                 value={usernameOrEmail}
                 onChange={(e) => setUsernameOrEmail(e.target.value)}
-                placeholder="Nombre de usuario o correo de la persona..."
+                placeholder="ej. jperez o jperez@correo.com"
                 className="flex-1 px-3.5 py-2.5 bg-[#001E32] border border-[#425563] focus:border-[#FFC72C] rounded-xl text-xs text-white placeholder-[#ECEBE4]/40 outline-none transition"
               />
               <button
