@@ -27,6 +27,7 @@ import {
 import * as XLSX from "xlsx";
 import PageHeader from "../components/PageHeader";
 import Modal from "../components/Modal";
+import EpirocOptionIcon from "../components/EpirocOptionIcon";
 
 interface OptionItem {
   id: string;
@@ -925,14 +926,6 @@ export default function ActivityEditorPage() {
                       const isCorrect =
                         currentQuestion.correct_answer_value === opt.id ||
                         opt.isCorrect;
-                      const badgeColors = [
-                        "bg-[#B7312C]",
-                        "bg-[#48A9C5]",
-                        "bg-[#FFC72C]",
-                        "bg-[#4C8C2B]",
-                      ];
-                      const shapeIcons = ["▲", "◆", "●", "■"];
-
                       return (
                         <div
                           key={opt.id || idx}
@@ -942,12 +935,8 @@ export default function ActivityEditorPage() {
                               : "border-[#425563]"
                           }`}
                         >
-                          <div
-                            className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm text-white shrink-0 mr-3 shadow ${
-                              badgeColors[idx % 4]
-                            }`}
-                          >
-                            {shapeIcons[idx % 4]}
+                          <div className="mr-3 shrink-0">
+                            <EpirocOptionIcon index={idx} size="md" />
                           </div>
 
                           <input

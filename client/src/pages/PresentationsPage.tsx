@@ -26,6 +26,9 @@ import {
   X,
   AlertCircle,
   CheckCircle2,
+  Radio,
+  ArrowRightCircle,
+  ListOrdered,
 } from "lucide-react";
 import QRCode from "qrcode";
 import * as XLSX from "xlsx";
@@ -99,6 +102,9 @@ export default function PresentationsPage() {
   // Estados de interfaz y modales
   const [copiedLink, setCopiedLink] = useState(false);
   const [qrModalUrl, setQrModalUrl] = useState<string | null>(null);
+  const [questionListFilter, setQuestionListFilter] = useState<
+    "all" | "completed" | "pending"
+  >("all");
   const [isCreatingModal, setIsCreatingModal] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newCategory, setNewCategory] = useState("Presentaciones");
@@ -313,13 +319,19 @@ export default function PresentationsPage() {
   };
 
   // Controles de presentador
-  const handlePresenterAction = (action: string) => {
+  const handlePresenterAction = (
+    action: string,
+    targetQuestionIndex?: number,
+  ) => {
     if (!activeSession) return;
     const socket = getSocket();
     socket.emit("presenter:action", {
       pin: activeSession.pin,
       action,
-      questionIndex: activeSession.current_question_index,
+      questionIndex:
+        targetQuestionIndex !== undefined
+          ? targetQuestionIndex
+          : activeSession.current_question_index,
     });
   };
 
@@ -833,7 +845,86 @@ export default function PresentationsPage() {
     }
   };
 
-  const currentQ = currentQuestions[activeSession?.current_question_index || 0];
+  const activeQIndex = activeSession?.current_question_index ?? 0;
+  const isLobby = activeSession?.current_step === "lobby";
+  const currentQ = currentQuestions[activeQIndex];
+  const nextQ = isLobby
+    ? currentQuestions[0]
+    : currentQuestions[activeQIndex + 1];
+
+  const pastQuestionsCount = isLobby ? 0 : activeQIndex;
+  const pendingQuestionsCount = isLobby
+    ? currentQuestions.length
+    : Math.max(0, currentQuestions.length - (activeQIndex + 1));
+
+  const getQuestionTypeBadge = (type: string) => {
+    switch (type) {
+      case "multiple_choice":
+        return {
+          label: "Opción Múltiple",
+          color: "bg-[#48A9C5]/20 text-[#48A9C5] border-[#48A9C5]/40",
+        };
+      case "true_false":
+        return {
+          label: "Verdadero o Falso",
+          color: "bg-[#FFC72C]/20 text-[#FFC72C] border-[#FFC72C]/40",
+        };
+      case "word_cloud":
+        return {
+          label: "Nube de Palabras",
+          color: "bg-[#86C8BC]/20 text-[#86C8BC] border-[#86C8BC]/40",
+        };
+      case "open_ended":
+        return {
+          label: "Pregunta Abierta",
+          color: "bg-[#86C8BC]/20 text-[#86C8BC] border-[#86C8BC]/40",
+        };
+      case "rating":
+        return {
+          label: "Calificación (Estrellas)",
+          color: "bg-[#FFC72C]/20 text-[#FFC72C] border-[#FFC72C]/40",
+        };
+      case "ranking":
+        return {
+          label: "Ranking / Ordenar",
+          color: "bg-[#B7312C]/20 text-[#B7312C] border-[#B7312C]/40",
+        };
+      case "likert":
+        return {
+          label: "Escala de Valoración",
+          color: "bg-[#4C8C2B]/20 text-[#4C8C2B] border-[#4C8C2B]/40",
+        };
+      default:
+        return {
+          label: type || "Pregunta",
+          color: "bg-[#425563]/30 text-[#ECEBE4] border-[#425563]",
+        };
+    }
+  };
+
+  const filteredQuestionList = useMemo(() => {
+    return currentQuestions
+      .map((q, idx) => {
+        let status: "completed" | "current" | "next" | "pending";
+        if (!isLobby && idx < activeQIndex) {
+          status = "completed";
+        } else if (!isLobby && idx === activeQIndex) {
+          status = "current";
+        } else if (idx === (isLobby ? 0 : activeQIndex + 1)) {
+          status = "next";
+        } else {
+          status = "pending";
+        }
+        return { ...q, index: idx, status };
+      })
+      .filter((item) => {
+        if (questionListFilter === "completed")
+          return item.status === "completed";
+        if (questionListFilter === "pending")
+          return item.status === "pending" || item.status === "next";
+        return true;
+      });
+  }, [currentQuestions, activeQIndex, isLobby, questionListFilter]);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
@@ -1095,18 +1186,35 @@ export default function PresentationsPage() {
               </div>
             </div>
 
-            {/* Fila de Resumen de la Pregunta Activa en el Monitor */}
+            {/* 1. Fila de Diapositiva Activa / En Vivo */}
             {currentQ && (
-              <div className="md:col-span-3 bg-[#001E32] border border-[#425563] p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2 truncate">
-                  <span className="font-extrabold uppercase tracking-wider text-[#FFC72C] bg-[#FFC72C]/10 px-2.5 py-1 rounded-lg border border-[#FFC72C]/30 shrink-0">
-                    Pregunta Activa #{activeSession.current_question_index + 1}
+              <div className="md:col-span-3 bg-[#001E32] border-2 border-[#FFC72C]/70 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-lg">
+                <div className="flex items-center gap-2.5 truncate flex-1 min-w-0">
+                  <span className="flex items-center gap-1 font-extrabold uppercase tracking-wider text-[#FFC72C] bg-[#FFC72C]/15 px-3 py-1.5 rounded-xl border border-[#FFC72C]/40 shrink-0">
+                    <Radio className="w-3.5 h-3.5 animate-pulse" />
+                    {isLobby
+                      ? "En Sala de Espera (Lobby)"
+                      : `Pregunta Activa #${activeQIndex + 1}`}
                   </span>
-                  <span className="font-bold text-white truncate text-sm">
-                    {currentQ.question_text}
-                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-extrabold text-white truncate text-sm">
+                      {currentQ.question_text}
+                    </h3>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 shrink-0 text-[#ECEBE4]/70">
+
+                <div className="flex items-center gap-3 shrink-0 text-[#ECEBE4]/80 flex-wrap">
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getQuestionTypeBadge(currentQ.question_type).color}`}
+                  >
+                    {getQuestionTypeBadge(currentQ.question_type).label}
+                  </span>
+                  <span>
+                    Votos:{" "}
+                    <strong className="text-[#FFC72C]">
+                      {totalAnswers} / {activeParticipants.length}
+                    </strong>
+                  </span>
                   <span>
                     Opciones con votos:{" "}
                     <strong className="text-[#FFC72C]">
@@ -1119,6 +1227,233 @@ export default function PresentationsPage() {
                 </div>
               </div>
             )}
+
+            {/* 2. Tarjeta Destacada: Siguiente Pregunta que Viene */}
+            <div className="md:col-span-3 bg-[#001E32] border-2 border-[#48A9C5]/50 p-4 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-lg">
+              <div className="space-y-1 flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-[#48A9C5] bg-[#48A9C5]/15 border border-[#48A9C5]/40 px-2.5 py-0.5 rounded-full">
+                    <ArrowRightCircle className="w-3.5 h-3.5" />
+                    {isLobby
+                      ? "Próxima a Lanzar: Pregunta #1"
+                      : nextQ
+                        ? `Siguiente Pregunta (#${activeQIndex + 2} de ${currentQuestions.length})`
+                        : "Fin de Diapositivas"}
+                  </span>
+                  {nextQ && (
+                    <>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getQuestionTypeBadge(nextQ.question_type).color}`}
+                      >
+                        {getQuestionTypeBadge(nextQ.question_type).label}
+                      </span>
+                      <span className="text-[10px] text-[#ECEBE4]/60 font-mono">
+                        ⏱ {nextQ.time_limit}s
+                      </span>
+                    </>
+                  )}
+                </div>
+                <h4 className="text-sm md:text-base font-bold text-white truncate">
+                  {nextQ
+                    ? nextQ.question_text
+                    : "No hay más preguntas pendientes. Al avanzar se proyectará el Podio Final."}
+                </h4>
+              </div>
+
+              {nextQ && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    handlePresenterAction(
+                      "jump_to_question",
+                      isLobby ? 0 : activeQIndex + 1,
+                    )
+                  }
+                  className="bg-[#48A9C5] hover:bg-[#3FA1BD] text-[#001E32] font-black text-xs py-2 px-3.5 rounded-xl transition shadow flex items-center gap-1.5 shrink-0 active:scale-95"
+                >
+                  <Play className="w-3.5 h-3.5 fill-[#001E32]" />
+                  <span>
+                    {isLobby
+                      ? "Lanzar Primera Pregunta"
+                      : "Lanzar Siguiente Pregunta Ahora"}
+                  </span>
+                </button>
+              )}
+            </div>
+
+            {/* 3. Panel Completo: Listado y Secuencia de Diapositivas */}
+            <div className="md:col-span-3 bg-[#001E32] border border-[#425563] p-5 rounded-2xl space-y-4 shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#425563]/60">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 bg-[#FFC72C]/15 border border-[#FFC72C]/40 text-[#FFC72C] rounded-xl">
+                    <ListOrdered className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-white flex items-center gap-2">
+                      <span>Listado y Secuencia de Preguntas</span>
+                      <span className="text-xs font-mono bg-[#193750] text-[#ECEBE4] px-2 py-0.5 rounded-full border border-[#425563]">
+                        {currentQuestions.length} diapositivas
+                      </span>
+                    </h3>
+                    <div className="flex items-center gap-3 text-xs text-[#ECEBE4]/70 mt-0.5 flex-wrap">
+                      <span className="flex items-center gap-1 text-[#4C8C2B] font-bold">
+                        <CheckCircle2 className="w-3 h-3" />
+                        {pastQuestionsCount} realizadas
+                      </span>
+                      <span>&bull;</span>
+                      <span className="flex items-center gap-1 text-[#FFC72C] font-bold">
+                        <Radio className="w-3 h-3 animate-pulse" />
+                        {isLobby ? 0 : 1} en curso
+                      </span>
+                      <span>&bull;</span>
+                      <span className="flex items-center gap-1 text-[#48A9C5] font-bold">
+                        <Clock className="w-3 h-3" />
+                        {pendingQuestionsCount} faltan por mostrar
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Filtros de Pestaña */}
+                <div className="flex items-center gap-1 bg-[#193750] p-1 rounded-xl border border-[#425563] shrink-0 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setQuestionListFilter("all")}
+                    className={`px-2.5 py-1 rounded-lg font-bold transition ${
+                      questionListFilter === "all"
+                        ? "bg-[#FFC72C] text-[#001E32]"
+                        : "text-[#ECEBE4]/70 hover:text-white"
+                    }`}
+                  >
+                    Todas ({currentQuestions.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setQuestionListFilter("completed")}
+                    className={`px-2.5 py-1 rounded-lg font-bold transition ${
+                      questionListFilter === "completed"
+                        ? "bg-[#4C8C2B] text-white"
+                        : "text-[#ECEBE4]/70 hover:text-white"
+                    }`}
+                  >
+                    Realizadas ({pastQuestionsCount})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setQuestionListFilter("pending")}
+                    className={`px-2.5 py-1 rounded-lg font-bold transition ${
+                      questionListFilter === "pending"
+                        ? "bg-[#48A9C5] text-[#001E32]"
+                        : "text-[#ECEBE4]/70 hover:text-white"
+                    }`}
+                  >
+                    Por Mostrar ({pendingQuestionsCount})
+                  </button>
+                </div>
+              </div>
+
+              {/* Lista Desplegable de Preguntas */}
+              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                {filteredQuestionList.length === 0 ? (
+                  <p className="text-xs text-[#ECEBE4]/50 italic text-center py-4">
+                    No hay preguntas para mostrar en esta categoría.
+                  </p>
+                ) : (
+                  filteredQuestionList.map((q) => {
+                    const badge = getQuestionTypeBadge(q.question_type);
+                    return (
+                      <div
+                        key={q.id}
+                        className={`p-3 rounded-xl border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs ${
+                          q.status === "current"
+                            ? "bg-[#193750] border-[#FFC72C] shadow-md ring-1 ring-[#FFC72C]/40"
+                            : q.status === "next"
+                              ? "bg-[#102B41] border-[#48A9C5]/50"
+                              : q.status === "completed"
+                                ? "bg-[#0B1A28] border-[#4C8C2B]/30 opacity-80"
+                                : "bg-[#0B1A28] border-[#425563]/40"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <span className="font-mono font-black text-sm text-[#FFC72C] shrink-0 w-6">
+                            #{q.index + 1}
+                          </span>
+
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {/* Badge de Estado */}
+                              {q.status === "completed" && (
+                                <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-[#4C8C2B] bg-[#4C8C2B]/15 border border-[#4C8C2B]/40 px-2 py-0.5 rounded-full">
+                                  <CheckCircle2 className="w-3 h-3" />
+                                  Realizada
+                                </span>
+                              )}
+                              {q.status === "current" && (
+                                <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-[#FFC72C] bg-[#FFC72C]/15 border border-[#FFC72C]/40 px-2 py-0.5 rounded-full animate-pulse">
+                                  <Radio className="w-3 h-3" />
+                                  En Vivo Ahora
+                                </span>
+                              )}
+                              {q.status === "next" && (
+                                <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-[#48A9C5] bg-[#48A9C5]/15 border border-[#48A9C5]/40 px-2 py-0.5 rounded-full">
+                                  <ArrowRightCircle className="w-3 h-3" />
+                                  Siguiente Pregunta
+                                </span>
+                              )}
+                              {q.status === "pending" && (
+                                <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#ECEBE4]/60 bg-[#425563]/30 border border-[#425563]/40 px-2 py-0.5 rounded-full">
+                                  <Clock className="w-3 h-3" />
+                                  Falta por Mostrar
+                                </span>
+                              )}
+
+                              {/* Badge de Tipo */}
+                              <span
+                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badge.color}`}
+                              >
+                                {badge.label}
+                              </span>
+
+                              <span className="text-[10px] text-[#ECEBE4]/50 font-mono">
+                                {q.time_limit}s
+                              </span>
+                            </div>
+
+                            <p className="font-bold text-white text-sm truncate">
+                              {q.question_text}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Botón de Salto / Proyección Rápida */}
+                        <div className="shrink-0 self-end sm:self-center">
+                          {q.status === "current" ? (
+                            <span className="text-[11px] font-extrabold text-[#FFC72C] bg-[#FFC72C]/10 border border-[#FFC72C]/30 px-3 py-1.5 rounded-lg flex items-center gap-1">
+                              <Radio className="w-3 h-3" />
+                              En Pantalla
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handlePresenterAction(
+                                  "jump_to_question",
+                                  q.index,
+                                )
+                              }
+                              className="text-xs font-bold bg-[#193750] hover:bg-[#FFC72C] text-[#ECEBE4] hover:text-[#001E32] px-3 py-1.5 rounded-lg border border-[#425563] transition flex items-center gap-1.5 shadow active:scale-95"
+                            >
+                              <Play className="w-3 h-3 fill-current" />
+                              <span>Lanzar Diapositiva</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
           </div>
         </section>
       ) : (

@@ -13,29 +13,25 @@ import {
   Star,
 } from "lucide-react";
 import { getSocket } from "../services/socket";
+import EpirocOptionIcon, {
+  EPIROC_OPTION_CONFIGS,
+} from "../components/EpirocOptionIcon";
 
 interface QuestionOption {
   id: string;
   text: string;
-  color?: string;
+  is_correct?: boolean;
 }
 
 interface QuestionData {
   id: number;
   question_text: string;
   question_type: string;
+  chart_type?: string;
   time_limit: number;
   options_json: string;
+  explanation_text?: string;
 }
-
-const SHAPES = [
-  { shape: "▲", color: "bg-[#FFC72C] text-[#001E32]", label: "Triángulo" },
-  { shape: "■", color: "bg-[#48A9C5] text-white", label: "Cuadrado" },
-  { shape: "●", color: "bg-[#4C8C2B] text-white", label: "Círculo" },
-  { shape: "◆", color: "bg-[#B7312C] text-white", label: "Rombo" },
-  { shape: "★", color: "bg-[#612C51] text-white", label: "Estrella" },
-  { shape: "⬡", color: "bg-[#D86018] text-white", label: "Hexágono" },
-];
 
 export default function LiveParticipantPage() {
   const { pin } = useParams<{ pin: string }>();
@@ -337,7 +333,18 @@ export default function LiveParticipantPage() {
           </span>
         </header>
 
-        <main className="my-auto space-y-6 max-w-md mx-auto w-full">
+        <main className="my-auto space-y-4 max-w-md mx-auto w-full">
+          {currentQuestion?.question_text && (
+            <div className="bg-[#193750] border border-[#425563] p-3.5 rounded-2xl text-center shadow-lg">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#FFC72C] block mb-1">
+                Pregunta
+              </span>
+              <p className="text-sm font-bold text-white leading-snug">
+                {currentQuestion.question_text}
+              </p>
+            </div>
+          )}
+
           {lastFeedback ? (
             lastFeedback.isPoll ||
             currentQuestion?.question_type === "word_cloud" ||
@@ -423,13 +430,23 @@ export default function LiveParticipantPage() {
       {/* Cuerpo principal según si ya respondió o no */}
       <main className="my-auto max-w-md w-full mx-auto space-y-4">
         {hasAnswered ? (
-          <div className="bg-[#193750] border-2 border-[#FFC72C] p-8 rounded-3xl text-center space-y-4 shadow-2xl">
+          <div className="bg-[#193750] border-2 border-[#FFC72C] p-6 rounded-3xl text-center space-y-4 shadow-2xl">
             <div className="w-16 h-16 bg-[#FFC72C]/20 text-[#FFC72C] rounded-full flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-10 h-10" />
             </div>
             <h2 className="text-2xl font-bold text-white">
               ¡Respuesta Enviada!
             </h2>
+            {currentQuestion?.question_text && (
+              <div className="bg-[#001E32] border border-[#425563] p-3 rounded-xl text-left">
+                <span className="text-[10px] uppercase font-bold text-[#FFC72C] tracking-wider block mb-0.5">
+                  Pregunta respondida
+                </span>
+                <p className="text-xs text-white font-semibold">
+                  {currentQuestion.question_text}
+                </p>
+              </div>
+            )}
             {selectedAnswer && (
               <p className="text-xs uppercase tracking-wider text-[#FFC72C] font-bold">
                 Opción registrada: {selectedAnswer}
@@ -442,6 +459,17 @@ export default function LiveParticipantPage() {
           </div>
         ) : (
           <>
+            {/* Tarjeta con el Enunciado de la Pregunta */}
+            {currentQuestion?.question_text && (
+              <div className="bg-[#193750] border-2 border-[#FFC72C]/70 p-4 rounded-2xl shadow-xl space-y-1 text-center">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#FFC72C] block">
+                  Pregunta
+                </span>
+                <h2 className="text-base sm:text-lg font-extrabold text-white leading-snug">
+                  {currentQuestion.question_text}
+                </h2>
+              </div>
+            )}
             {/* Pregunta tipo: Verdadero / Falso */}
             {currentQuestion?.question_type === "true_false" && (
               <div className="grid grid-cols-1 gap-4">
@@ -545,20 +573,23 @@ export default function LiveParticipantPage() {
             {/* Pregunta tipo: Selección Múltiple (adaptable para 2 a 6 opciones sin tapar ninguna) */}
             {(currentQuestion?.question_type === "multiple_choice" ||
               (!currentQuestion?.question_type && currentQuestion?.question_type !== "rating")) && (
-              <div className="grid grid-cols-2 gap-2.5 max-h-[72vh] overflow-y-auto p-1">
+              <div className="grid grid-cols-2 gap-2.5 max-h-[56vh] overflow-y-auto p-1">
                 {parsedOptions.map((opt, idx) => {
-                  const shapeDef = SHAPES[idx % SHAPES.length];
+                  const cfg =
+                    EPIROC_OPTION_CONFIGS[idx % EPIROC_OPTION_CONFIGS.length];
                   const is5thCentered = parsedOptions.length === 5 && idx === 4;
                   return (
                     <button
                       key={opt.id}
                       type="button"
                       onClick={() => handleAnswerSubmit(opt.id)}
-                      className={`${shapeDef.color} ${
+                      className={`${cfg.bgColor} ${cfg.textColor} ${
                         is5thCentered ? "col-span-2" : ""
-                      } font-extrabold p-4 rounded-2xl shadow-xl active:scale-95 transition flex flex-col items-center justify-center min-h-[95px]`}
+                      } font-extrabold p-3.5 rounded-2xl shadow-xl active:scale-95 transition flex flex-col items-center justify-center min-h-[95px]`}
                     >
-                      <span className="text-2xl mb-1">{shapeDef.shape}</span>
+                      <div className="mb-1 flex items-center justify-center">
+                        <EpirocOptionIcon index={idx} size="md" />
+                      </div>
                       <span className="text-center text-sm line-clamp-3 leading-snug">
                         {opt.text}
                       </span>

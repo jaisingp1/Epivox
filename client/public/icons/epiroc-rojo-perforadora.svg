@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <!-- Fondo circular rojo -->
+  <circle cx="105" cy="100" r="80" fill="#B7312C" />
+  
+  <g stroke="#001E32" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Brazo de perforación superior (Viga de avance) -->
+    <g transform="rotate(14, 60, 50)">
+      <rect x="10" y="38" width="95" height="6" fill="#ECEBE4" />
+      <rect x="5" y="44" width="105" height="6" fill="#B4B4AA" />
+      <rect x="15" y="34" width="8" height="10" fill="#ECEBE4" />
+      <rect x="55" y="33" width="14" height="9" fill="#ECEBE4" />
+    </g>
+
+    <!-- Mangueras hidráulicas colgantes -->
+    <path d="M 38 48 C 35 75, 50 75, 55 58" fill="none" stroke="#001E32" stroke-width="5" />
+    <path d="M 38 48 C 35 75, 50 75, 55 58" fill="none" stroke="#77746E" stroke-width="2" />
+    <path d="M 46 50 C 45 80, 62 80, 68 64" fill="none" stroke="#001E32" stroke-width="5" />
+    <path d="M 46 50 C 45 80, 62 80, 68 64" fill="none" stroke="#77746E" stroke-width="2" />
+
+    <!-- Brazo articulado (Boom) -->
+    <polygon points="50,48 68,53 125,95 115,103" fill="#ECEBE4" />
+    <polygon points="60,58 118,98 112,106 54,64" fill="#B4B4AA" />
+    <polygon points="45,45 72,52 65,62 48,55" fill="#ECEBE4" />
+    <circle cx="62" cy="55" r="2.5" fill="#001E32" />
+
+    <!-- Chasis delantero y gatos estabilizadores -->
+    <rect x="85" y="110" width="38" height="10" fill="#B4B4AA" />
+    <!-- Rueda delantera izquierda (fondo) -->
+    <circle cx="96" cy="126" r="14" fill="#425563" />
+    
+    <!-- Cabina del operador -->
+    <polygon points="112,72 152,72 148,112 115,112" fill="#77746E" />
+    <polygon points="116,76 132,76 130,96 117,96" fill="#ECEBE4" />
+    <polygon points="136,76 148,76 146,108 136,108" fill="#ECEBE4" />
+    <!-- Techo de seguridad FOPS/ROPS -->
+    <polygon points="108,70 155,70 152,74 110,74" fill="#ECEBE4" />
+
+    <!-- Cuerpo trasero (Motor) -->
+    <polygon points="149,84 185,90 185,120 148,120" fill="#ECEBE4" />
+    <rect x="155" y="92" width="18" height="22" fill="#B4B4AA" />
+    <rect x="173" y="95" width="8" height="19" fill="#ECEBE4" />
+    <!-- Parachoques trasero -->
+    <polygon points="148,114 188,114 188,124 148,126" fill="#B4B4AA" />
+
+    <!-- Rueda delantera principal -->
+    <circle cx="128" cy="126" r="16" fill="#425563" />
+    <circle cx="128" cy="126" r="9" fill="#B4B4AA" />
+    <circle cx="128" cy="126" r="3" fill="#425563" />
+
+    <!-- Rueda trasera principal -->
+    <circle cx="166" cy="126" r="16" fill="#425563" />
+    <circle cx="166" cy="126" r="9" fill="#B4B4AA" />
+    <circle cx="166" cy="126" r="3" fill="#425563" />
+
+    <!-- Gatos hidráulicos delanteros -->
+    <rect x="82" y="102" width="5" height="36" fill="#ECEBE4" />
+    <line x1="79" y1="138" x2="90" y2="138" stroke-width="4" />
+    <rect x="112" y="104" width="5" height="36" fill="#ECEBE4" />
+    <line x1="109" y1="140" x2="120" y2="140" stroke-width="4" />
+  </g>
+</svg>

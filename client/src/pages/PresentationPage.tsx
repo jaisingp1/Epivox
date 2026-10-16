@@ -21,6 +21,7 @@ import {
 import confetti from "canvas-confetti";
 import QRCode from "qrcode";
 import { getSocket } from "../services/socket";
+import EpirocOptionIcon from "../components/EpirocOptionIcon";
 
 interface QuestionOption {
   id: string;
@@ -63,7 +64,6 @@ const OPTION_COLORS = [
   "#86C8BC", // Epiroc Electric Green
   "#77746E", // Epiroc Dark Grey
 ];
-const OPTION_SHAPES = ["▲", "■", "●", "◆", "★", "⬡", "✦", "▼"];
 
 export default function PresentationPage() {
   const { pin } = useParams<{ pin: string }>();
@@ -823,15 +823,8 @@ export default function PresentationPage() {
                   key={opt.id}
                   className="bg-[#193750] border-2 border-[#425563] p-4 lg:p-5 rounded-2xl flex items-center space-x-3.5 shadow-xl transition"
                 >
-                  <div
-                    className="w-11 h-11 rounded-xl flex items-center justify-center text-xl font-black shadow shrink-0"
-                    style={{
-                      backgroundColor:
-                        OPTION_COLORS[idx % OPTION_COLORS.length],
-                      color: idx === 0 ? "#001E32" : "#FFFFFF",
-                    }}
-                  >
-                    {OPTION_SHAPES[idx % OPTION_SHAPES.length]}
+                  <div className="shrink-0">
+                    <EpirocOptionIcon index={idx} size="lg" />
                   </div>
                   <span className="text-lg lg:text-xl font-bold text-white flex-1 leading-snug">
                     {opt.text}
