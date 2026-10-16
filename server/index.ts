@@ -2,11 +2,14 @@ import http from "node:http";
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import cookieParser from "cookie-parser";
 import { Server as SocketIOServer } from "socket.io";
+import authRoutes from "./routes/auth.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
 import epivoxRoutes from "./routes/epivox.routes.js";
 import { setupSocketManager } from "./services/socketManager.js";
 
-// Polyfill for BigInt serialization from DuckDB aggregations
+// Polyfill para serialización de BigInt desde agregaciones DuckDB
 (BigInt.prototype as unknown as { toJSON: () => number }).toJSON = function () {
   return Number(this);
 };
@@ -16,7 +19,7 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Sockets configuration with low latency
+// Configuración de WebSockets de baja latencia
 const io = new SocketIOServer(server, {
   cors: {
     origin: "*",
@@ -24,36 +27,31 @@ const io = new SocketIOServer(server, {
   },
 });
 
-app.use(cors());
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  }),
+);
 app.use(express.json());
+app.use(cookieParser());
 
-// Identity / SSO simulation middleware (Rule 6)
-app.use((req, _res, next) => {
-  const forwardedEmail =
-    req.headers["x-forwarded-email"] ||
-    req.headers["x-forwarded-preferred-username"] ||
-    req.headers["x-user-email"];
-
-  // Fallback for non-production development
-  if (!forwardedEmail && process.env.NODE_ENV !== "production") {
-    req.headers["x-user-email"] = "jaising.pasten@epiroc.com";
-  }
-  next();
-});
-
-// Health check endpoint
+// Endpoint de verificación de salud
 app.get("/api/health", (_req, res) => {
   res.json({
     status: "ok",
     module: "Epivox",
+    standalone: true,
     timestamp: new Date().toISOString(),
   });
 });
 
-// Epivox REST routes
+// Rutas de la API
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/epivox", epivoxRoutes);
 
-// Epivox Real-time WebSockets
+// Servidor de WebSockets de Epivox en tiempo real
 setupSocketManager(io);
 
 const PORT = process.env.PORT || 3000;

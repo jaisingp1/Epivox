@@ -4,6 +4,20 @@
 -- ==============================================================================
 
 -- ------------------------------------------------------------------------------
+-- 0. [MASTER] Usuario Administrador Inicial
+-- ------------------------------------------------------------------------------
+INSERT INTO users (id, username, email, password_hash, full_name, role, is_active)
+VALUES (
+  1,
+  'jaisingp',
+  'jaisingp@hotmail.com',
+  '$2b$10$mUJA4fCM8pDvFWnMR4fSpOFRJ7VQA6mHUzeZyREPwdfoawJ3c8lGG',
+  'Jaising Pasten',
+  'admin',
+  true
+);
+
+-- ------------------------------------------------------------------------------
 -- 1. [MASTER] Temas Corporativos Oficiales Epiroc
 -- ------------------------------------------------------------------------------
 INSERT INTO epivox_themes (id, name, primary_color, secondary_color, background_color, card_color, text_color, accent_color, font_family, is_default)

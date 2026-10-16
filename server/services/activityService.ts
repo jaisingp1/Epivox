@@ -1,4 +1,5 @@
 import { query, exec } from "../db/db.js";
+import type { AuthUser } from "./authService.js";
 
 export interface Activity {
   id: number;
@@ -17,6 +18,9 @@ export interface Activity {
   created_at: string;
   updated_at: string;
   questions_count?: number;
+  owner_username?: string;
+  owner_name?: string | null;
+  my_access?: ActivityAccess;
 }
 
 export interface Question {
@@ -37,247 +41,259 @@ export interface Question {
   created_at: string;
 }
 
-export async function getActivities(userId = 1): Promise<Activity[]> {
+export interface Collaborator {
+  user_id: number;
+  username: string;
+  full_name: string | null;
+  email: string;
+  role: string;
+  created_at: string;
+}
+
+/** Nivel de acceso del usuario sobre una actividad (null = sin acceso). */
+export type ActivityAccess = "owner" | "admin" | "editor" | "template";
+
+export const canEditActivity = (access: ActivityAccess | null): boolean =>
+  access === "owner" || access === "admin" || access === "editor";
+
+export const canManageActivity = (access: ActivityAccess | null): boolean =>
+  access === "owner" || access === "admin";
+
+async function nextId(table: string): Promise<number> {
+  const rows = await query<{ next_id: number }>(
+    `SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM ${table}`,
+  );
+  return rows[0]?.next_id || 1;
+}
+
+export async function getActivityAccess(
+  user: AuthUser,
+  activityId: number,
+): Promise<ActivityAccess | null> {
+  const rows = await query<{
+    created_by_user_id: number;
+    is_template: boolean;
+    is_public: boolean;
+    collab_role: string | null;
+  }>(
+    `SELECT a.created_by_user_id, a.is_template, a.is_public, c.role AS collab_role
+     FROM epivox_activities a
+     LEFT JOIN epivox_collaborators c ON c.activity_id = a.id AND c.user_id = ?
+     WHERE a.id = ?`,
+    [user.id, activityId],
+  );
+  const row = rows[0];
+  if (!row) return null;
+  if (row.created_by_user_id === user.id) return "owner";
+  if (user.role === "admin") return "admin";
+  if (row.collab_role) return "editor";
+  if (row.is_template || row.is_public) return "template";
+  return null;
+}
+
+/** Presentaciones propias + compartidas conmigo (admin: todas). */
+export async function getActivities(user: AuthUser): Promise<Activity[]> {
+  const isAdmin = user.role === "admin";
   const sql = `
-    SELECT a.*, COUNT(q.id) as questions_count
+    SELECT a.*, COUNT(q.id) AS questions_count,
+           u.username AS owner_username, u.full_name AS owner_name,
+           CASE WHEN a.created_by_user_id = ? THEN 'owner'
+                WHEN ? THEN 'admin'
+                ELSE 'editor' END AS my_access
     FROM epivox_activities a
+    JOIN users u ON u.id = a.created_by_user_id
     LEFT JOIN epivox_questions q ON q.activity_id = a.id
-    WHERE a.created_by_user_id = ? OR a.is_public = TRUE
-    GROUP BY a.id, a.title, a.description, a.category, a.activity_type, a.theme_id, 
-             a.created_by_user_id, a.is_template, a.is_public, a.default_time_limit, 
-             a.default_points, a.speed_bonus_enabled, a.negative_points_enabled, 
-             a.created_at, a.updated_at
+    WHERE ? OR a.created_by_user_id = ?
+       OR EXISTS (SELECT 1 FROM epivox_collaborators c
+                  WHERE c.activity_id = a.id AND c.user_id = ?)
+    GROUP BY ALL
     ORDER BY a.updated_at DESC
   `;
-  return query<Activity>(sql, [userId]);
+  return query<Activity>(sql, [user.id, isAdmin, isAdmin, user.id, user.id]);
 }
 
 export async function getTemplates(): Promise<Activity[]> {
   const sql = `
-    SELECT a.*, COUNT(q.id) as questions_count
+    SELECT a.*, COUNT(q.id) AS questions_count
     FROM epivox_activities a
     LEFT JOIN epivox_questions q ON q.activity_id = a.id
     WHERE a.is_template = TRUE OR a.is_public = TRUE
-    GROUP BY a.id, a.title, a.description, a.category, a.activity_type, a.theme_id, 
-             a.created_by_user_id, a.is_template, a.is_public, a.default_time_limit, 
-             a.default_points, a.speed_bonus_enabled, a.negative_points_enabled, 
-             a.created_at, a.updated_at
+    GROUP BY ALL
     ORDER BY a.title ASC
   `;
   return query<Activity>(sql);
 }
 
 export async function getActivityById(id: number): Promise<Activity | null> {
-  const sql = `SELECT * FROM epivox_activities WHERE id = ?`;
-  const rows = await query<Activity>(sql, [id]);
+  const rows = await query<Activity>(
+    `SELECT a.*, u.username AS owner_username, u.full_name AS owner_name
+     FROM epivox_activities a
+     JOIN users u ON u.id = a.created_by_user_id
+     WHERE a.id = ?`,
+    [id],
+  );
   return rows[0] || null;
 }
 
 export async function getQuestionsByActivityId(
   activityId: number,
 ): Promise<Question[]> {
-  const sql = `
-    SELECT * FROM epivox_questions 
-    WHERE activity_id = ? 
-    ORDER BY sort_order ASC, id ASC
-  `;
-  return query<Question>(sql, [activityId]);
+  return query<Question>(
+    `SELECT * FROM epivox_questions
+     WHERE activity_id = ?
+     ORDER BY sort_order ASC, id ASC`,
+    [activityId],
+  );
 }
 
 export async function createActivity(
   data: Partial<Activity>,
+  ownerUserId: number,
 ): Promise<Activity> {
-  const nextIdRows = await query<{ next_id: number }>(`
-    SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM epivox_activities
-  `);
-  const id = nextIdRows[0]?.next_id || 1;
-
-  const title = data.title || "Nueva Actividad";
-  const description = data.description || "";
-  const category = data.category || "Capacitación";
-  const activity_type = data.activity_type || "quiz";
-  const theme_id = data.theme_id || 1;
-  const created_by = data.created_by_user_id || 1;
-  const is_template = data.is_template ? "TRUE" : "FALSE";
-  const is_public = data.is_public ? "TRUE" : "FALSE";
-  const time_limit = data.default_time_limit || 30;
-  const points = data.default_points || 1000;
-  const speed_bonus = data.speed_bonus_enabled !== false ? "TRUE" : "FALSE";
-  const negative_points = data.negative_points_enabled ? "TRUE" : "FALSE";
-
-  const sql = `
-    INSERT INTO epivox_activities (
-      id, title, description, category, activity_type, theme_id, created_by_user_id,
-      is_template, is_public, default_time_limit, default_points, speed_bonus_enabled, negative_points_enabled,
-      created_at, updated_at
-    ) VALUES (
-      ${id}, '${title.replace(/'/g, "''")}', '${description.replace(/'/g, "''")}', '${category}', 
-      '${activity_type}', ${theme_id}, ${created_by}, ${is_template}, ${is_public}, ${time_limit}, 
-      ${points}, ${speed_bonus}, ${negative_points}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-    )
-  `;
-  await exec(sql);
-
+  const id = await nextId("epivox_activities");
+  await query(
+    `INSERT INTO epivox_activities (
+       id, title, description, category, activity_type, theme_id, created_by_user_id,
+       is_template, is_public, default_time_limit, default_points,
+       speed_bonus_enabled, negative_points_enabled, created_at, updated_at
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+    [
+      id,
+      data.title || "Nueva Actividad",
+      data.description || "",
+      data.category || "Capacitación",
+      data.activity_type || "quiz",
+      data.theme_id || 1,
+      ownerUserId,
+      Boolean(data.is_template),
+      Boolean(data.is_public),
+      Number(data.default_time_limit) || 30,
+      Number(data.default_points) || 1000,
+      data.speed_bonus_enabled !== false,
+      Boolean(data.negative_points_enabled),
+    ],
+  );
   const created = await getActivityById(id);
   if (!created) throw new Error("Error al crear actividad");
   return created;
 }
 
+const ACTIVITY_UPDATABLE: Array<keyof Activity> = [
+  "title",
+  "description",
+  "category",
+  "activity_type",
+  "theme_id",
+  "is_template",
+  "is_public",
+  "default_time_limit",
+  "default_points",
+  "speed_bonus_enabled",
+  "negative_points_enabled",
+];
+
 export async function updateActivity(
   id: number,
   data: Partial<Activity>,
 ): Promise<Activity> {
-  const updates: string[] = [];
-
-  if (data.title !== undefined)
-    updates.push(`title = '${data.title.replace(/'/g, "''")}'`);
-  if (data.description !== undefined) {
-    updates.push(
-      data.description
-        ? `description = '${data.description.replace(/'/g, "''")}'`
-        : "description = NULL",
-    );
+  const sets: string[] = [];
+  const values: unknown[] = [];
+  for (const col of ACTIVITY_UPDATABLE) {
+    if (data[col] === undefined) continue;
+    sets.push(`${col} = ?`);
+    values.push(data[col] === "" && col === "description" ? null : data[col]);
   }
-  if (data.category !== undefined)
-    updates.push(`category = '${data.category.replace(/'/g, "''")}'`);
-  if (data.activity_type !== undefined)
-    updates.push(`activity_type = '${data.activity_type}'`);
-  if (data.theme_id !== undefined) updates.push(`theme_id = ${data.theme_id}`);
-  if (data.is_template !== undefined)
-    updates.push(`is_template = ${data.is_template ? "TRUE" : "FALSE"}`);
-  if (data.is_public !== undefined)
-    updates.push(`is_public = ${data.is_public ? "TRUE" : "FALSE"}`);
-  if (data.default_time_limit !== undefined)
-    updates.push(`default_time_limit = ${data.default_time_limit}`);
-  if (data.default_points !== undefined)
-    updates.push(`default_points = ${data.default_points}`);
-  if (data.speed_bonus_enabled !== undefined)
-    updates.push(
-      `speed_bonus_enabled = ${data.speed_bonus_enabled ? "TRUE" : "FALSE"}`,
-    );
-  if (data.negative_points_enabled !== undefined)
-    updates.push(
-      `negative_points_enabled = ${data.negative_points_enabled ? "TRUE" : "FALSE"}`,
-    );
-
-  updates.push("updated_at = CURRENT_TIMESTAMP");
-
-  const sql = `UPDATE epivox_activities SET ${updates.join(", ")} WHERE id = ${id}`;
-  await exec(sql);
-
+  sets.push("updated_at = CURRENT_TIMESTAMP");
+  await query(
+    `UPDATE epivox_activities SET ${sets.join(", ")} WHERE id = ?`,
+    [...values, id],
+  );
   const updated = await getActivityById(id);
   if (!updated) throw new Error("Actividad no encontrada para actualizar");
   return updated;
 }
 
 export async function deleteActivity(id: number): Promise<void> {
-  // 1. Eliminar preguntas de la audiencia de las sesiones de esta actividad
-  await exec(
-    `DELETE FROM epivox_audience_questions WHERE session_id IN (SELECT id FROM epivox_sessions WHERE activity_id = ${id})`,
+  // Orden hijo -> padre por FKs. DuckDB no admite borrar hijo y padre dentro
+  // de una misma transacción con FK, por eso se ejecutan en secuencia.
+  const sessionsOf = `SELECT id FROM epivox_sessions WHERE activity_id = ?`;
+  await query(
+    `DELETE FROM epivox_audience_questions WHERE session_id IN (${sessionsOf})`,
+    [id],
   );
-
-  // 2. Eliminar respuestas enviadas asociadas a sesiones o preguntas de esta actividad
-  await exec(
-    `DELETE FROM epivox_answers WHERE session_id IN (SELECT id FROM epivox_sessions WHERE activity_id = ${id}) OR question_id IN (SELECT id FROM epivox_questions WHERE activity_id = ${id})`,
+  await query(
+    `DELETE FROM epivox_answers WHERE session_id IN (${sessionsOf})
+       OR question_id IN (SELECT id FROM epivox_questions WHERE activity_id = ?)`,
+    [id, id],
   );
-
-  // 3. Eliminar participantes de las sesiones de esta actividad
-  await exec(
-    `DELETE FROM epivox_participants WHERE session_id IN (SELECT id FROM epivox_sessions WHERE activity_id = ${id})`,
+  await query(
+    `DELETE FROM epivox_participants WHERE session_id IN (${sessionsOf})`,
+    [id],
   );
-
-  // 4. Eliminar sesiones de esta actividad
-  await exec(`DELETE FROM epivox_sessions WHERE activity_id = ${id}`);
-
-  // 5. Eliminar preguntas de la actividad
-  await exec(`DELETE FROM epivox_questions WHERE activity_id = ${id}`);
-
-  // 6. Eliminar la actividad
-  await exec(`DELETE FROM epivox_activities WHERE id = ${id}`);
+  await query(`DELETE FROM epivox_sessions WHERE activity_id = ?`, [id]);
+  await query(`DELETE FROM epivox_questions WHERE activity_id = ?`, [id]);
+  await query(`DELETE FROM epivox_collaborators WHERE activity_id = ?`, [id]);
+  await query(`DELETE FROM epivox_activities WHERE id = ?`, [id]);
 }
 
 export async function cloneActivity(
   activityId: number,
-  targetUserId = 1,
+  targetUserId: number,
 ): Promise<Activity> {
   const source = await getActivityById(activityId);
   if (!source) throw new Error("Actividad de origen no encontrada");
 
-  const cloned = await createActivity({
-    title: `${source.title} (Copia)`,
-    description: source.description || "",
-    category: source.category,
-    activity_type: source.activity_type,
-    theme_id: source.theme_id,
-    created_by_user_id: targetUserId,
-    is_template: false,
-    is_public: false,
-    default_time_limit: source.default_time_limit,
-    default_points: source.default_points,
-    speed_bonus_enabled: source.speed_bonus_enabled,
-    negative_points_enabled: source.negative_points_enabled,
-  });
+  const cloned = await createActivity(
+    {
+      title: `${source.title} (Copia)`,
+      description: source.description || "",
+      category: source.category,
+      activity_type: source.activity_type,
+      theme_id: source.theme_id,
+      is_template: false,
+      is_public: false,
+      default_time_limit: source.default_time_limit,
+      default_points: source.default_points,
+      speed_bonus_enabled: source.speed_bonus_enabled,
+      negative_points_enabled: source.negative_points_enabled,
+    },
+    targetUserId,
+  );
 
   const sourceQuestions = await getQuestionsByActivityId(activityId);
   for (const q of sourceQuestions) {
-    await createQuestion({
-      activity_id: cloned.id,
-      sort_order: q.sort_order,
-      question_text: q.question_text,
-      question_type: q.question_type,
-      time_limit: q.time_limit,
-      points_base: q.points_base,
-      media_type: q.media_type,
-      media_url: q.media_url,
-      reveal_step_count: q.reveal_step_count,
-      chart_type: q.chart_type,
-      options_json: q.options_json,
-      correct_answer_value: q.correct_answer_value,
-      explanation_text: q.explanation_text,
-    });
+    await createQuestion({ ...q, activity_id: cloned.id });
   }
-
   return cloned;
 }
 
 export async function createQuestion(
   data: Partial<Question>,
 ): Promise<Question> {
-  const nextIdRows = await query<{ next_id: number }>(`
-    SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM epivox_questions
-  `);
-  const id = nextIdRows[0]?.next_id || 1;
-
-  const activity_id = data.activity_id || 1;
-  const sort_order = data.sort_order || 1;
-  const question_text = data.question_text || "¿Pregunta?";
-  const question_type = data.question_type || "multiple_choice";
-  const time_limit = data.time_limit || 30;
-  const points_base = data.points_base || 1000;
-  const media_type = data.media_type || "none";
-  const media_url = data.media_url ? `'${data.media_url}'` : "NULL";
-  const reveal_step = data.reveal_step_count || 1;
-  const chart_type = data.chart_type || "bar";
-  const options_json = data.options_json || "[]";
-  const correct_answer = data.correct_answer_value
-    ? `'${data.correct_answer_value.replace(/'/g, "''")}'`
-    : "NULL";
-  const explanation = data.explanation_text
-    ? `'${data.explanation_text.replace(/'/g, "''")}'`
-    : "NULL";
-
-  const sql = `
-    INSERT INTO epivox_questions (
-      id, activity_id, sort_order, question_text, question_type, time_limit, points_base,
-      media_type, media_url, reveal_step_count, chart_type, options_json, correct_answer_value, explanation_text
-    ) VALUES (
-      ${id}, ${activity_id}, ${sort_order}, '${question_text.replace(/'/g, "''")}',
-      '${question_type}', ${time_limit}, ${points_base}, '${media_type}', ${media_url},
-      ${reveal_step}, '${chart_type}', '${options_json.replace(/'/g, "''")}', ${correct_answer}, ${explanation}
-    )
-  `;
-  await exec(sql);
-
+  const id = await nextId("epivox_questions");
+  await query(
+    `INSERT INTO epivox_questions (
+       id, activity_id, sort_order, question_text, question_type, time_limit, points_base,
+       media_type, media_url, reveal_step_count, chart_type, options_json,
+       correct_answer_value, explanation_text
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id,
+      data.activity_id,
+      Number(data.sort_order) || 1,
+      data.question_text || "¿Pregunta?",
+      data.question_type || "multiple_choice",
+      Number(data.time_limit) || 30,
+      data.points_base ?? 1000,
+      data.media_type || "none",
+      data.media_url || null,
+      Number(data.reveal_step_count) || 1,
+      data.chart_type || "bar",
+      data.options_json || "[]",
+      data.correct_answer_value || null,
+      data.explanation_text || null,
+    ],
+  );
   const rows = await query<Question>(
     `SELECT * FROM epivox_questions WHERE id = ?`,
     [id],
@@ -285,55 +301,53 @@ export async function createQuestion(
   return rows[0];
 }
 
+export async function getQuestionActivityId(
+  questionId: number,
+): Promise<number | null> {
+  const rows = await query<{ activity_id: number }>(
+    `SELECT activity_id FROM epivox_questions WHERE id = ?`,
+    [questionId],
+  );
+  return rows[0]?.activity_id ?? null;
+}
+
+const QUESTION_UPDATABLE: Array<keyof Question> = [
+  "question_text",
+  "question_type",
+  "time_limit",
+  "points_base",
+  "media_type",
+  "media_url",
+  "reveal_step_count",
+  "chart_type",
+  "options_json",
+  "correct_answer_value",
+  "explanation_text",
+  "sort_order",
+];
+const QUESTION_NULLABLE = new Set<keyof Question>([
+  "media_url",
+  "correct_answer_value",
+  "explanation_text",
+]);
+
 export async function updateQuestion(
   id: number,
   data: Partial<Question>,
 ): Promise<Question> {
-  const updates: string[] = [];
-
-  if (data.question_text !== undefined)
-    updates.push(`question_text = '${data.question_text.replace(/'/g, "''")}'`);
-  if (data.question_type !== undefined)
-    updates.push(`question_type = '${data.question_type}'`);
-  if (data.time_limit !== undefined)
-    updates.push(`time_limit = ${data.time_limit}`);
-  if (data.points_base !== undefined)
-    updates.push(`points_base = ${data.points_base}`);
-  if (data.media_type !== undefined)
-    updates.push(`media_type = '${data.media_type}'`);
-  if (data.media_url !== undefined) {
-    updates.push(
-      data.media_url ? `media_url = '${data.media_url}'` : "media_url = NULL",
-    );
+  const sets: string[] = [];
+  const values: unknown[] = [];
+  for (const col of QUESTION_UPDATABLE) {
+    if (data[col] === undefined) continue;
+    sets.push(`${col} = ?`);
+    values.push(QUESTION_NULLABLE.has(col) && !data[col] ? null : data[col]);
   }
-  if (data.reveal_step_count !== undefined)
-    updates.push(`reveal_step_count = ${data.reveal_step_count}`);
-  if (data.chart_type !== undefined)
-    updates.push(`chart_type = '${data.chart_type}'`);
-  if (data.options_json !== undefined)
-    updates.push(`options_json = '${data.options_json.replace(/'/g, "''")}'`);
-  if (data.correct_answer_value !== undefined) {
-    updates.push(
-      data.correct_answer_value
-        ? `correct_answer_value = '${data.correct_answer_value.replace(/'/g, "''")}'`
-        : "correct_answer_value = NULL",
-    );
+  if (sets.length > 0) {
+    await query(`UPDATE epivox_questions SET ${sets.join(", ")} WHERE id = ?`, [
+      ...values,
+      id,
+    ]);
   }
-  if (data.explanation_text !== undefined) {
-    updates.push(
-      data.explanation_text
-        ? `explanation_text = '${data.explanation_text.replace(/'/g, "''")}'`
-        : "explanation_text = NULL",
-    );
-  }
-  if (data.sort_order !== undefined)
-    updates.push(`sort_order = ${data.sort_order}`);
-
-  if (updates.length > 0) {
-    const sql = `UPDATE epivox_questions SET ${updates.join(", ")} WHERE id = ${id}`;
-    await exec(sql);
-  }
-
   const rows = await query<Question>(
     `SELECT * FROM epivox_questions WHERE id = ?`,
     [id],
@@ -342,7 +356,7 @@ export async function updateQuestion(
 }
 
 export async function deleteQuestion(id: number): Promise<void> {
-  await exec(`DELETE FROM epivox_questions WHERE id = ${id}`);
+  await query(`DELETE FROM epivox_questions WHERE id = ?`, [id]);
 }
 
 export async function reorderQuestions(
@@ -350,9 +364,60 @@ export async function reorderQuestions(
   questionIds: number[],
 ): Promise<void> {
   for (let idx = 0; idx < questionIds.length; idx++) {
-    const qId = questionIds[idx];
-    await exec(
-      `UPDATE epivox_questions SET sort_order = ${idx + 1} WHERE id = ${qId} AND activity_id = ${activityId}`,
+    await query(
+      `UPDATE epivox_questions SET sort_order = ? WHERE id = ? AND activity_id = ?`,
+      [idx + 1, Number(questionIds[idx]), activityId],
     );
   }
 }
+
+export async function setQuestionChartType(
+  questionId: number,
+  chartType: string,
+): Promise<void> {
+  await query(`UPDATE epivox_questions SET chart_type = ? WHERE id = ?`, [
+    chartType,
+    questionId,
+  ]);
+}
+
+// ---------------------------------------------------------------------------
+// Colaboradores (invitados a editar una presentación)
+// ---------------------------------------------------------------------------
+export async function listCollaborators(
+  activityId: number,
+): Promise<Collaborator[]> {
+  return query<Collaborator>(
+    `SELECT c.user_id, u.username, u.full_name, u.email, c.role, c.created_at
+     FROM epivox_collaborators c
+     JOIN users u ON u.id = c.user_id
+     WHERE c.activity_id = ?
+     ORDER BY c.created_at ASC`,
+    [activityId],
+  );
+}
+
+export async function addCollaborator(
+  activityId: number,
+  userId: number,
+): Promise<void> {
+  const id = await nextId("epivox_collaborators");
+  await query(
+    `INSERT INTO epivox_collaborators (id, activity_id, user_id, role)
+     VALUES (?, ?, ?, 'editor') ON CONFLICT DO NOTHING`,
+    [id, activityId, userId],
+  );
+}
+
+export async function removeCollaborator(
+  activityId: number,
+  userId: number,
+): Promise<void> {
+  await query(
+    `DELETE FROM epivox_collaborators WHERE activity_id = ? AND user_id = ?`,
+    [activityId, userId],
+  );
+}
+
+// `exec` se mantiene exportado por compatibilidad con otros módulos.
+export { exec };

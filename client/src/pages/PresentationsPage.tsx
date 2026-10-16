@@ -29,11 +29,13 @@ import {
   Radio,
   ArrowRightCircle,
   ListOrdered,
+  Share2,
 } from "lucide-react";
 import QRCode from "qrcode";
 import * as XLSX from "xlsx";
 import PageHeader from "../components/PageHeader";
 import Modal from "../components/Modal";
+import CollaboratorsModal from "../components/CollaboratorsModal";
 import { getSocket } from "../services/socket";
 
 interface PresentationItem {
@@ -45,6 +47,9 @@ interface PresentationItem {
   questions_count?: number;
   default_time_limit: number;
   updated_at: string;
+  owner_username?: string;
+  owner_name?: string | null;
+  my_access?: "owner" | "admin" | "editor" | "template";
 }
 
 interface ActiveSessionData {
@@ -113,6 +118,13 @@ export default function PresentationsPage() {
 
   // Modal de confirmación de eliminación (sin alert nativo)
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
+
+  // Modal de colaboradores
+  const [collabTarget, setCollabTarget] = useState<{
+    id: number;
+    title: string;
+    isOwnerOrAdmin: boolean;
+  } | null>(null);
 
   // Modal de Importación Masiva desde Excel
   const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
@@ -1656,8 +1668,25 @@ export default function PresentationsPage() {
                         </Link>
                       </div>
 
-                      {/* Acciones secundarias (Clonar / Eliminar) */}
+                      {/* Acciones secundarias (Compartir / Clonar / Eliminar) */}
                       <div className="flex items-center justify-end gap-3 text-xs pt-1">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setCollabTarget({
+                              id: act.id,
+                              title: act.title,
+                              isOwnerOrAdmin:
+                                act.my_access === "owner" ||
+                                act.my_access === "admin",
+                            })
+                          }
+                          className="text-[#48A9C5] hover:text-white flex items-center gap-1 transition"
+                          title="Gestionar colaboradores"
+                        >
+                          <Share2 className="w-3.5 h-3.5" />
+                          <span>Compartir</span>
+                        </button>
                         <button
                           type="button"
                           onClick={() => handleClone(act.id)}
@@ -1667,15 +1696,19 @@ export default function PresentationsPage() {
                           <CopyPlus className="w-3.5 h-3.5" />
                           <span>Duplicar</span>
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => setDeleteTargetId(act.id)}
-                          className="text-[#B7312C]/80 hover:text-[#B7312C] flex items-center gap-1 transition"
-                          title="Eliminar presentación"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>Eliminar</span>
-                        </button>
+                        {(act.my_access === "owner" ||
+                          act.my_access === "admin" ||
+                          !act.my_access) && (
+                          <button
+                            type="button"
+                            onClick={() => setDeleteTargetId(act.id)}
+                            className="text-[#B7312C]/80 hover:text-[#B7312C] flex items-center gap-1 transition"
+                            title="Eliminar presentación"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Eliminar</span>
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1764,6 +1797,23 @@ export default function PresentationsPage() {
 
                             <button
                               type="button"
+                              onClick={() =>
+                                setCollabTarget({
+                                  id: act.id,
+                                  title: act.title,
+                                  isOwnerOrAdmin:
+                                    act.my_access === "owner" ||
+                                    act.my_access === "admin",
+                                })
+                              }
+                              className="bg-[#001E32] hover:bg-[#254F72] text-[#48A9C5] border border-[#48A9C5]/40 py-1.5 px-2.5 rounded-lg transition"
+                              title="Colaboradores"
+                            >
+                              <Share2 className="w-3.5 h-3.5" />
+                            </button>
+
+                            <button
+                              type="button"
                               onClick={() => handleClone(act.id)}
                               className="bg-[#001E32] hover:bg-[#254F72] text-[#ECEBE4] border border-[#425563] py-1.5 px-2.5 rounded-lg transition"
                               title="Duplicar"
@@ -1771,14 +1821,18 @@ export default function PresentationsPage() {
                               <CopyPlus className="w-3.5 h-3.5" />
                             </button>
 
-                            <button
-                              type="button"
-                              onClick={() => setDeleteTargetId(act.id)}
-                              className="bg-[#001E32] hover:bg-[#B7312C]/20 text-[#B7312C] border border-[#B7312C]/40 py-1.5 px-2.5 rounded-lg transition"
-                              title="Eliminar"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                            {(act.my_access === "owner" ||
+                              act.my_access === "admin" ||
+                              !act.my_access) && (
+                              <button
+                                type="button"
+                                onClick={() => setDeleteTargetId(act.id)}
+                                className="bg-[#001E32] hover:bg-[#B7312C]/20 text-[#B7312C] border border-[#B7312C]/40 py-1.5 px-2.5 rounded-lg transition"
+                                title="Eliminar"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -2224,6 +2278,17 @@ export default function PresentationsPage() {
           </button>
         </div>
       </Modal>
+
+      {/* ===================================================================== */}
+      {/* MODAL 5: GESTIÓN DE COLABORADORES                                     */}
+      {/* ===================================================================== */}
+      <CollaboratorsModal
+        isOpen={collabTarget !== null}
+        onClose={() => setCollabTarget(null)}
+        activityId={collabTarget?.id || null}
+        activityTitle={collabTarget?.title || ""}
+        isOwnerOrAdmin={Boolean(collabTarget?.isOwnerOrAdmin)}
+      />
     </div>
   );
 }

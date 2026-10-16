@@ -1,4 +1,6 @@
 import { Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 import AppLayout from "./components/AppLayout";
 import HomePage from "./pages/HomePage";
 import PresentationsPage from "./pages/PresentationsPage";
@@ -10,87 +12,126 @@ import PresentationPage from "./pages/PresentationPage";
 import PresenterRemotePage from "./pages/PresenterRemotePage";
 import JoinPage from "./pages/JoinPage";
 import LiveParticipantPage from "./pages/LiveParticipantPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
 
 export default function App() {
   return (
-    <Routes>
-      {/* Rutas con Navegación y Sidebar Corporativo Logistech */}
-      <Route
-        path="/"
-        element={
-          <AppLayout>
-            <HomePage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/hub"
-        element={
-          <AppLayout>
-            <HomePage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/presentations"
-        element={
-          <AppLayout>
-            <PresentationsPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/open-polls"
-        element={
-          <AppLayout>
-            <OpenPollsPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/templates"
-        element={
-          <AppLayout>
-            <TemplatesPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/reports/:id"
-        element={
-          <AppLayout>
-            <SessionReportPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/reports"
-        element={
-          <AppLayout>
-            <SessionReportPage />
-          </AppLayout>
-        }
-      />
+    <AuthProvider>
+      <Routes>
+        {/* Rutas Públicas de Acceso y Recuperación */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-      {/* Editor de diapositivas (Dentro de AppLayout para conservar el Sidebar y menú principal) */}
-      <Route
-        path="/editor/:id"
-        element={
-          <AppLayout>
-            <ActivityEditorPage />
-          </AppLayout>
-        }
-      />
+        {/* Rutas Protegidas con AppLayout y Sidebar */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <HomePage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/hub"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <HomePage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/presentations"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <PresentationsPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/open-polls"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <OpenPollsPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/templates"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <TemplatesPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reports/:id"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <SessionReportPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <SessionReportPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Pantalla de Proyección 16:9 (Proyector / Teams) */}
-      <Route path="/present/:pin" element={<PresentationPage />} />
+        {/* Editor de diapositivas (Protegido) */}
+        <Route
+          path="/editor/:id"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <ActivityEditorPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Control Remoto para el Presentador */}
-      <Route path="/remote/:pin" element={<PresenterRemotePage />} />
+        {/* Módulo de Administración de Usuarios (Solo Super Admin) */}
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute requireAdmin>
+              <AppLayout>
+                <AdminUsersPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Experiencia Móvil de Participantes */}
-      <Route path="/join" element={<JoinPage />} />
-      <Route path="/live/:pin" element={<LiveParticipantPage />} />
-    </Routes>
+        {/* Pantalla de Proyección 16:9 (Proyector / Teams) */}
+        <Route path="/present/:pin" element={<PresentationPage />} />
+
+        {/* Control Remoto para el Presentador */}
+        <Route path="/remote/:pin" element={<PresenterRemotePage />} />
+
+        {/* Experiencia Móvil de Participantes (100% pública por PIN, sin login) */}
+        <Route path="/join" element={<JoinPage />} />
+        <Route path="/live/:pin" element={<LiveParticipantPage />} />
+      </Routes>
+    </AuthProvider>
   );
 }

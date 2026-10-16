@@ -1,7 +1,43 @@
 -- ============================================================================
--- schema.sql - DDL Estructural para Epivox (DuckDB Local)
+-- schema.sql - DDL Estructural para Epivox (DuckDB Local / VPS Standalone)
 -- Regla 6b: SOLO sentencias DDL (sin sentencias DML/INSERT)
 -- ============================================================================
+
+-- ----------------------------------------------------------------------------
+-- Autenticación propia (VPS standalone): usuarios, invitaciones y resets
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY,
+  username VARCHAR NOT NULL,
+  email VARCHAR NOT NULL,
+  password_hash VARCHAR NOT NULL,
+  full_name VARCHAR,
+  role VARCHAR NOT NULL DEFAULT 'creator',
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS invitations (
+  id INTEGER PRIMARY KEY,
+  email VARCHAR NOT NULL,
+  token VARCHAR NOT NULL,
+  role VARCHAR NOT NULL DEFAULT 'creator',
+  invited_by_user_id INTEGER NOT NULL REFERENCES users(id),
+  expires_at TIMESTAMP NOT NULL,
+  used_at TIMESTAMP,
+  revoked_at TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS password_resets (
+  id INTEGER PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  token VARCHAR NOT NULL,
+  created_by_user_id INTEGER NOT NULL REFERENCES users(id),
+  expires_at TIMESTAMP NOT NULL,
+  used_at TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
 CREATE TABLE IF NOT EXISTS epivox_themes (
   id INTEGER PRIMARY KEY,
@@ -25,7 +61,7 @@ CREATE TABLE IF NOT EXISTS epivox_activities (
   category VARCHAR NOT NULL DEFAULT 'Capacitación',
   activity_type VARCHAR NOT NULL DEFAULT 'quiz',
   theme_id INTEGER REFERENCES epivox_themes(id),
-  created_by_user_id INTEGER NOT NULL DEFAULT 1,
+  created_by_user_id INTEGER NOT NULL REFERENCES users(id),
   is_template BOOLEAN NOT NULL DEFAULT FALSE,
   is_public BOOLEAN NOT NULL DEFAULT FALSE,
   default_time_limit INTEGER NOT NULL DEFAULT 30,
@@ -34,6 +70,15 @@ CREATE TABLE IF NOT EXISTS epivox_activities (
   negative_points_enabled BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Usuarios invitados a editar una presentación ajena
+CREATE TABLE IF NOT EXISTS epivox_collaborators (
+  id INTEGER PRIMARY KEY,
+  activity_id INTEGER NOT NULL REFERENCES epivox_activities(id),
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  role VARCHAR NOT NULL DEFAULT 'editor',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS epivox_questions (
@@ -56,7 +101,7 @@ CREATE TABLE IF NOT EXISTS epivox_questions (
 
 CREATE TABLE IF NOT EXISTS epivox_sessions (
   id INTEGER PRIMARY KEY,
-  pin VARCHAR NOT NULL UNIQUE,
+  pin VARCHAR NOT NULL,
   activity_id INTEGER NOT NULL REFERENCES epivox_activities(id),
   presenter_user_id INTEGER NOT NULL DEFAULT 1,
   status VARCHAR NOT NULL DEFAULT 'lobby',
@@ -110,7 +155,16 @@ CREATE TABLE IF NOT EXISTS epivox_audience_questions (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_epivox_sessions_pin ON epivox_sessions(pin);
+-- Índices de unicidad y rendimiento (DuckDB friendly)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_invitations_token ON invitations(token);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_epivox_collaborators_pair ON epivox_collaborators(activity_id, user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_epivox_sessions_pin ON epivox_sessions(pin);
+
 CREATE INDEX IF NOT EXISTS idx_epivox_participants_session ON epivox_participants(session_id);
 CREATE INDEX IF NOT EXISTS idx_epivox_answers_session_question ON epivox_answers(session_id, question_id);
 CREATE INDEX IF NOT EXISTS idx_epivox_questions_activity ON epivox_questions(activity_id);
+CREATE INDEX IF NOT EXISTS idx_epivox_activities_owner ON epivox_activities(created_by_user_id);
+CREATE INDEX IF NOT EXISTS idx_epivox_collaborators_user ON epivox_collaborators(user_id);
