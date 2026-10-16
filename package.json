@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "start": "node server/dist/index.js",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install && cd ..",
     "db:regen": "cd server && npx tsx db/regen.ts",
     "dev:reg": "npm run db:regen && npm run dev",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
