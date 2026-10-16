@@ -431,3 +431,42 @@ export async function getSessionReport(
     participants,
   };
 }
+
+export interface HubGlobalStats {
+  totalParticipants: number;
+  accuracyRate: number | null;
+  totalSessions: number;
+}
+
+export async function getHubGlobalStats(): Promise<HubGlobalStats> {
+  const partResult = await query<{ count: number }>(
+    "SELECT COUNT(*) as count FROM epivox_participants",
+  );
+  const totalParticipants = Number(partResult[0]?.count || 0);
+
+  const accResult = await query<{ total: number; correct: number }>(
+    `SELECT 
+       COUNT(*) as total,
+       SUM(CASE WHEN is_correct = TRUE THEN 1 ELSE 0 END) as correct
+     FROM epivox_answers
+     WHERE is_correct IS NOT NULL`,
+  );
+  const totalAnswers = Number(accResult[0]?.total || 0);
+  const correctAnswers = Number(accResult[0]?.correct || 0);
+  const accuracyRate =
+    totalAnswers > 0
+      ? Math.round((correctAnswers / totalAnswers) * 1000) / 10
+      : null;
+
+  const sessResult = await query<{ count: number }>(
+    "SELECT COUNT(*) as count FROM epivox_sessions",
+  );
+  const totalSessions = Number(sessResult[0]?.count || 0);
+
+  return {
+    totalParticipants,
+    accuracyRate,
+    totalSessions,
+  };
+}
+

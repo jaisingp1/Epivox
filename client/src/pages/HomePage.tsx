@@ -22,19 +22,35 @@ interface ActivitySummary {
   updated_at: string;
 }
 
+interface HubStats {
+  totalParticipants: number;
+  accuracyRate: number | null;
+  totalSessions: number;
+}
+
 export default function HomePage() {
   const navigate = useNavigate();
   const [activities, setActivities] = useState<ActivitySummary[]>([]);
+  const [stats, setStats] = useState<HubStats>({
+    totalParticipants: 0,
+    accuracyRate: null,
+    totalSessions: 0,
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isLaunching, setIsLaunching] = useState(false);
 
   useEffect(() => {
-    fetch("/api/epivox/activities")
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) setActivities(data);
+    Promise.all([
+      fetch("/api/epivox/activities").then((res) => res.json()),
+      fetch("/api/epivox/hub/stats").then((res) => res.json()),
+    ])
+      .then(([actsData, statsData]) => {
+        if (Array.isArray(actsData)) setActivities(actsData);
+        if (statsData && typeof statsData.totalParticipants === "number") {
+          setStats(statsData);
+        }
       })
-      .catch((err) => console.error("Error al cargar actividades:", err))
+      .catch((err) => console.error("Error al cargar datos del hub:", err))
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -129,8 +145,12 @@ export default function HomePage() {
               <Users className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl font-black text-white">500+</div>
-          <p className="text-xs text-[#ECEBE4]/60">Capacidad simultánea</p>
+          <div className="text-3xl font-black text-white">
+            {stats.totalParticipants}
+          </div>
+          <p className="text-xs text-[#ECEBE4]/60">
+            {stats.totalParticipants === 1 ? "Participante histórico" : "Participantes totales"}
+          </p>
         </div>
 
         <div className="bg-[#193750] border border-[#425563]/60 p-5 rounded-2xl shadow space-y-2">
@@ -142,8 +162,12 @@ export default function HomePage() {
               <TrendingUp className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl font-black text-white">92.4%</div>
-          <p className="text-xs text-[#ECEBE4]/60">Promedio de retención</p>
+          <div className="text-3xl font-black text-white">
+            {stats.accuracyRate !== null ? `${stats.accuracyRate}%` : "—"}
+          </div>
+          <p className="text-xs text-[#ECEBE4]/60">
+            {stats.accuracyRate !== null ? "Promedio en sesiones" : "Sin sesiones evaluadas"}
+          </p>
         </div>
       </div>
 

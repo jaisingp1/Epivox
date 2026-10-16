@@ -27,11 +27,25 @@ import {
   getLeaderboard,
   getParticipants,
   getSessionReport,
+  getHubGlobalStats,
 } from "../services/sessionService.js";
 import { findActiveUserByLogin } from "../services/authService.js";
 import { requireAuth, optionalAuth } from "../middleware/auth.middleware.js";
 
 const router = Router();
+
+// ---------------------------------------------------------------------------
+// Métricas Globales del Hub
+// ---------------------------------------------------------------------------
+router.get("/hub/stats", requireAuth, async (_req, res) => {
+  try {
+    const stats = await getHubGlobalStats();
+    res.json(stats);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al obtener métricas";
+    res.status(500).json({ error: message });
+  }
+});
 
 // ---------------------------------------------------------------------------
 // Actividades & Plantillas
