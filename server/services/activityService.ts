@@ -171,7 +171,28 @@ export async function updateActivity(
 }
 
 export async function deleteActivity(id: number): Promise<void> {
+  // 1. Eliminar preguntas de la audiencia de las sesiones de esta actividad
+  await exec(
+    `DELETE FROM epivox_audience_questions WHERE session_id IN (SELECT id FROM epivox_sessions WHERE activity_id = ${id})`,
+  );
+
+  // 2. Eliminar respuestas enviadas asociadas a sesiones o preguntas de esta actividad
+  await exec(
+    `DELETE FROM epivox_answers WHERE session_id IN (SELECT id FROM epivox_sessions WHERE activity_id = ${id}) OR question_id IN (SELECT id FROM epivox_questions WHERE activity_id = ${id})`,
+  );
+
+  // 3. Eliminar participantes de las sesiones de esta actividad
+  await exec(
+    `DELETE FROM epivox_participants WHERE session_id IN (SELECT id FROM epivox_sessions WHERE activity_id = ${id})`,
+  );
+
+  // 4. Eliminar sesiones de esta actividad
+  await exec(`DELETE FROM epivox_sessions WHERE activity_id = ${id}`);
+
+  // 5. Eliminar preguntas de la actividad
   await exec(`DELETE FROM epivox_questions WHERE activity_id = ${id}`);
+
+  // 6. Eliminar la actividad
   await exec(`DELETE FROM epivox_activities WHERE id = ${id}`);
 }
 

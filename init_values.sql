@@ -128,6 +128,99 @@ INSERT INTO epivox_questions (
   'Métrica instantánea para evaluar la percepción de seguridad operativa.'
 );
 
+-- Pregunta 5: Opción Múltiple con 5 OPCIONES (Verificación de 5 Opciones completas)
+INSERT INTO epivox_questions (
+  id, activity_id, sort_order, question_text, question_type, time_limit, points_base,
+  chart_type, options_json, correct_answer_value, explanation_text
+) VALUES (
+  5,
+  1,
+  5,
+  '¿Cuál es el paso final indispensable antes de dar por liberado un equipo minero tras una mantención?',
+  'multiple_choice',
+  25,
+  1000,
+  'bar',
+  '[{"id":"A","text":"Retirar candados y tarjetas personales","isCorrect":false},{"id":"B","text":"Inspección visual del área","isCorrect":false},{"id":"C","text":"Prueba funcional y entrega formal al operador","isCorrect":true},{"id":"D","text":"Guardar herramientas en el taller","isCorrect":false},{"id":"E","text":"Avisar al supervisor por radio","isCorrect":false}]',
+  'C',
+  'La prueba funcional con entrega formal y firma conjunta garantiza que el equipo queda 100% operativo y seguro.'
+);
+
+-- ------------------------------------------------------------------------------
+-- 3b. [MASTER] Actividad 2: "Procedimientos Críticos LOTO y Bloqueo de Energía"
+-- ------------------------------------------------------------------------------
+INSERT INTO epivox_activities (
+  id, title, description, category, activity_type, theme_id, created_by_user_id,
+  is_template, is_public, default_time_limit, default_points, speed_bonus_enabled
+) VALUES (
+  2,
+  'Procedimientos Críticos LOTO y Bloqueo de Energía',
+  'Evaluación técnica sobre desenergización, disipación de presiones residuales y permisos de trabajo especial.',
+  'Seguridad',
+  'quiz',
+  1,
+  1,
+  true,
+  true,
+  30,
+  1000,
+  true
+);
+
+INSERT INTO epivox_questions (
+  id, activity_id, sort_order, question_text, question_type, time_limit, points_base,
+  chart_type, options_json, correct_answer_value, explanation_text
+) VALUES (
+  6,
+  2,
+  1,
+  '¿Quién es la única persona autorizada para retirar un candado de bloqueo LOTO personal?',
+  'multiple_choice',
+  20,
+  1000,
+  'bar',
+  '[{"id":"A","text":"El supervisor del turno siguiente","isCorrect":false},{"id":"B","text":"El propio dueño del candado","isCorrect":true},{"id":"C","text":"Cualquier compañero con la llave maestra","isCorrect":false},{"id":"D","text":"El jefe de prevención de riesgos","isCorrect":false},{"id":"E","text":"El operador del equipo intervenido","isCorrect":false}]',
+  'B',
+  'La regla de oro LOTO establece que cada trabajador instala y retira exclusivamente su propio candado y tarjeta.'
+);
+
+-- ------------------------------------------------------------------------------
+-- 3c. [MASTER] Actividad 3: "Sondeo de Clima Laboral y Liderazgo en Faena" (Mentimeter)
+-- ------------------------------------------------------------------------------
+INSERT INTO epivox_activities (
+  id, title, description, category, activity_type, theme_id, created_by_user_id,
+  is_template, is_public, default_time_limit, default_points, speed_bonus_enabled
+) VALUES (
+  3,
+  'Sondeo de Clima Laboral y Liderazgo en Faena',
+  'Pregunta abierta y sondeo interactivo en tiempo real sin concurso para recoger opiniones y propuestas de mejora.',
+  'Cultura',
+  'open_poll',
+  1,
+  1,
+  true,
+  true,
+  60,
+  0,
+  false
+);
+
+INSERT INTO epivox_questions (
+  id, activity_id, sort_order, question_text, question_type, time_limit, points_base,
+  chart_type, options_json, explanation_text
+) VALUES (
+  7,
+  3,
+  1,
+  '¿Qué iniciativa o idea propones para fortalecer la seguridad y bienestar en nuestras faenas?',
+  'word_cloud',
+  120,
+  0,
+  'word_cloud',
+  '[]',
+  'Las respuestas se proyectan en vivo como Nube de Palabras, Barras o Muro de Ideas según la vista del presentador.'
+);
+
 -- ------------------------------------------------------------------------------
 -- 4. [TRANSACCIONAL/PRUEBA] Sesión de Demostración y Analítica (Solo DuckDB Local)
 -- ------------------------------------------------------------------------------

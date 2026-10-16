@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server/dist/index.js",
     "db:regen": "cd server && npx tsx db/regen.ts",
+    "dev:reg": "npm run db:regen",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client && npm run dev",

@@ -48,3 +48,39 @@ INSERT INTO epivox_activities (
   1000,
   true
 ) ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO epivox_activities (
+  id, title, description, category, activity_type, theme_id, created_by_user_id,
+  is_template, is_public, default_time_limit, default_points, speed_bonus_enabled
+) VALUES (
+  2,
+  'Procedimientos Críticos LOTO y Bloqueo de Energía',
+  'Evaluación técnica sobre desenergización, disipación de presiones residuales y permisos de trabajo especial.',
+  'Seguridad',
+  'quiz',
+  1,
+  1,
+  true,
+  true,
+  30,
+  1000,
+  true
+) ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO epivox_activities (
+  id, title, description, category, activity_type, theme_id, created_by_user_id,
+  is_template, is_public, default_time_limit, default_points, speed_bonus_enabled
+) VALUES (
+  3,
+  'Sondeo de Clima Laboral y Liderazgo en Faena',
+  'Pregunta abierta y sondeo interactivo en tiempo real sin concurso para recoger opiniones y propuestas de mejora.',
+  'Cultura',
+  'open_poll',
+  1,
+  1,
+  true,
+  true,
+  60,
+  0,
+  false
+) ON CONFLICT (id) DO NOTHING;

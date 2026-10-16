@@ -110,26 +110,22 @@ export default function TemplatesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#001E32] text-white flex flex-col selection:bg-[#FFC72C] selection:text-[#001E32]">
-      {/* Top Header */}
-      <div className="bg-[#193750] border-b border-[#425563] px-6 py-6">
-        <PageHeader
-          title="Banco de Plantillas Epivox"
-          description="Catálogo corporativo de cuestionarios, dinámicas y evaluaciones listas para clonar o presentar en vivo"
-          breadcrumbs={[
-            { label: "Epivox Hub", href: "/" },
-            { label: "Plantillas Oficiales" },
-          ]}
-          badge={
-            <span className="bg-[#FFC72C]/20 border border-[#FFC72C] text-[#FFC72C] text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
-              {templates.length} Plantillas Disponibles
-            </span>
-          }
-        />
-      </div>
+    <div className="space-y-6 animate-in fade-in duration-300">
+      <PageHeader
+        title="Banco de Plantillas Epivox"
+        description="Catálogo corporativo de cuestionarios, dinámicas y evaluaciones listas para clonar o presentar en vivo."
+        breadcrumbs={[
+          { label: "Epivox", href: "/" },
+          { label: "Banco de Plantillas" },
+        ]}
+        badge={
+          <span className="bg-[#FFC72C]/20 border border-[#FFC72C] text-[#FFC72C] text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
+            {templates.length} Plantillas Disponibles
+          </span>
+        }
+      />
 
-      {/* Main Container */}
-      <div className="max-w-7xl w-full mx-auto p-6 md:p-8 space-y-8 flex-1">
+      <div className="space-y-6">
         {/* Search & Category Filter Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-[#193750] border border-[#425563] p-4 rounded-2xl">
           {/* Search Bar */}
@@ -310,12 +306,6 @@ export default function TemplatesPage() {
           </div>
         </Modal>
       )}
-
-      {/* Footer Branding */}
-      <footer className="p-6 text-center text-xs text-[#ECEBE4]/50 border-t border-[#425563]/30">
-        Ecosistema Logistech &bull; Epivox Enterprise Presentation Suite &bull;
-        Epiroc Chile
-      </footer>
     </div>
   );
 }

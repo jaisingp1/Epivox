@@ -254,6 +254,18 @@ export async function recordAnswer(
   await exec(sqlParticipant);
 }
 
+export async function hasParticipantAnsweredQuestion(
+  sessionId: number,
+  questionId: number,
+  participantId: number,
+): Promise<boolean> {
+  const rows = await query<{ cnt: number }>(
+    `SELECT COUNT(id) as cnt FROM epivox_answers WHERE session_id = ? AND question_id = ? AND participant_id = ?`,
+    [sessionId, questionId, participantId],
+  );
+  return Number(rows[0]?.cnt || 0) > 0;
+}
+
 export async function getLiveResults(
   sessionId: number,
   questionId: number,
@@ -273,6 +285,29 @@ export async function getLiveResults(
     results[r.answer_payload] = Number(r.count);
   }
   return results;
+}
+
+export async function getQuestionAnswers(
+  sessionId: number,
+  questionId: number,
+): Promise<
+  Array<{
+    id: number;
+    participant_id: number;
+    nickname: string;
+    department: string | null;
+    answer_payload: string;
+    submitted_at: string;
+  }>
+> {
+  const sql = `
+    SELECT a.id, a.participant_id, p.nickname, p.department, a.answer_payload, a.submitted_at
+    FROM epivox_answers a
+    JOIN epivox_participants p ON p.id = a.participant_id
+    WHERE a.session_id = ? AND a.question_id = ?
+    ORDER BY a.submitted_at DESC
+  `;
+  return query(sql, [sessionId, questionId]);
 }
 
 export async function getLeaderboard(

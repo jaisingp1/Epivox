@@ -135,32 +135,29 @@ export default function SessionReportPage() {
   )[0];
 
   return (
-    <div className="min-h-screen bg-[#001E32] text-white flex flex-col selection:bg-[#FFC72C] selection:text-[#001E32]">
-      {/* Top Page Header */}
-      <div className="bg-[#193750] border-b border-[#425563] px-6 py-6">
-        <PageHeader
-          title={`Reporte de Sesión: ${report.session.activity_title || "Evaluación Epiroc"}`}
-          description={`Sesión PIN #${report.session.pin} • Finalizada el ${new Date(report.session.created_at).toLocaleDateString()}`}
-          breadcrumbs={[
-            { label: "Epivox Hub", href: "/" },
-            { label: "Reportes y Analíticas" },
-          ]}
-          actions={
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleExportCSV}
-                className="flex items-center gap-2 bg-[#4C8C2B] hover:bg-[#3D7122] text-white font-bold py-2.5 px-4 rounded-xl shadow-lg transition active:scale-95 text-xs"
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-                <span>Exportar a Excel / CSV</span>
-              </button>
-            </div>
-          }
-        />
-      </div>
+    <div className="space-y-6 animate-in fade-in duration-300">
+      <PageHeader
+        title={`Reporte de Sesión: ${report.session.activity_title || "Evaluación Epiroc"}`}
+        description={`Sesión PIN #${report.session.pin} • Finalizada el ${new Date(report.session.created_at).toLocaleDateString()}`}
+        breadcrumbs={[
+          { label: "Epivox", href: "/" },
+          { label: "Reportes y Analíticas" },
+        ]}
+        actions={
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleExportCSV}
+              className="flex items-center gap-2 bg-[#4C8C2B] hover:bg-[#3D7122] text-white font-bold py-2.5 px-4 rounded-xl shadow-lg transition active:scale-95 text-xs"
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              <span>Exportar a Excel / CSV</span>
+            </button>
+          </div>
+        }
+      />
 
-      <div className="max-w-7xl w-full mx-auto p-6 md:p-8 space-y-8 flex-1">
+      <div className="space-y-6">
         {/* KPI Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-[#193750] border-2 border-[#425563] rounded-3xl p-6 shadow-xl space-y-2">
@@ -382,10 +379,6 @@ export default function SessionReportPage() {
           </div>
         </div>
       </div>
-
-      <footer className="p-6 text-center text-xs text-[#ECEBE4]/50 border-t border-[#425563]/30">
-        Ecosistema Logistech &bull; Epivox Analytics Engine &bull; Epiroc Chile
-      </footer>
     </div>
   );
 }

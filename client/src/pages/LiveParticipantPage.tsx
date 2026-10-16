@@ -10,6 +10,7 @@ import {
   Flame,
   Lightbulb,
   Trophy,
+  Star,
 } from "lucide-react";
 import { getSocket } from "../services/socket";
 
@@ -32,6 +33,8 @@ const SHAPES = [
   { shape: "■", color: "bg-[#48A9C5] text-white", label: "Cuadrado" },
   { shape: "●", color: "bg-[#4C8C2B] text-white", label: "Círculo" },
   { shape: "◆", color: "bg-[#B7312C] text-white", label: "Rombo" },
+  { shape: "★", color: "bg-[#612C51] text-white", label: "Estrella" },
+  { shape: "⬡", color: "bg-[#D86018] text-white", label: "Hexágono" },
 ];
 
 export default function LiveParticipantPage() {
@@ -46,9 +49,11 @@ export default function LiveParticipantPage() {
   const [remainingTime, setRemainingTime] = useState<number>(30);
   const [hasAnswered, setHasAnswered] = useState<boolean>(false);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [selectedRating, setSelectedRating] = useState<number>(0);
   const [textAnswer, setTextAnswer] = useState<string>("");
   const [lastFeedback, setLastFeedback] = useState<{
     isCorrect: boolean;
+    isPoll?: boolean;
     pointsAwarded: number;
     newStreak: number;
   } | null>(null);
@@ -72,6 +77,34 @@ export default function LiveParticipantPage() {
 
     const socket = getSocket();
 
+    // Sincronización proactiva inmediata al montar la pantalla móvil
+    socket.emit("participant:sync", {
+      pin,
+      participantId: part.id,
+    });
+
+    socket.on(
+      "participant:sync_state",
+      (data: {
+        status: string;
+        currentStep: string;
+        currentQuestionIndex: number;
+        question?: QuestionData | null;
+        remainingSeconds?: number;
+        hasAnswered?: boolean;
+      }) => {
+        setSessionStatus(data.status);
+        setCurrentStep(data.currentStep);
+
+        if (data.status === "question_active" && data.question) {
+          setCurrentQuestion(data.question);
+          setRemainingTime(data.remainingSeconds ?? data.question.time_limit);
+          setHasAnswered(!!data.hasAnswered);
+          setQuestionStartTime(Date.now());
+        }
+      },
+    );
+
     // Sincronización de eventos de sesión
     socket.on(
       "session:state_changed",
@@ -89,6 +122,7 @@ export default function LiveParticipantPage() {
           setRemainingTime(data.question.time_limit);
           setHasAnswered(false);
           setSelectedAnswer(null);
+          setSelectedRating(0);
           setTextAnswer("");
           setLastFeedback(null);
           setQuestionStartTime(Date.now());
@@ -104,6 +138,7 @@ export default function LiveParticipantPage() {
       "answer:accepted",
       (data: {
         isCorrect: boolean;
+        isPoll?: boolean;
         pointsAwarded: number;
         newStreak: number;
       }) => {
@@ -118,6 +153,7 @@ export default function LiveParticipantPage() {
     );
 
     return () => {
+      socket.off("participant:sync_state");
       socket.off("session:state_changed");
       socket.off("timer:tick");
       socket.off("answer:accepted");
@@ -205,8 +241,57 @@ export default function LiveParticipantPage() {
     );
   }
 
-  // 2. Estado: PODIO FINAL / JUEGO TERMINADO
-  if (sessionStatus === "finished" || currentStep === "podium") {
+  // 2. Estado: PODIO FINAL / SONDEO TERMINADO
+  if (
+    sessionStatus === "finished" ||
+    currentStep === "podium" ||
+    currentStep === "summary"
+  ) {
+    const isSurveyOrOpen =
+      currentQuestion?.question_type === "word_cloud" ||
+      currentQuestion?.question_type === "open_ended" ||
+      currentQuestion?.question_type === "rating" ||
+      (() => {
+        try {
+          return currentQuestion?.options_json
+            ? JSON.parse(currentQuestion.options_json).length === 0
+            : true;
+        } catch {
+          return true;
+        }
+      })();
+
+    if (isSurveyOrOpen) {
+      return (
+        <div className="min-h-screen bg-[#001E32] text-white flex flex-col justify-between p-6 text-center animate-in fade-in">
+          <header className="py-2 border-b border-[#425563]">
+            <span className="font-extrabold text-xl text-[#FFC72C]">EPIVOX</span>
+          </header>
+
+          <main className="my-auto space-y-6">
+            <div className="inline-block p-5 bg-[#48A9C5]/20 text-[#48A9C5] border-2 border-[#48A9C5] rounded-full shadow-2xl">
+              <CheckCircle2 className="w-16 h-16 mx-auto" />
+            </div>
+            <h1 className="text-3xl font-black text-white">
+              ¡Sondeo Finalizado!
+            </h1>
+            <div className="bg-[#193750] border border-[#425563] p-6 rounded-2xl max-w-sm mx-auto shadow-xl space-y-2">
+              <p className="text-base text-[#ECEBE4]">
+                ¡Muchas gracias por tus ideas y opiniones!
+              </p>
+              <p className="text-xs text-[#ECEBE4] opacity-80 pt-2">
+                El presentador está proyectando el resumen de respuestas en la pantalla principal.
+              </p>
+            </div>
+          </main>
+
+          <footer className="text-center text-xs text-[#ECEBE4] opacity-60">
+            Epiroc Chile &bull; Experiencia Móvil de Participación
+          </footer>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-[#001E32] text-white flex flex-col justify-between p-6 text-center">
         <header className="py-2 border-b border-[#425563]">
@@ -254,7 +339,20 @@ export default function LiveParticipantPage() {
 
         <main className="my-auto space-y-6 max-w-md mx-auto w-full">
           {lastFeedback ? (
-            lastFeedback.isCorrect ? (
+            lastFeedback.isPoll ||
+            currentQuestion?.question_type === "word_cloud" ||
+            currentQuestion?.question_type === "open_ended" ||
+            currentQuestion?.question_type === "rating" ? (
+              <div className="bg-[#48A9C5]/20 border-2 border-[#48A9C5] p-6 rounded-3xl space-y-3">
+                <CheckCircle2 className="w-16 h-16 text-[#48A9C5] mx-auto" />
+                <h2 className="text-3xl font-black text-white">
+                  ¡Respuesta Recibida!
+                </h2>
+                <p className="text-base text-[#ECEBE4]">
+                  Tu opinión ya se visualiza en la pantalla principal.
+                </p>
+              </div>
+            ) : lastFeedback.isCorrect ? (
               <div className="bg-[#4C8C2B]/20 border-2 border-[#4C8C2B] p-6 rounded-3xl space-y-3">
                 <CheckCircle2 className="w-16 h-16 text-[#4C8C2B] mx-auto" />
                 <h2 className="text-3xl font-black text-white">¡Correcto!</h2>
@@ -349,7 +447,15 @@ export default function LiveParticipantPage() {
               <div className="grid grid-cols-1 gap-4">
                 <button
                   type="button"
-                  onClick={() => handleAnswerSubmit("opt_t")}
+                  onClick={() => {
+                    const optT = parsedOptions.find(
+                      (o) =>
+                        o.id === "true" ||
+                        o.id === "A" ||
+                        o.text?.toLowerCase().includes("verdadero"),
+                    );
+                    handleAnswerSubmit(optT ? optT.id : "true");
+                  }}
                   className="bg-[#4C8C2B] hover:bg-[#3E7323] text-white font-black text-2xl py-8 rounded-2xl shadow-xl active:scale-95 transition flex items-center justify-center space-x-3"
                 >
                   <CheckCircle2 className="w-8 h-8" />
@@ -357,7 +463,15 @@ export default function LiveParticipantPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleAnswerSubmit("opt_f")}
+                  onClick={() => {
+                    const optF = parsedOptions.find(
+                      (o) =>
+                        o.id === "false" ||
+                        o.id === "B" ||
+                        o.text?.toLowerCase().includes("falso"),
+                    );
+                    handleAnswerSubmit(optF ? optF.id : "false");
+                  }}
                   className="bg-[#B7312C] hover:bg-[#962824] text-white font-black text-2xl py-8 rounded-2xl shadow-xl active:scale-95 transition flex items-center justify-center space-x-3"
                 >
                   <XCircle className="w-8 h-8" />
@@ -366,21 +480,86 @@ export default function LiveParticipantPage() {
               </div>
             )}
 
-            {/* Pregunta tipo: Selección Múltiple (4 Botones gigantes) */}
+            {/* Pregunta tipo: Calificación con Estrellas (1-5 ⭐) */}
+            {currentQuestion?.question_type === "rating" && (
+              <div className="bg-[#193750] border-2 border-[#425563] p-6 rounded-3xl space-y-6 text-center shadow-2xl">
+                <div className="space-y-1">
+                  <span className="text-xs font-black uppercase tracking-wider text-[#FFC72C]">
+                    Calificación de la Audiencia
+                  </span>
+                  <h3 className="text-base font-black text-white">
+                    {currentQuestion.question_text}
+                  </h3>
+                </div>
+
+                {/* 5 Estrellas Interactivas */}
+                <div className="flex justify-center items-center gap-2 py-3">
+                  {[1, 2, 3, 4, 5].map((starVal) => {
+                    const isFilled = starVal <= (selectedRating || 0);
+                    return (
+                      <button
+                        key={starVal}
+                        type="button"
+                        onClick={() => setSelectedRating(starVal)}
+                        className="p-1 transition-transform active:scale-90 hover:scale-110 focus:outline-none"
+                        aria-label={`${starVal} estrellas`}
+                      >
+                        <Star
+                          className={`w-12 h-12 transition-all ${
+                            isFilled
+                              ? "text-[#FFC72C] fill-[#FFC72C] drop-shadow-[0_0_10px_rgba(255,199,44,0.7)]"
+                              : "text-[#425563] hover:text-[#FFC72C]/40"
+                          }`}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="min-h-[24px] text-xs font-bold text-[#ECEBE4]/80">
+                  {selectedRating > 0 ? (
+                    <span className="text-[#FFC72C] font-black text-sm">
+                      {selectedRating === 1 && "★ 1 Estrella (Muy insatisfecho)"}
+                      {selectedRating === 2 && "★★ 2 Estrellas (Insatisfecho)"}
+                      {selectedRating === 3 && "★★★ 3 Estrellas (Neutral)"}
+                      {selectedRating === 4 && "★★★★ 4 Estrellas (Satisfecho)"}
+                      {selectedRating === 5 && "★★★★★ 5 Estrellas (Excelente)"}
+                    </span>
+                  ) : (
+                    "Toca las estrellas para calificar"
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  disabled={selectedRating === 0}
+                  onClick={() => handleAnswerSubmit(String(selectedRating))}
+                  className="w-full bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-base py-3.5 rounded-xl transition shadow-xl disabled:opacity-40 active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <Star className="w-5 h-5 fill-[#001E32]" />
+                  <span>Enviar Calificación {selectedRating > 0 ? `(${selectedRating} ⭐)` : ""}</span>
+                </button>
+              </div>
+            )}
+
+            {/* Pregunta tipo: Selección Múltiple (adaptable para 2 a 6 opciones sin tapar ninguna) */}
             {(currentQuestion?.question_type === "multiple_choice" ||
-              !currentQuestion?.question_type) && (
-              <div className="grid grid-cols-2 gap-3">
+              (!currentQuestion?.question_type && currentQuestion?.question_type !== "rating")) && (
+              <div className="grid grid-cols-2 gap-2.5 max-h-[72vh] overflow-y-auto p-1">
                 {parsedOptions.map((opt, idx) => {
                   const shapeDef = SHAPES[idx % SHAPES.length];
+                  const is5thCentered = parsedOptions.length === 5 && idx === 4;
                   return (
                     <button
                       key={opt.id}
                       type="button"
                       onClick={() => handleAnswerSubmit(opt.id)}
-                      className={`${shapeDef.color} font-extrabold text-lg p-6 rounded-2xl shadow-xl active:scale-95 transition flex flex-col items-center justify-center min-h-[140px]`}
+                      className={`${shapeDef.color} ${
+                        is5thCentered ? "col-span-2" : ""
+                      } font-extrabold p-4 rounded-2xl shadow-xl active:scale-95 transition flex flex-col items-center justify-center min-h-[95px]`}
                     >
-                      <span className="text-3xl mb-1">{shapeDef.shape}</span>
-                      <span className="text-center text-sm line-clamp-3">
+                      <span className="text-2xl mb-1">{shapeDef.shape}</span>
+                      <span className="text-center text-sm line-clamp-3 leading-snug">
                         {opt.text}
                       </span>
                     </button>
