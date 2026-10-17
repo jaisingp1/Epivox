@@ -7,7 +7,7 @@ interface AppLayoutProps {
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
-    <div className="flex min-h-screen bg-[#001E32] text-white overflow-hidden">
+    <div className="flex min-h-screen bg-[var(--surface-base)] text-[var(--text-main)] overflow-hidden transition-colors duration-200">
       {/* Sidebar fijo oficial Epiroc */}
       <Sidebar />
 

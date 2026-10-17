@@ -1,11 +1,13 @@
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppLayout from "./components/AppLayout";
 import HomePage from "./pages/HomePage";
 import PresentationsPage from "./pages/PresentationsPage";
 import OpenPollsPage from "./pages/OpenPollsPage";
 import QuestionBankPage from "./pages/QuestionBankPage";
+import TemplatesPage from "./pages/TemplatesPage";
 import SessionReportPage from "./pages/SessionReportPage";
 
 import ActivityEditorPage from "./pages/ActivityEditorPage";
@@ -20,7 +22,8 @@ import AdminUsersPage from "./pages/AdminUsersPage";
 
 export default function App() {
   return (
-    <AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
       <Routes>
         {/* Rutas Públicas de Acceso y Recuperación */}
         <Route path="/login" element={<LoginPage />} />
@@ -83,7 +86,7 @@ export default function App() {
           element={
             <ProtectedRoute>
               <AppLayout>
-                <QuestionBankPage />
+                <TemplatesPage />
               </AppLayout>
             </ProtectedRoute>
           }
@@ -145,5 +148,6 @@ export default function App() {
         <Route path="/live/:pin" element={<LiveParticipantPage />} />
       </Routes>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
