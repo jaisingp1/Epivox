@@ -17,4 +17,28 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("xlsx")) {
+              return "vendor-xlsx";
+            }
+            if (id.includes("recharts") || id.includes("d3-") || id.includes("victory-vendor")) {
+              return "vendor-recharts";
+            }
+            if (id.includes("lucide-react")) {
+              return "vendor-lucide";
+            }
+            if (id.includes("socket.io-client") || id.includes("engine.io")) {
+              return "vendor-socket";
+            }
+            return "vendor";
+          }
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
+  },
 });
