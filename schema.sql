@@ -155,6 +155,39 @@ CREATE TABLE IF NOT EXISTS epivox_audience_questions (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- ----------------------------------------------------------------------------
+-- Banco de Preguntas: Carpetas, Subcarpetas y Preguntas Almacenadas
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS epivox_question_folders (
+  id INTEGER PRIMARY KEY,
+  name VARCHAR NOT NULL,
+  parent_id INTEGER REFERENCES epivox_question_folders(id),
+  created_by_user_id INTEGER NOT NULL REFERENCES users(id),
+  description VARCHAR,
+  color VARCHAR DEFAULT '#FFC72C',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS epivox_bank_questions (
+  id INTEGER PRIMARY KEY,
+  folder_id INTEGER NOT NULL REFERENCES epivox_question_folders(id),
+  question_text VARCHAR NOT NULL,
+  question_type VARCHAR NOT NULL,
+  time_limit INTEGER NOT NULL DEFAULT 30,
+  points_base INTEGER NOT NULL DEFAULT 1000,
+  media_type VARCHAR DEFAULT 'none',
+  media_url VARCHAR,
+  reveal_step_count INTEGER NOT NULL DEFAULT 1,
+  chart_type VARCHAR NOT NULL DEFAULT 'bar',
+  options_json VARCHAR NOT NULL DEFAULT '[]',
+  correct_answer_value VARCHAR,
+  explanation_text VARCHAR,
+  created_by_user_id INTEGER NOT NULL REFERENCES users(id),
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Índices de unicidad y rendimiento (DuckDB friendly)
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email);
@@ -168,3 +201,7 @@ CREATE INDEX IF NOT EXISTS idx_epivox_answers_session_question ON epivox_answers
 CREATE INDEX IF NOT EXISTS idx_epivox_questions_activity ON epivox_questions(activity_id);
 CREATE INDEX IF NOT EXISTS idx_epivox_activities_owner ON epivox_activities(created_by_user_id);
 CREATE INDEX IF NOT EXISTS idx_epivox_collaborators_user ON epivox_collaborators(user_id);
+CREATE INDEX IF NOT EXISTS idx_epivox_question_folders_parent ON epivox_question_folders(parent_id);
+CREATE INDEX IF NOT EXISTS idx_epivox_question_folders_user ON epivox_question_folders(created_by_user_id);
+CREATE INDEX IF NOT EXISTS idx_epivox_bank_questions_folder ON epivox_bank_questions(folder_id);
+

@@ -5,7 +5,8 @@ import {
   LayoutGrid,
   Tv,
   MessageSquare,
-  BookOpen,
+  KeyRound,
+
   BarChart2,
   Smartphone,
   ChevronLeft,
@@ -16,7 +17,7 @@ import {
   Shield,
   Users,
   LogOut,
-  KeyRound,
+  HelpCircle,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import ChangePasswordModal from "./ChangePasswordModal";
@@ -38,8 +39,9 @@ const baseNavItems: NavItem[] = [
     icon: MessageSquare,
     badge: "Mentimeter",
   },
-  { name: "Banco de Plantillas", path: "/templates", icon: BookOpen },
+  { name: "Banco de Preguntas", path: "/question-bank", icon: HelpCircle },
   { name: "Reportes y Analíticas", path: "/reports", icon: BarChart2 },
+
   {
     name: "Gestión de Usuarios",
     path: "/admin/users",

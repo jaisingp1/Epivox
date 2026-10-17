@@ -27,7 +27,9 @@ import {
 import * as XLSX from "xlsx";
 import PageHeader from "../components/PageHeader";
 import Modal from "../components/Modal";
+import QuestionBankPickerModal from "../components/QuestionBankPickerModal";
 import EpirocOptionIcon from "../components/EpirocOptionIcon";
+
 
 interface OptionItem {
   id: string;
@@ -90,8 +92,12 @@ export default function ActivityEditorPage() {
     null,
   );
 
+  // Modal de Escoger desde Banco de Preguntas
+  const [isBankPickerOpen, setIsBankPickerOpen] = useState(false);
+
   // Modal de Importación Masiva desde Excel dentro del Editor
   const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
+
   const [excelFileName, setExcelFileName] = useState<string | null>(null);
   const [parsedExcelQuestions, setParsedExcelQuestions] = useState<
     Array<{
@@ -791,28 +797,39 @@ export default function ActivityEditorPage() {
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
+                onClick={() => setIsBankPickerOpen(true)}
+                className="flex items-center space-x-1 bg-[#193750] hover:bg-[#254F72] text-[#FFC72C] border border-[#FFC72C]/40 text-xs font-bold py-1.5 px-2 rounded-lg transition active:scale-95 shadow cursor-pointer"
+                title="Escoger desde Banco de Preguntas"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-[#FFC72C]" />
+                <span>Banco</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => {
                   setExcelError(null);
                   setParsedExcelQuestions([]);
                   setExcelFileName(null);
                   setIsExcelModalOpen(true);
                 }}
-                className="flex items-center space-x-1 bg-[#193750] hover:bg-[#254F72] text-[#48A9C5] border border-[#48A9C5]/40 text-xs font-bold py-1.5 px-2.5 rounded-lg transition active:scale-95 shadow"
+                className="flex items-center space-x-1 bg-[#193750] hover:bg-[#254F72] text-[#48A9C5] border border-[#48A9C5]/40 text-xs font-bold py-1.5 px-2 rounded-lg transition active:scale-95 shadow cursor-pointer"
                 title="Subir preguntas masivas desde Excel (.xlsx)"
               >
                 <Upload className="w-3.5 h-3.5" />
-                <span>Subir</span>
+                <span>Excel</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleAddQuestion}
-                className="flex items-center space-x-1 bg-[#425563] hover:bg-[#FFC72C] hover:text-[#001E32] text-white text-xs font-bold py-1.5 px-2.5 rounded-lg transition active:scale-95"
+                className="flex items-center space-x-1 bg-[#425563] hover:bg-[#FFC72C] hover:text-[#001E32] text-white text-xs font-bold py-1.5 px-2 rounded-lg transition active:scale-95 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Añadir</span>
               </button>
             </div>
+
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
@@ -1561,6 +1578,29 @@ export default function ActivityEditorPage() {
           </div>
         </div>
       </Modal>
+
+      {/* Modal para Escoger Preguntas desde el Banco */}
+      <QuestionBankPickerModal
+        isOpen={isBankPickerOpen}
+        onClose={() => setIsBankPickerOpen(false)}
+        targetActivityId={activity ? activity.id : undefined}
+        targetActivityTitle={activity ? activity.title : undefined}
+        onImportSuccess={async () => {
+          if (!id) return;
+          try {
+            const res = await fetch(`/api/epivox/activities/${id}`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data.questions) {
+                setQuestions(data.questions);
+              }
+            }
+          } catch (err) {
+            console.error("Error recargando preguntas tras importar desde banco:", err);
+          }
+        }}
+      />
     </div>
   );
 }
+

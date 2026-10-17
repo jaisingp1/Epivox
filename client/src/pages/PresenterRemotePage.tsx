@@ -12,6 +12,8 @@ import {
   Radio,
   ArrowRightCircle,
   ListOrdered,
+  XCircle,
+  AlertCircle,
 } from "lucide-react";
 import { getSocket } from "../services/socket";
 
@@ -32,6 +34,7 @@ export default function PresenterRemotePage() {
   const [remainingTime, setRemainingTime] = useState<number>(30);
   const [participantsCount, setParticipantsCount] = useState<number>(0);
   const [totalAnswers, setTotalAnswers] = useState<number>(0);
+  const [showCancelConfirm, setShowCancelConfirm] = useState<boolean>(false);
 
   useEffect(() => {
     if (!pin) return;
@@ -252,6 +255,49 @@ export default function PresenterRemotePage() {
                   : "Finalizar y Podio"}
               </span>
             </button>
+          )}
+        </div>
+
+        {/* Botón y Panel para Cancelar Sesión para Alumnos */}
+        <div className="bg-[#001E32] border border-[#425563] p-3.5 rounded-2xl space-y-2">
+          {!showCancelConfirm ? (
+            <button
+              type="button"
+              onClick={() => setShowCancelConfirm(true)}
+              className="w-full py-2.5 px-4 bg-[#B7312C]/20 hover:bg-[#B7312C]/35 border border-[#B7312C]/50 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow"
+            >
+              <XCircle className="w-4 h-4 text-[#B7312C]" />
+              <span>Cancelar Presentación para Alumnos</span>
+            </button>
+          ) : (
+            <div className="p-3 bg-[#B7312C]/15 border border-[#B7312C]/40 rounded-xl space-y-2 animate-in fade-in">
+              <div className="flex items-center gap-2 text-xs font-bold text-white">
+                <AlertCircle className="w-4 h-4 text-[#B7312C] shrink-0" />
+                <span>¿Detener la sesión ahora?</span>
+              </div>
+              <p className="text-[11px] text-[#ECEBE4]/80">
+                Las preguntas se cerrarán de inmediato para todos los alumnos en sus móviles.
+              </p>
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowCancelConfirm(false)}
+                  className="flex-1 py-1.5 px-3 bg-[#193750] hover:bg-[#254F72] border border-[#425563] text-white rounded-lg text-xs font-bold transition cursor-pointer"
+                >
+                  Volver
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleAction("cancel_session");
+                    setShowCancelConfirm(false);
+                  }}
+                  className="flex-1 py-1.5 px-3 bg-[#B7312C] hover:bg-[#A32823] text-white rounded-lg text-xs font-black transition shadow cursor-pointer"
+                >
+                  Sí, Cancelar
+                </button>
+              </div>
+            </div>
           )}
         </div>
 

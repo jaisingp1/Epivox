@@ -28,11 +28,26 @@ import {
   getParticipants,
   getSessionReport,
   getHubGlobalStats,
+  cancelSession,
 } from "../services/sessionService.js";
-import { findActiveUserByLogin } from "../services/authService.js";
+import { broadcastSessionCancelled } from "../services/socketManager.js";
+import { findActiveUserByLogin, listUsers } from "../services/authService.js";
 import { requireAuth, optionalAuth } from "../middleware/auth.middleware.js";
+import {
+  getFolders,
+  createFolder,
+  updateFolder,
+  deleteFolder,
+  getBankQuestions,
+  createBankQuestion,
+  updateBankQuestion,
+  deleteBankQuestion,
+  importExcelToFolder,
+  copyBankQuestionsToActivity,
+} from "../services/questionBankService.js";
 
 const router = Router();
+
 
 // ---------------------------------------------------------------------------
 // Métricas Globales del Hub
@@ -457,4 +472,209 @@ router.get("/sessions/:id/report", requireAuth, async (req, res) => {
   }
 });
 
+// Cancelar sesión activa (por PIN o por ID)
+router.post("/sessions/:pin/cancel", requireAuth, async (req, res) => {
+  try {
+    const { pin } = req.params;
+    const session = await getSessionByPin(pin);
+    if (!session) {
+      res.status(404).json({ error: "Sesión no encontrada o PIN inválido" });
+      return;
+    }
+    await cancelSession(session.id);
+    broadcastSessionCancelled(pin);
+    res.json({ success: true, message: "Sesión cancelada exitosamente" });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al cancelar la sesión";
+    res.status(500).json({ error: message });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Búsqueda de Usuarios Registrados para Colaboración
+// ---------------------------------------------------------------------------
+router.get("/users/search", requireAuth, async (_req, res) => {
+  try {
+    const allUsers = await listUsers();
+    // Retornar usuarios activos sin hashes de contraseña para autocompletar colaboración
+    const filtered = allUsers
+      .filter((u) => u.is_active)
+      .map((u) => ({
+        id: u.id,
+        username: u.username,
+        full_name: u.full_name,
+        email: u.email,
+        role: u.role,
+      }));
+    res.json(filtered);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al buscar usuarios";
+    res.status(500).json({ error: message });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Banco de Preguntas: Carpetas, Subcarpetas y Preguntas
+// ---------------------------------------------------------------------------
+
+// Listar todas las carpetas con estructura jerárquica
+router.get("/bank/folders", requireAuth, async (_req, res) => {
+  try {
+    const folders = await getFolders();
+    res.json(folders);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al obtener carpetas";
+    res.status(500).json({ error: message });
+  }
+});
+
+// Crear carpeta o subcarpeta
+router.post("/bank/folders", requireAuth, async (req, res) => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: "No autenticado" });
+      return;
+    }
+    const { name, parent_id, description, color } = req.body;
+    if (!name || !name.trim()) {
+      res.status(400).json({ error: "El nombre de la carpeta es obligatorio" });
+      return;
+    }
+    const folder = await createFolder(
+      { name, parent_id, description, color },
+      req.user.id,
+    );
+    res.status(201).json(folder);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al crear carpeta";
+    res.status(500).json({ error: message });
+  }
+});
+
+// Actualizar carpeta
+router.put("/bank/folders/:id", requireAuth, async (req, res) => {
+  try {
+    const folder = await updateFolder(Number(req.params.id), req.body);
+    res.json(folder);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al actualizar carpeta";
+    res.status(500).json({ error: message });
+  }
+});
+
+// Eliminar carpeta (en cascada)
+router.delete("/bank/folders/:id", requireAuth, async (req, res) => {
+  try {
+    await deleteFolder(Number(req.params.id));
+    res.json({ success: true });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al eliminar carpeta";
+    res.status(500).json({ error: message });
+  }
+});
+
+// Listar preguntas del banco (filtro por carpeta o todas)
+router.get("/bank/questions", requireAuth, async (req, res) => {
+  try {
+    const folderId = req.query.folder_id ? Number(req.query.folder_id) : undefined;
+    const recursive = req.query.recursive === "true";
+    const questions = await getBankQuestions(folderId, recursive);
+    res.json(questions);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al obtener preguntas";
+    res.status(500).json({ error: message });
+  }
+});
+
+// Crear pregunta individual en carpeta
+router.post("/bank/questions", requireAuth, async (req, res) => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: "No autenticado" });
+      return;
+    }
+    if (!req.body.folder_id) {
+      res.status(400).json({ error: "Debes especificar la carpeta de destino" });
+      return;
+    }
+    const created = await createBankQuestion(req.body, req.user.id);
+    res.status(201).json(created);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al crear pregunta en banco";
+    res.status(500).json({ error: message });
+  }
+});
+
+// Importar lote de preguntas desde Excel a una carpeta
+router.post("/bank/questions/import-excel", requireAuth, async (req, res) => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: "No autenticado" });
+      return;
+    }
+    const { folder_id, questions } = req.body;
+    if (!folder_id) {
+      res.status(400).json({ error: "Debes seleccionar una carpeta de destino" });
+      return;
+    }
+    if (!Array.isArray(questions) || questions.length === 0) {
+      res.status(400).json({ error: "No se proporcionaron preguntas para importar" });
+      return;
+    }
+    const result = await importExcelToFolder(Number(folder_id), questions, req.user.id);
+    res.status(201).json(result);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al importar preguntas desde Excel";
+    res.status(500).json({ error: message });
+  }
+});
+
+// Actualizar pregunta del banco
+router.put("/bank/questions/:id", requireAuth, async (req, res) => {
+  try {
+    const updated = await updateBankQuestion(Number(req.params.id), req.body);
+    res.json(updated);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al actualizar pregunta";
+    res.status(500).json({ error: message });
+  }
+});
+
+// Eliminar pregunta del banco
+router.delete("/bank/questions/:id", requireAuth, async (req, res) => {
+  try {
+    await deleteBankQuestion(Number(req.params.id));
+    res.json({ success: true });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al eliminar pregunta";
+    res.status(500).json({ error: message });
+  }
+});
+
+// Copiar preguntas desde el banco hacia una presentación (existente o nueva)
+router.post("/bank/copy-to-presentation", requireAuth, async (req, res) => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: "No autenticado" });
+      return;
+    }
+    const { activity_id, new_activity, question_ids } = req.body;
+    if (!Array.isArray(question_ids) || question_ids.length === 0) {
+      res.status(400).json({ error: "No se seleccionaron preguntas para copiar" });
+      return;
+    }
+    const target = await copyBankQuestionsToActivity({
+      activityId: activity_id ? Number(activity_id) : undefined,
+      newActivity: new_activity,
+      questionIds: question_ids.map(Number),
+      userId: req.user.id,
+    });
+    res.json({ success: true, activity: target });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al transferir preguntas";
+    res.status(500).json({ error: message });
+  }
+});
+
 export default router;
+

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Modal from "./Modal";
-import { UserPlus, Trash2, Shield, User, Check, AlertCircle } from "lucide-react";
+import { UserPlus, Trash2, Shield, User, Check, AlertCircle, Search, X } from "lucide-react";
+
 
 interface Collaborator {
   user_id: number;
@@ -9,6 +10,14 @@ interface Collaborator {
   email: string;
   role: string;
   created_at: string;
+}
+
+interface RegisteredUser {
+  id: number;
+  username: string;
+  full_name: string | null;
+  email: string;
+  role: string;
 }
 
 interface CollaboratorsModalProps {
@@ -28,7 +37,10 @@ export const CollaboratorsModal: React.FC<CollaboratorsModalProps> = ({
 }) => {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [usernameOrEmail, setUsernameOrEmail] = useState("");
+  const [availableUsers, setAvailableUsers] = useState<RegisteredUser[]>([]);
+  const [selectedUser, setSelectedUser] = useState<RegisteredUser | null>(null);
+  const [searchFilter, setSearchFilter] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -49,18 +61,38 @@ export const CollaboratorsModal: React.FC<CollaboratorsModalProps> = ({
     }
   }, [activityId]);
 
+  const fetchUsers = useCallback(async () => {
+    try {
+      const res = await fetch("/api/epivox/users/search");
+      if (res.ok) {
+        const data = await res.json();
+        setAvailableUsers(data);
+      }
+    } catch {
+      // Ignorar
+    }
+  }, []);
+
   useEffect(() => {
     if (isOpen && activityId) {
       setErrorMsg(null);
       setSuccessMsg(null);
-      setUsernameOrEmail("");
+      setSelectedUser(null);
+      setSearchFilter("");
+      setIsDropdownOpen(false);
       fetchCollaborators();
+      fetchUsers();
     }
-  }, [isOpen, activityId, fetchCollaborators]);
+  }, [isOpen, activityId, fetchCollaborators, fetchUsers]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activityId || !usernameOrEmail.trim()) return;
+    if (!activityId) return;
+    const targetValue = selectedUser ? selectedUser.username : searchFilter.trim();
+    if (!targetValue) {
+      setErrorMsg("Selecciona o escribe un usuario para invitar.");
+      return;
+    }
 
     setErrorMsg(null);
     setSuccessMsg(null);
@@ -70,7 +102,7 @@ export const CollaboratorsModal: React.FC<CollaboratorsModalProps> = ({
       const res = await fetch(`/api/epivox/activities/${activityId}/collaborators`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usernameOrEmail: usernameOrEmail.trim() }),
+        body: JSON.stringify({ usernameOrEmail: targetValue }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -78,7 +110,9 @@ export const CollaboratorsModal: React.FC<CollaboratorsModalProps> = ({
         return;
       }
       setSuccessMsg("Colaborador agregado exitosamente.");
-      setUsernameOrEmail("");
+      setSelectedUser(null);
+      setSearchFilter("");
+      setIsDropdownOpen(false);
       setCollaborators(data.collaborators || []);
     } catch {
       setErrorMsg("Error de conexión");
@@ -86,6 +120,7 @@ export const CollaboratorsModal: React.FC<CollaboratorsModalProps> = ({
       setIsAdding(false);
     }
   };
+
 
   const handleRemove = async (userId: number) => {
     if (!activityId) return;
@@ -142,31 +177,125 @@ export const CollaboratorsModal: React.FC<CollaboratorsModalProps> = ({
         {isOwnerOrAdmin && (
           <form onSubmit={handleAdd} className="space-y-2 pt-1">
             <label className="block text-xs font-bold text-[#ECEBE4]/90">
-              Invitar a un Creador a Editar
+              Buscar e Invitar Usuario Registrado
             </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                required
-                value={usernameOrEmail}
-                onChange={(e) => setUsernameOrEmail(e.target.value)}
-                placeholder="ej. jperez o jperez@correo.com"
-                className="flex-1 px-3.5 py-2.5 bg-[#001E32] border border-[#425563] focus:border-[#FFC72C] rounded-xl text-xs text-white placeholder-[#ECEBE4]/40 outline-none transition"
-              />
-              <button
-                type="submit"
-                disabled={isAdding}
-                className="bg-[#FFC72C] hover:bg-[#E6B327] disabled:opacity-50 text-[#001E32] font-black text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 shrink-0 shadow active:scale-95 cursor-pointer"
-              >
-                <UserPlus className="w-4 h-4" />
-                <span>{isAdding ? "Añadiendo..." : "Invitar"}</span>
-              </button>
+
+            <div className="relative">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 text-[#ECEBE4]/40 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={selectedUser ? `${selectedUser.full_name || selectedUser.username} (${selectedUser.email})` : searchFilter}
+                    onChange={(e) => {
+                      if (selectedUser) setSelectedUser(null);
+                      setSearchFilter(e.target.value);
+                      setIsDropdownOpen(true);
+                    }}
+                    onFocus={() => setIsDropdownOpen(true)}
+                    placeholder="Buscar por nombre, usuario (@) o correo..."
+                    className="w-full pl-9 pr-8 py-2.5 bg-[#001E32] border border-[#425563] focus:border-[#FFC72C] rounded-xl text-xs text-white placeholder-[#ECEBE4]/40 outline-none transition"
+                  />
+                  {(searchFilter || selectedUser) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedUser(null);
+                        setSearchFilter("");
+                        setIsDropdownOpen(false);
+                      }}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#ECEBE4]/50 hover:text-white"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isAdding || (!selectedUser && !searchFilter.trim())}
+                  className="bg-[#FFC72C] hover:bg-[#E6B327] disabled:opacity-50 text-[#001E32] font-black text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 shrink-0 shadow active:scale-95 cursor-pointer"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>{isAdding ? "Añadiendo..." : "Invitar"}</span>
+                </button>
+              </div>
+
+              {/* Menú desplegable con usuarios registrados */}
+              {isDropdownOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsDropdownOpen(false)}
+                  />
+                  <div className="absolute left-0 right-16 top-full mt-1 bg-[#193750] border-2 border-[#425563] rounded-xl shadow-2xl max-h-56 overflow-y-auto z-50 divide-y divide-[#425563]/40">
+                    {availableUsers
+                      .filter((u) => !collaborators.some((c) => c.user_id === u.id))
+                      .filter((u) => {
+                        if (!searchFilter.trim() || selectedUser) return true;
+                        const term = searchFilter.toLowerCase();
+                        return (
+                          u.username.toLowerCase().includes(term) ||
+                          (u.full_name && u.full_name.toLowerCase().includes(term)) ||
+                          u.email.toLowerCase().includes(term)
+                        );
+                      })
+                      .map((u) => (
+                        <button
+                          key={u.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedUser(u);
+                            setSearchFilter(u.username);
+                            setIsDropdownOpen(false);
+                          }}
+                          className="w-full flex items-center justify-between p-3 text-left hover:bg-[#001E32] transition group"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-7 h-7 rounded-lg bg-[#FFC72C]/20 border border-[#FFC72C]/40 text-[#FFC72C] font-black text-xs flex items-center justify-center shrink-0">
+                              {(u.full_name || u.username)[0]?.toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <span className="text-xs font-bold text-white block truncate group-hover:text-[#FFC72C]">
+                                {u.full_name || u.username}
+                              </span>
+                              <span className="text-[10px] text-[#ECEBE4]/60 block truncate">
+                                @{u.username} • {u.email}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-[10px] bg-[#001E32] text-[#48A9C5] border border-[#48A9C5]/30 px-2 py-0.5 rounded shrink-0">
+                            {u.role}
+                          </span>
+                        </button>
+                      ))}
+
+                    {availableUsers
+                      .filter((u) => !collaborators.some((c) => c.user_id === u.id))
+                      .filter((u) => {
+                        if (!searchFilter.trim() || selectedUser) return true;
+                        const term = searchFilter.toLowerCase();
+                        return (
+                          u.username.toLowerCase().includes(term) ||
+                          (u.full_name && u.full_name.toLowerCase().includes(term)) ||
+                          u.email.toLowerCase().includes(term)
+                        );
+                      }).length === 0 && (
+                      <div className="p-4 text-center text-xs text-[#ECEBE4]/50">
+                        No se encontraron usuarios disponibles para invitar.
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
+
             <p className="text-[11px] text-[#ECEBE4]/60">
-              El usuario debe estar registrado previamente en la plataforma para recibir acceso de edición.
+              Selecciona cualquier usuario registrado en Epivox para otorgarle permisos de edición.
             </p>
           </form>
         )}
+
 
         {/* Lista de colaboradores actuales */}
         <div className="space-y-2 pt-2 border-t border-[#425563]/40">

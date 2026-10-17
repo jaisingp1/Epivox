@@ -203,7 +203,7 @@ export async function updateSessionState(
   let extraSql = "";
   if (status === "in_progress" || status === "question_active") {
     extraSql = ", started_at = CURRENT_TIMESTAMP";
-  } else if (status === "finished") {
+  } else if (status === "finished" || status === "cancelled") {
     extraSql = ", finished_at = CURRENT_TIMESTAMP";
   }
 
@@ -213,6 +213,17 @@ export async function updateSessionState(
     WHERE id = ${sessionId}
   `;
   await exec(sql);
+}
+
+export async function cancelSession(idOrPin: number | string): Promise<boolean> {
+  const isNumber = typeof idOrPin === "number" || /^\d+$/.test(String(idOrPin));
+  const filter = isNumber ? `id = ${idOrPin}` : `pin = '${idOrPin}'`;
+  await exec(`
+    UPDATE epivox_sessions 
+    SET status = 'cancelled', current_step = 'cancelled', finished_at = CURRENT_TIMESTAMP
+    WHERE ${filter}
+  `);
+  return true;
 }
 
 export async function recordAnswer(

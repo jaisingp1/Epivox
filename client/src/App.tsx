@@ -5,8 +5,9 @@ import AppLayout from "./components/AppLayout";
 import HomePage from "./pages/HomePage";
 import PresentationsPage from "./pages/PresentationsPage";
 import OpenPollsPage from "./pages/OpenPollsPage";
-import TemplatesPage from "./pages/TemplatesPage";
+import QuestionBankPage from "./pages/QuestionBankPage";
 import SessionReportPage from "./pages/SessionReportPage";
+
 import ActivityEditorPage from "./pages/ActivityEditorPage";
 import PresentationPage from "./pages/PresentationPage";
 import PresenterRemotePage from "./pages/PresenterRemotePage";
@@ -68,15 +69,26 @@ export default function App() {
           }
         />
         <Route
-          path="/templates"
+          path="/question-bank"
           element={
             <ProtectedRoute>
               <AppLayout>
-                <TemplatesPage />
+                <QuestionBankPage />
               </AppLayout>
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/templates"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <QuestionBankPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/reports/:id"
           element={

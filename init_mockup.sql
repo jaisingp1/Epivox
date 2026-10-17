@@ -233,3 +233,30 @@ INSERT INTO epivox_answers (
   (14, 1, 4, 2, '5', null, 5000, 0),
   (15, 1, 4, 3, '4', null, 3800, 0),
   (16, 1, 4, 4, '4', null, 6100, 0);
+
+-- ------------------------------------------------------------------------------
+-- 3. Banco de Preguntas: Carpetas, Subcarpetas y Preguntas de Ejemplo
+-- ------------------------------------------------------------------------------
+INSERT INTO epivox_question_folders (id, name, parent_id, created_by_user_id, description, color)
+VALUES
+  (1, 'Seguridad y Salud Ocupacional', NULL, 1, 'Protocolos de seguridad, LOTO, EPP y reglas cardinales de Epiroc', '#FFC72C'),
+  (2, 'Operaciones Mineras y Equipos', NULL, 1, 'Perforadoras, camiones bajo perfil, cargadores y mantenimiento', '#48A9C5'),
+  (3, 'Cultura Corporativa y Valores', NULL, 1, 'Innovación, compromiso, colaboración y diversidad', '#86C8BC');
+
+INSERT INTO epivox_question_folders (id, name, parent_id, created_by_user_id, description, color)
+VALUES
+  (10, 'Procedimientos LOTO y Bloqueo', 1, 1, 'Aislamiento de fuentes de energía y candados personales', '#FFC72C'),
+  (11, 'Elementos de Protección Personal (EPP)', 1, 1, 'Uso correcto de respirador, casco, auditivos y arnés', '#E6B327'),
+  (20, 'Perforación de Superficie e Interior Mina', 2, 1, 'Pit Viper, Boomer y Simba en operaciones críticas', '#48A9C5');
+
+INSERT INTO epivox_bank_questions (
+  id, folder_id, question_text, question_type, time_limit, points_base, chart_type, options_json, correct_answer_value, explanation_text, created_by_user_id
+) VALUES
+  (1, 10, '¿Cuál es el primer paso indispensable antes de intervenir cualquier circuito hidráulico o eléctrico?', 'multiple_choice', 30, 1000, 'bar', '[{"id":"opt-1","text":"Desenergizar y verificar ausencia de energía residual","is_correct":true},{"id":"opt-2","text":"Avisar al supervisor por radio","is_correct":false},{"id":"opt-3","text":"Colocar cinta de peligro sin candado","is_correct":false},{"id":"opt-4","text":"Empezar a desarmar con guantes","is_correct":false}]', '1', 'Verificar ausencia de tensión y energía cero es la regla cardinal para evitar atrapamientos o electrocución.', 1),
+  (2, 10, '¿Se permite compartir o prestar el candado personal LOTO a otro técnico del turno?', 'true_false', 20, 1000, 'bar', '[{"id":"opt-1","text":"Verdadero","is_correct":false},{"id":"opt-2","text":"Falso","is_correct":true}]', '2', 'Cada candado LOTO es estrictamente personal e intransferible.', 1),
+  (3, 11, '¿Qué equipo de protección es OBLIGATORIO en áreas con presencia de sílice libre cristalizada?', 'multiple_choice', 25, 1000, 'bar', '[{"id":"opt-1","text":"Respirador de medio rostro con filtros P100 aprobados","is_correct":true},{"id":"opt-2","text":"Mascarilla quirúrgica desechable","is_correct":false},{"id":"opt-3","text":"Pañuelo de tela húmedo","is_correct":false},{"id":"opt-4","text":"Tapón auditivo tipo copa","is_correct":false}]', '1', 'La protección respiratoria contra sílice requiere filtros de alta eficiencia P100 para proteger los pulmones.', 1),
+  (4, 11, '¿Cómo calificarías la disponibilidad y estado de tu equipo de protección en tu faena?', 'rating', 30, 0, 'bar', '[{"id":"1","text":"1 Estrella","is_correct":false},{"id":"2","text":"2 Estrellas","is_correct":false},{"id":"3","text":"3 Estrellas","is_correct":false},{"id":"4","text":"4 Estrellas","is_correct":false},{"id":"5","text":"5 Estrellas","is_correct":false}]', null, 'Evaluación rápida de disponibilidad y confort del EPP.', 1),
+  (5, 20, '¿Cuál es el equipo de perforación frontal automatizado de Epiroc para túneles y galerías?', 'multiple_choice', 30, 1000, 'bar', '[{"id":"opt-1","text":"Boomer E2 C / S2","is_correct":true},{"id":"opt-2","text":"Pit Viper 351","is_correct":false},{"id":"opt-3","text":"Scooptram ST18","is_correct":false},{"id":"opt-4","text":"Minetruck MT65","is_correct":false}]', '1', 'La línea Boomer es el referente mundial en jumbos de perforación frontal para minería subterránea.', 1),
+  (6, 3, '¿Cuál de los siguientes es uno de los valores centrales de Epiroc?', 'multiple_choice', 20, 1000, 'bar', '[{"id":"opt-1","text":"Innovación, Compromiso y Colaboración","is_correct":true},{"id":"opt-2","text":"Velocidad sin protocolo","is_correct":false},{"id":"opt-3","text":"Competencia interna entre áreas","is_correct":false},{"id":"opt-4","text":"Reducción de personal","is_correct":false}]', '1', 'Innovación, Compromiso y Colaboración son los tres pilares de identidad y cultura de Epiroc.', 1),
+  (7, 3, 'En una sola palabra: ¿Qué sentimiento te inspira trabajar con el equipo de Epiroc?', 'word_cloud', 45, 0, 'word_cloud', '[]', null, 'Lluvia de palabras colectiva proyectada en tiempo real.', 1);
+

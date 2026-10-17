@@ -20,8 +20,24 @@ interface ActiveSessionTimer {
 }
 
 const sessionTimers = new Map<string, ActiveSessionTimer>();
+let ioInstance: SocketIOServer | null = null;
+
+export function broadcastSessionCancelled(pin: string): void {
+  stopServerTimer(pin);
+  if (ioInstance) {
+    ioInstance.to(`session:${pin}`).emit("session:state_changed", {
+      status: "cancelled",
+      currentStep: "cancelled",
+      message: "La presentación ha sido cancelada o terminada por el presentador.",
+    });
+    ioInstance.to(`session:${pin}`).emit("session:cancelled", {
+      message: "La presentación ha sido cancelada o terminada por el presentador.",
+    });
+  }
+}
 
 export function setupSocketManager(io: SocketIOServer): void {
+  ioInstance = io;
   io.on("connection", (socket: Socket) => {
     console.log(`[Socket] Conectado: ${socket.id}`);
 
@@ -493,6 +509,15 @@ export function setupSocketManager(io: SocketIOServer): void {
               isOpenPoll,
               podium: finalPodium,
             });
+          } else if (action === "cancel_session") {
+            broadcastSessionCancelled(pin);
+            await updateSessionState(
+              session.id,
+              "cancelled",
+              currentQIndex,
+              "cancelled",
+            );
+            console.log(`[Socket] Sesión ${pin} CANCELADA por el presentador.`);
           }
         } catch (err) {
           console.error("[Socket presenter:action Error]:", err);

@@ -11,6 +11,7 @@ import {
   Lightbulb,
   Trophy,
   Star,
+  AlertCircle,
 } from "lucide-react";
 import { getSocket } from "../services/socket";
 import EpirocOptionIcon, {
@@ -110,6 +111,14 @@ export default function LiveParticipantPage() {
         question?: QuestionData;
         podium?: Array<{ id: number; nickname: string; score: number }>;
       }) => {
+        if (data.status === "cancelled" || data.currentStep === "cancelled") {
+          setSessionStatus("cancelled");
+          setCurrentStep("cancelled");
+          setCurrentQuestion(null);
+          setRemainingTime(0);
+          return;
+        }
+
         setSessionStatus(data.status);
         setCurrentStep(data.currentStep);
 
@@ -125,6 +134,13 @@ export default function LiveParticipantPage() {
         }
       },
     );
+
+    socket.on("session:cancelled", () => {
+      setSessionStatus("cancelled");
+      setCurrentStep("cancelled");
+      setCurrentQuestion(null);
+      setRemainingTime(0);
+    });
 
     socket.on("timer:tick", (data: { remaining: number }) => {
       setRemainingTime(data.remaining);
@@ -151,6 +167,7 @@ export default function LiveParticipantPage() {
     return () => {
       socket.off("participant:sync_state");
       socket.off("session:state_changed");
+      socket.off("session:cancelled");
       socket.off("timer:tick");
       socket.off("answer:accepted");
     };
@@ -228,6 +245,49 @@ export default function LiveParticipantPage() {
               ))}
             </div>
           </div>
+        </main>
+
+        <footer className="text-center text-xs text-[#ECEBE4] opacity-60">
+          Epiroc Chile &bull; Experiencia Móvil de Participación
+        </footer>
+      </div>
+    );
+  }
+
+  // 1b. Estado: SESIÓN CANCELADA O FINALIZADA POR EL PRESENTADOR
+  if (sessionStatus === "cancelled" || currentStep === "cancelled") {
+    return (
+      <div className="min-h-screen bg-[#001E32] text-white flex flex-col justify-between p-6 text-center animate-in fade-in select-none">
+        <header className="py-2 border-b border-[#425563]">
+          <span className="font-extrabold text-xl text-[#FFC72C]">EPIVOX</span>
+        </header>
+
+        <main className="my-auto space-y-6 max-w-sm mx-auto">
+          <div className="inline-block p-5 bg-[#B7312C]/20 text-[#B7312C] border-2 border-[#B7312C] rounded-full shadow-2xl">
+            <AlertCircle className="w-16 h-16 mx-auto" />
+          </div>
+          <h1 className="text-2xl font-black text-white">
+            Presentación Finalizada
+          </h1>
+          <div className="bg-[#193750] border border-[#425563] p-5 rounded-2xl shadow-xl space-y-2 text-center">
+            <p className="text-sm font-bold text-[#ECEBE4]">
+              El presentador ha cerrado o cancelado esta presentación.
+            </p>
+            <p className="text-xs text-[#ECEBE4]/70">
+              Las preguntas ya no están activas y la sesión ha terminado.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              sessionStorage.removeItem("epivox_participant");
+              navigate("/join");
+            }}
+            className="w-full bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-sm py-3.5 px-6 rounded-xl shadow-lg transition active:scale-95"
+          >
+            Unirse a otra Presentación
+          </button>
         </main>
 
         <footer className="text-center text-xs text-[#ECEBE4] opacity-60">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
+
 import {
   Tv,
   Plus,
@@ -30,12 +31,17 @@ import {
   ArrowRightCircle,
   ListOrdered,
   Share2,
+  User,
+  Calendar,
+  HelpCircle,
+  XCircle,
 } from "lucide-react";
 import QRCode from "qrcode";
 import * as XLSX from "xlsx";
 import PageHeader from "../components/PageHeader";
 import Modal from "../components/Modal";
 import CollaboratorsModal from "../components/CollaboratorsModal";
+import QuestionBankPickerModal from "../components/QuestionBankPickerModal";
 import { getSocket } from "../services/socket";
 
 interface PresentationItem {
@@ -46,11 +52,13 @@ interface PresentationItem {
   activity_type: string;
   questions_count?: number;
   default_time_limit: number;
+  created_at?: string;
   updated_at: string;
   owner_username?: string;
   owner_name?: string | null;
   my_access?: "owner" | "admin" | "editor" | "template";
 }
+
 
 interface ActiveSessionData {
   id: number;
@@ -80,7 +88,9 @@ interface ParsedExcelQuestion {
 }
 
 export default function PresentationsPage() {
+  const navigate = useNavigate();
   const [presentations, setPresentations] = useState<PresentationItem[]>([]);
+
   const [isLoading, setIsLoading] = useState(true);
 
   // Filtros de búsqueda, modo y vista
@@ -126,7 +136,11 @@ export default function PresentationsPage() {
     isOwnerOrAdmin: boolean;
   } | null>(null);
 
+  // Modal de Escoger desde Banco de Preguntas
+  const [isBankPickerOpen, setIsBankPickerOpen] = useState(false);
+
   // Modal de Importación Masiva desde Excel
+
   const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
   const [excelTitle, setExcelTitle] = useState("");
   const [excelCategory, setExcelCategory] = useState("Presentaciones");
@@ -345,6 +359,22 @@ export default function PresentationsPage() {
           ? targetQuestionIndex
           : activeSession.current_question_index,
     });
+  };
+
+  // Cancelar la sesión activa de presentación para todos los participantes
+  const handleCancelActiveSession = async () => {
+    if (!activeSession) return;
+    const pin = activeSession.pin;
+    try {
+      const socket = getSocket();
+      socket.emit("presenter:action", { pin, action: "cancel_session" });
+      await fetch(`/api/epivox/sessions/${pin}/cancel`, { method: "POST" });
+    } catch (err) {
+      console.error("Error al cancelar sesión:", err);
+    } finally {
+      setActiveSession(null);
+      setSearchParams({});
+    }
   };
 
   const handleCopyLink = (pin: string) => {
@@ -950,12 +980,22 @@ export default function PresentationsPage() {
           </span>
         }
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Botón Escoger desde Banco de Preguntas */}
+            <button
+              type="button"
+              onClick={() => setIsBankPickerOpen(true)}
+              className="bg-[#001E32] hover:bg-[#254F72] text-[#FFC72C] border border-[#FFC72C]/40 font-bold text-xs py-2.5 px-4 rounded-xl transition shadow flex items-center gap-2 active:scale-95 cursor-pointer"
+            >
+              <HelpCircle className="w-4 h-4 text-[#FFC72C]" />
+              <span>Desde Banco de Preguntas</span>
+            </button>
+
             {/* Botón Subir Excel Masivo */}
             <button
               type="button"
               onClick={() => setIsExcelModalOpen(true)}
-              className="bg-[#001E32] hover:bg-[#254F72] text-[#48A9C5] border border-[#48A9C5]/40 font-bold text-xs py-2.5 px-4 rounded-xl transition shadow flex items-center gap-2 active:scale-95"
+              className="bg-[#001E32] hover:bg-[#254F72] text-[#48A9C5] border border-[#48A9C5]/40 font-bold text-xs py-2.5 px-4 rounded-xl transition shadow flex items-center gap-2 active:scale-95 cursor-pointer"
             >
               <FileSpreadsheet className="w-4 h-4 text-[#48A9C5]" />
               <span>Importar Excel</span>
@@ -965,7 +1005,7 @@ export default function PresentationsPage() {
             <button
               type="button"
               onClick={() => setIsCreatingModal(true)}
-              className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2.5 px-4 rounded-xl transition shadow flex items-center gap-2 active:scale-95"
+              className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2.5 px-4 rounded-xl transition shadow flex items-center gap-2 active:scale-95 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Nueva Presentación</span>
@@ -973,6 +1013,7 @@ export default function PresentationsPage() {
           </div>
         }
       />
+
 
       {/* ===================================================================== */}
       {/* CASO 1: SESIÓN EN VIVO ACTIVA (SE MUESTRA ÚNICA Y EXCLUSIVAMENTE ESTO) */}
@@ -1040,17 +1081,29 @@ export default function PresentationsPage() {
                 <ExternalLink className="w-3.5 h-3.5" />
               </Link>
 
-              {/* Cerrar Monitor y Volver al Catálogo */}
+              {/* Botón Cancelar Presentación para Alumnos */}
+              <button
+                type="button"
+                onClick={handleCancelActiveSession}
+                className="bg-[#B7312C] hover:bg-[#A32823] text-white font-black text-xs py-2.5 px-4 rounded-xl transition flex items-center gap-2 shadow-lg active:scale-95 cursor-pointer"
+                title="Detiene la sesión inmediatamente para todos los alumnos conectados"
+              >
+                <XCircle className="w-4 h-4" />
+                <span>Cancelar Presentación</span>
+              </button>
+
+              {/* Ocultar Monitor (manteniendo sesión activa en segundo plano) */}
               <button
                 type="button"
                 onClick={() => {
                   setActiveSession(null);
                   setSearchParams({});
                 }}
-                className="bg-[#B7312C]/20 hover:bg-[#B7312C]/40 text-[#B7312C] border border-[#B7312C]/40 font-bold text-xs py-2.5 px-3.5 rounded-xl transition flex items-center gap-1.5"
+                className="bg-[#193750] hover:bg-[#254F72] text-[#ECEBE4]/80 hover:text-white border border-[#425563] font-bold text-xs py-2.5 px-3.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer"
+                title="Minimiza este panel manteniendo la sesión activa"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Volver al Catálogo</span>
+                <span>Ocultar Monitor</span>
               </button>
             </div>
           </div>
@@ -1637,10 +1690,10 @@ export default function PresentationsPage() {
                       </p>
                     </div>
 
-                    <div className="space-y-3 pt-3 border-t border-[#425563]/40">
+                    <div className="space-y-2 pt-3 border-t border-[#425563]/40">
                       <div className="flex items-center justify-between text-xs text-[#ECEBE4]/60">
                         <span className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
+                          <Clock className="w-3.5 h-3.5 text-[#FFC72C]" />
                           {act.default_time_limit}s por pregunta
                         </span>
                         <span className="text-[11px] font-semibold text-[#ECEBE4]/80">
@@ -1648,7 +1701,28 @@ export default function PresentationsPage() {
                         </span>
                       </div>
 
+                      {/* Creador y Fecha de Creación */}
+                      <div className="flex items-center justify-between text-[11px] text-[#ECEBE4]/70 pt-1">
+                        <span className="flex items-center gap-1.5 font-medium truncate max-w-[150px]">
+                          <User className="w-3.5 h-3.5 text-[#FFC72C] shrink-0" />
+                          <span className="truncate">{act.owner_name || act.owner_username || "Creador"}</span>
+                        </span>
+                        <span className="flex items-center gap-1.5 shrink-0 text-[#ECEBE4]/50">
+                          <Calendar className="w-3.5 h-3.5 text-[#48A9C5] shrink-0" />
+                          <span>
+                            {act.created_at
+                              ? new Date(act.created_at).toLocaleDateString("es-CL", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                })
+                              : "—"}
+                          </span>
+                        </span>
+                      </div>
+
                       {/* Acciones principales */}
+
                       <div className="grid grid-cols-2 gap-2">
                         <button
                           type="button"
@@ -1726,6 +1800,7 @@ export default function PresentationsPage() {
                     <th className="py-3.5 px-4">Título y Descripción</th>
                     <th className="py-3.5 px-4">Modo</th>
                     <th className="py-3.5 px-4">Categoría</th>
+                    <th className="py-3.5 px-4">Creador y Fecha</th>
                     <th className="py-3.5 px-4 text-center">Diapositivas</th>
                     <th className="py-3.5 px-4 text-center">Tiempo</th>
                     <th className="py-3.5 px-4 text-right">Acciones</th>
@@ -1770,12 +1845,37 @@ export default function PresentationsPage() {
                             {act.category}
                           </span>
                         </td>
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-lg bg-[#FFC72C]/10 border border-[#FFC72C]/30 text-[#FFC72C] font-black text-[10px] flex items-center justify-center shrink-0">
+                              {(act.owner_name || act.owner_username || "C")[0].toUpperCase()}
+                            </div>
+                            <div className="space-y-0.5">
+                              <span className="font-bold text-white block">
+                                {act.owner_name || act.owner_username || "Creador"}
+                              </span>
+                              <span className="text-[10px] text-[#ECEBE4]/50 flex items-center gap-1">
+                                <Calendar className="w-2.5 h-2.5 text-[#48A9C5]" />
+                                <span>
+                                  {act.created_at
+                                    ? new Date(act.created_at).toLocaleDateString("es-CL", {
+                                        day: "2-digit",
+                                        month: "short",
+                                        year: "numeric",
+                                      })
+                                    : "—"}
+                                </span>
+                              </span>
+                            </div>
+                          </div>
+                        </td>
                         <td className="py-3.5 px-4 text-center font-bold text-white whitespace-nowrap">
                           {act.questions_count || 0}
                         </td>
                         <td className="py-3.5 px-4 text-center text-[#ECEBE4]/80 whitespace-nowrap">
                           {act.default_time_limit}s
                         </td>
+
                         <td className="py-3.5 px-4 text-right whitespace-nowrap">
                           <div className="flex items-center justify-end gap-2">
                             <button
@@ -2289,6 +2389,20 @@ export default function PresentationsPage() {
         activityTitle={collabTarget?.title || ""}
         isOwnerOrAdmin={Boolean(collabTarget?.isOwnerOrAdmin)}
       />
+
+      {/* ===================================================================== */}
+      {/* MODAL 6: ESCOGER DESDE BANCO DE PREGUNTAS                             */}
+      {/* ===================================================================== */}
+      <QuestionBankPickerModal
+        isOpen={isBankPickerOpen}
+        onClose={() => setIsBankPickerOpen(false)}
+        existingActivities={presentations.map((p) => ({ id: p.id, title: p.title }))}
+        onImportSuccess={async (actId) => {
+          await fetchPresentations();
+          navigate(`/editor/${actId}`);
+        }}
+      />
     </div>
   );
 }
+

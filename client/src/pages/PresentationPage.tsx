@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   Sparkles,
   Users,
@@ -17,11 +17,14 @@ import {
   LayoutGrid,
   PieChart,
   Star,
+  XCircle,
+  AlertCircle,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import QRCode from "qrcode";
 import { getSocket } from "../services/socket";
 import EpirocOptionIcon from "../components/EpirocOptionIcon";
+import Modal from "../components/Modal";
 
 interface QuestionOption {
   id: string;
@@ -90,6 +93,37 @@ export default function PresentationPage() {
   const [floatingReactions, setFloatingReactions] = useState<
     Array<{ id: number; emoji: string; left: number }>
   >([]);
+  const navigate = useNavigate();
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  const handleCancelPresentation = async () => {
+    if (!pin) return;
+    setIsCancelling(true);
+    try {
+      const socket = getSocket();
+      socket.emit("presenter:action", { pin, action: "cancel_session" });
+      await fetch(`/api/epivox/sessions/${pin}/cancel`, { method: "POST" });
+    } catch (err) {
+      console.error("Error al cancelar presentación:", err);
+    } finally {
+      setIsCancelling(false);
+      setIsCancelModalOpen(false);
+      navigate("/presentations");
+    }
+  };
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (pin && session?.status !== "finished" && session?.status !== "cancelled") {
+        navigator.sendBeacon(`/api/epivox/sessions/${pin}/cancel`);
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [pin, session?.status]);
 
   useEffect(() => {
     if (!pin) return;
@@ -703,6 +737,19 @@ export default function PresentationPage() {
             ) : (
               <Maximize2 className="w-5 h-5" />
             )}
+          </button>
+
+          {/* Botón Cancelar / Terminar Sesión */}
+          <button
+            type="button"
+            onClick={() => setIsCancelModalOpen(true)}
+            className="px-3.5 py-2.5 bg-[#B7312C]/20 hover:bg-[#B7312C]/40 border border-[#B7312C]/60 text-white rounded-xl transition flex items-center gap-2 cursor-pointer shadow active:scale-95"
+            title="Cancelar o Cerrar Presentación"
+          >
+            <XCircle className="w-5 h-5 text-[#B7312C]" />
+            <span className="text-xs font-bold text-white hidden sm:inline">
+              Cancelar Sesión
+            </span>
           </button>
         </div>
       </header>
@@ -1487,6 +1534,46 @@ export default function PresentationPage() {
       <footer className="text-center text-xs text-[#ECEBE4] opacity-50 py-2 border-t border-[#425563]/40">
         Epiroc Chile S.A.C. &bull; Epivox Sistema de Gamificación
       </footer>
+
+      {/* Modal de Confirmación para Cancelar Presentación */}
+      <Modal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        title="¿Cancelar Presentación Activa?"
+      >
+        <div className="space-y-4">
+          <div className="p-4 bg-[#B7312C]/10 border border-[#B7312C]/30 rounded-2xl flex items-start gap-3">
+            <AlertCircle className="w-6 h-6 text-[#B7312C] shrink-0 mt-0.5" />
+            <div className="text-xs text-[#ECEBE4] space-y-1">
+              <p className="font-bold text-white text-sm">
+                Esta acción detendrá la sesión para todos los participantes.
+              </p>
+              <p>
+                Los alumnos conectados (PIN: <strong className="font-mono text-[#FFC72C]">{pin}</strong>) ya no verán preguntas activas y su pantalla mostrará que la presentación ha finalizado.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setIsCancelModalOpen(false)}
+              className="px-4 py-2.5 bg-[#193750] hover:bg-[#254F72] border border-[#425563] text-xs font-bold text-white rounded-xl transition cursor-pointer"
+            >
+              Continuar Presentación
+            </button>
+            <button
+              type="button"
+              onClick={handleCancelPresentation}
+              disabled={isCancelling}
+              className="px-5 py-2.5 bg-[#B7312C] hover:bg-[#A32823] text-white text-xs font-black rounded-xl transition shadow-lg flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              <XCircle className="w-4 h-4" />
+              <span>{isCancelling ? "Cancelando..." : "Sí, Cancelar Presentación"}</span>
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
