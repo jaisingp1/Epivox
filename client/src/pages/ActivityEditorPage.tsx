@@ -741,9 +741,9 @@ export default function ActivityEditorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#001E32] text-white flex flex-col selection:bg-[#FFC72C] selection:text-[#001E32]">
+    <div className="min-h-screen bg-[var(--surface-bg)] text-[var(--text-main)] flex flex-col selection:bg-[#FFC72C] selection:text-[#001E32]">
       {/* Top Header Bar */}
-      <div className="bg-[#193750] border-b border-[#425563] px-6 py-4">
+      <div className="bg-[var(--surface-card)] border-b border-[var(--border-subtle)] px-6 py-4 shadow-sm">
         <PageHeader
           title={activity.title}
           description="Editor y creador de diapositivas interactivas y cuestionarios gamificados"
@@ -757,7 +757,7 @@ export default function ActivityEditorPage() {
               <button
                 type="button"
                 onClick={() => navigate("/presentations")}
-                className="flex items-center space-x-1.5 bg-[#001E32] hover:bg-[#254F72] text-[#ECEBE4] border border-[#425563] font-bold py-2.5 px-3.5 rounded-xl transition active:scale-95 text-sm shadow"
+                className="flex items-center space-x-1.5 bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[var(--text-main)] border border-[var(--border-subtle)] font-bold py-2.5 px-3.5 rounded-xl transition active:scale-95 text-sm shadow-sm cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Volver a Presentaciones</span>
@@ -767,7 +767,7 @@ export default function ActivityEditorPage() {
                 type="button"
                 onClick={handleSaveAll}
                 disabled={isSaving}
-                className="flex items-center space-x-2 bg-[#48A9C5] hover:bg-[#3B8FA8] text-white font-bold py-2.5 px-4 rounded-xl shadow-lg transition active:scale-95 disabled:opacity-50 text-sm"
+                className="flex items-center space-x-2 bg-[#48A9C5] hover:bg-[#3B8FA8] text-[#001E32] font-black py-2.5 px-4 rounded-xl shadow-sm transition active:scale-95 disabled:opacity-50 text-sm cursor-pointer"
               >
                 <Save className="w-4 h-4" />
                 <span>{isSaving ? "Guardando..." : "Guardar Cambios"}</span>
@@ -776,7 +776,7 @@ export default function ActivityEditorPage() {
               <button
                 type="button"
                 onClick={handleLaunchSession}
-                className="flex items-center space-x-2 bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black py-2.5 px-4 rounded-xl shadow-lg transition active:scale-95 text-sm"
+                className="flex items-center space-x-2 bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black py-2.5 px-4 rounded-xl shadow-sm transition active:scale-95 text-sm cursor-pointer"
               >
                 <Play className="w-4 h-4 fill-[#001E32]" />
                 <span>Presentar en Vivo</span>
@@ -789,16 +789,16 @@ export default function ActivityEditorPage() {
       {/* Main 3-Column Layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Column 1: Left Slides List */}
-        <aside className="w-72 bg-[#001E32] border-r border-[#425563] flex flex-col shrink-0">
-          <div className="p-4 border-b border-[#425563]/60 flex items-center justify-between">
-            <span className="text-xs font-black uppercase tracking-wider text-[#ECEBE4]/70">
+        <aside className="w-72 bg-[var(--surface-card)] border-r border-[var(--border-subtle)] flex flex-col shrink-0">
+          <div className="p-4 border-b border-[var(--border-subtle)] flex items-center justify-between">
+            <span className="text-xs font-black uppercase tracking-wider text-[var(--text-muted)]">
               Diapositivas ({questions.length})
             </span>
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => setIsBankPickerOpen(true)}
-                className="flex items-center space-x-1 bg-[#193750] hover:bg-[#254F72] text-[#FFC72C] border border-[#FFC72C]/40 text-xs font-bold py-1.5 px-2 rounded-lg transition active:scale-95 shadow cursor-pointer"
+                className="flex items-center space-x-1 bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[#001E32] dark:text-[#FFC72C] border border-[var(--border-subtle)] text-xs font-bold py-1.5 px-2 rounded-lg transition active:scale-95 shadow-sm cursor-pointer"
                 title="Escoger desde Banco de Preguntas"
               >
                 <HelpCircle className="w-3.5 h-3.5 text-[#FFC72C]" />
@@ -813,7 +813,7 @@ export default function ActivityEditorPage() {
                   setExcelFileName(null);
                   setIsExcelModalOpen(true);
                 }}
-                className="flex items-center space-x-1 bg-[#193750] hover:bg-[#254F72] text-[#48A9C5] border border-[#48A9C5]/40 text-xs font-bold py-1.5 px-2 rounded-lg transition active:scale-95 shadow cursor-pointer"
+                className="flex items-center space-x-1 bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[#48A9C5] border border-[#48A9C5]/40 text-xs font-bold py-1.5 px-2 rounded-lg transition active:scale-95 shadow-sm cursor-pointer"
                 title="Subir preguntas masivas desde Excel (.xlsx)"
               >
                 <Upload className="w-3.5 h-3.5" />
@@ -823,13 +823,12 @@ export default function ActivityEditorPage() {
               <button
                 type="button"
                 onClick={handleAddQuestion}
-                className="flex items-center space-x-1 bg-[#425563] hover:bg-[#FFC72C] hover:text-[#001E32] text-white text-xs font-bold py-1.5 px-2 rounded-lg transition active:scale-95 cursor-pointer"
+                className="flex items-center space-x-1 bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] text-xs font-black py-1.5 px-2 rounded-lg transition active:scale-95 shadow-sm cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Añadir</span>
               </button>
             </div>
-
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
@@ -841,25 +840,25 @@ export default function ActivityEditorPage() {
                   onClick={() => handleSelectQuestion(idx)}
                   className={`group relative p-3 rounded-xl border-2 transition cursor-pointer flex flex-col gap-1.5 ${
                     isSelected
-                      ? "bg-[#193750] border-[#FFC72C] shadow-lg"
-                      : "bg-[#001E32]/70 border-[#425563]/50 hover:border-[#425563]"
+                      ? "bg-[var(--surface-subtle)] border-[#FFC72C] shadow-sm"
+                      : "bg-[var(--surface-card)] border-[var(--border-subtle)] hover:border-[#425563]"
                   }`}
                 >
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-extrabold text-[#FFC72C]">
                       #{idx + 1}
                     </span>
-                    <span className="text-[10px] uppercase font-bold text-[#ECEBE4]/60 bg-[#425563]/40 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] uppercase font-bold text-[var(--text-muted)] bg-[var(--surface-subtle)] px-1.5 py-0.5 rounded border border-[var(--border-subtle)]">
                       {q.question_type.replace("_", " ")}
                     </span>
                   </div>
 
-                  <p className="text-xs font-semibold text-white line-clamp-2">
+                  <p className="text-xs font-semibold text-[var(--text-main)] line-clamp-2">
                     {q.question_text || "¿Sin pregunta redactada?"}
                   </p>
 
                   {/* Reorder & delete mini buttons */}
-                  <div className="flex items-center justify-between pt-1 border-t border-[#425563]/40 text-[#ECEBE4]/60">
+                  <div className="flex items-center justify-between pt-1 border-t border-[var(--border-subtle)] text-[var(--text-muted)]">
                     <div className="flex items-center space-x-1">
                       <button
                         type="button"
@@ -869,7 +868,7 @@ export default function ActivityEditorPage() {
                         }}
                         disabled={idx === 0}
                         aria-label="Subir diapositiva"
-                        className="hover:text-[#FFC72C] disabled:opacity-20 p-1"
+                        className="hover:text-[#FFC72C] disabled:opacity-20 p-1 cursor-pointer"
                       >
                         <ArrowUp className="w-3.5 h-3.5" />
                       </button>
@@ -881,7 +880,7 @@ export default function ActivityEditorPage() {
                         }}
                         disabled={idx === questions.length - 1}
                         aria-label="Bajar diapositiva"
-                        className="hover:text-[#FFC72C] disabled:opacity-20 p-1"
+                        className="hover:text-[#FFC72C] disabled:opacity-20 p-1 cursor-pointer"
                       >
                         <ArrowDown className="w-3.5 h-3.5" />
                       </button>
@@ -894,7 +893,7 @@ export default function ActivityEditorPage() {
                         setConfirmDeleteModal(idx);
                       }}
                       aria-label="Eliminar diapositiva"
-                      className="hover:text-[#B7312C] p-1"
+                      className="hover:text-[#B7312C] p-1 cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -906,11 +905,11 @@ export default function ActivityEditorPage() {
         </aside>
 
         {/* Column 2: Center Question Canvas */}
-        <main className="flex-1 bg-[#0F2D44] p-8 overflow-y-auto flex flex-col items-center">
+        <main className="flex-1 bg-[var(--surface-subtle)] p-8 overflow-y-auto flex flex-col items-center">
           {currentQuestion ? (
             <div className="max-w-3xl w-full space-y-6">
               {/* Question Text Prompt */}
-              <div className="bg-[#193750] border-2 border-[#425563] rounded-3xl p-6 shadow-xl space-y-3">
+              <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-3xl p-6 shadow-sm space-y-3">
                 <label className="text-xs font-black uppercase text-[#FFC72C] tracking-wider block">
                   Enunciado de la Pregunta #{selectedQuestionIndex + 1}
                 </label>
@@ -923,14 +922,14 @@ export default function ActivityEditorPage() {
                     })
                   }
                   placeholder="Escribe tu pregunta aquí..."
-                  className="w-full bg-[#001E32] border border-[#425563] rounded-2xl px-5 py-4 text-xl font-bold text-white placeholder-[#ECEBE4]/40 focus:outline-none focus:border-[#FFC72C] transition"
+                  className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-2xl px-5 py-4 text-xl font-bold text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[#FFC72C] transition"
                 />
               </div>
 
               {/* Type-Specific Options Canvas */}
               {currentQuestion.question_type === "multiple_choice" && (
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between text-xs font-bold text-[#ECEBE4]/80">
+                  <div className="flex items-center justify-between text-xs font-bold text-[var(--text-subtle)]">
                     <span>
                       Opciones de Respuesta (Marca el check verde en la
                       correcta)
@@ -946,10 +945,10 @@ export default function ActivityEditorPage() {
                       return (
                         <div
                           key={opt.id || idx}
-                          className={`relative flex items-center bg-[#193750] border-2 rounded-2xl p-3 transition shadow-md ${
+                          className={`relative flex items-center bg-[var(--surface-card)] border-2 rounded-2xl p-3 transition shadow-sm ${
                             isCorrect
-                              ? "border-[#4C8C2B] ring-2 ring-[#4C8C2B]/50"
-                              : "border-[#425563]"
+                              ? "border-[#4C8C2B] ring-2 ring-[#4C8C2B]/30"
+                              : "border-[var(--border-subtle)]"
                           }`}
                         >
                           <div className="mr-3 shrink-0">
@@ -963,17 +962,17 @@ export default function ActivityEditorPage() {
                               handleOptionChange(idx, e.target.value)
                             }
                             placeholder={`Opción ${opt.id}`}
-                            className="flex-1 bg-transparent text-sm font-semibold text-white focus:outline-none placeholder-[#ECEBE4]/30"
+                            className="flex-1 bg-transparent text-sm font-semibold text-[var(--text-main)] focus:outline-none placeholder-[var(--text-muted)]"
                           />
 
                           <button
                             type="button"
                             onClick={() => handleSetCorrectOption(opt.id)}
                             title="Marcar como respuesta correcta"
-                            className={`p-2 rounded-xl transition ${
+                            className={`p-2 rounded-xl transition cursor-pointer ${
                               isCorrect
-                                ? "text-[#4C8C2B] bg-[#4C8C2B]/20 font-bold"
-                                : "text-[#ECEBE4]/40 hover:text-white"
+                                ? "text-[#4C8C2B] bg-[#4C8C2B]/15 font-bold"
+                                : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
                             }`}
                           >
                             <CheckCircle2 className="w-5 h-5" />
@@ -998,10 +997,10 @@ export default function ActivityEditorPage() {
                         ]),
                       })
                     }
-                    className={`p-6 rounded-2xl border-2 font-black text-lg transition flex items-center justify-center space-x-3 ${
+                    className={`p-6 rounded-2xl border-2 font-black text-lg transition flex items-center justify-center space-x-3 cursor-pointer ${
                       currentQuestion.correct_answer_value === "true"
-                        ? "bg-[#4C8C2B] text-white border-white shadow-xl"
-                        : "bg-[#193750] border-[#425563] text-[#ECEBE4] hover:border-[#4C8C2B]"
+                        ? "bg-[#4C8C2B] text-white border-[#4C8C2B] shadow-md"
+                        : "bg-[var(--surface-card)] border-[var(--border-subtle)] text-[var(--text-main)] hover:border-[#4C8C2B]"
                     }`}
                   >
                     <CheckCircle2 className="w-6 h-6" />
@@ -1019,10 +1018,10 @@ export default function ActivityEditorPage() {
                         ]),
                       })
                     }
-                    className={`p-6 rounded-2xl border-2 font-black text-lg transition flex items-center justify-center space-x-3 ${
+                    className={`p-6 rounded-2xl border-2 font-black text-lg transition flex items-center justify-center space-x-3 cursor-pointer ${
                       currentQuestion.correct_answer_value === "false"
-                        ? "bg-[#B7312C] text-white border-white shadow-xl"
-                        : "bg-[#193750] border-[#425563] text-[#ECEBE4] hover:border-[#B7312C]"
+                        ? "bg-[#B7312C] text-white border-[#B7312C] shadow-md"
+                        : "bg-[var(--surface-card)] border-[var(--border-subtle)] text-[var(--text-main)] hover:border-[#B7312C]"
                     }`}
                   >
                     <span>Falso</span>
@@ -1031,7 +1030,7 @@ export default function ActivityEditorPage() {
               )}
 
               {currentQuestion.question_type === "rating" && (
-                <div className="bg-[#193750] border border-[#425563] rounded-3xl p-8 text-center space-y-4 shadow-xl">
+                <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-3xl p-8 text-center space-y-4 shadow-sm">
                   <div className="flex justify-center items-center gap-3">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star
@@ -1041,10 +1040,10 @@ export default function ActivityEditorPage() {
                     ))}
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-base font-black text-white">
+                    <h3 className="text-base font-black text-[var(--text-main)]">
                       Calificación con Estrellas (Escala 1 a 5 ⭐)
                     </h3>
-                    <p className="text-xs text-[#ECEBE4]/70 max-w-md mx-auto leading-relaxed">
+                    <p className="text-xs text-[var(--text-subtle)] max-w-md mx-auto leading-relaxed">
                       Los asistentes evaluarán la pregunta asignando de 1 a 5 estrellas desde sus teléfonos móviles.
                       En la pantalla grande se calculará automáticamente el promedio en vivo y el desglose de votos.
                     </p>
@@ -1053,12 +1052,12 @@ export default function ActivityEditorPage() {
               )}
 
               {currentQuestion.question_type === "word_cloud" && (
-                <div className="bg-[#193750] border border-[#425563] rounded-3xl p-6 text-center space-y-2">
+                <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-3xl p-6 text-center space-y-2 shadow-sm">
                   <Sparkles className="w-8 h-8 text-[#FFC72C] mx-auto animate-pulse-subtle" />
-                  <h3 className="text-base font-bold text-white">
+                  <h3 className="text-base font-bold text-[var(--text-main)]">
                     Nube de Palabras en Tiempo Real
                   </h3>
-                  <p className="text-xs text-[#ECEBE4]/70 max-w-md mx-auto">
+                  <p className="text-xs text-[var(--text-subtle)] max-w-md mx-auto">
                     Los participantes enviarán palabras cortas o conceptos desde
                     sus teléfonos móviles. Las frecuencias se ponderarán y
                     animarán automáticamente en el proyector.
@@ -1067,12 +1066,12 @@ export default function ActivityEditorPage() {
               )}
 
               {currentQuestion.question_type === "likert_scale" && (
-                <div className="bg-[#193750] border border-[#425563] rounded-3xl p-6 text-center space-y-4">
+                <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-3xl p-6 text-center space-y-4 shadow-sm">
                   <Sliders className="w-8 h-8 text-[#48A9C5] mx-auto" />
-                  <h3 className="text-base font-bold text-white">
+                  <h3 className="text-base font-bold text-[var(--text-main)]">
                     Escala Likert de Valoración (1 a 5)
                   </h3>
-                  <div className="flex justify-between max-w-sm mx-auto text-xs font-bold text-[#ECEBE4]/70 pt-2">
+                  <div className="flex justify-between max-w-sm mx-auto text-xs font-bold text-[var(--text-muted)] pt-2">
                     <span>1: Muy en Desacuerdo</span>
                     <span>5: Totalmente de Acuerdo</span>
                   </div>
@@ -1080,8 +1079,8 @@ export default function ActivityEditorPage() {
               )}
 
               {/* Explanation Field */}
-              <div className="bg-[#193750] border border-[#425563] rounded-2xl p-4 space-y-2">
-                <label className="text-xs font-bold text-[#ECEBE4]/80 flex items-center space-x-1.5">
+              <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-2xl p-4 space-y-2 shadow-sm">
+                <label className="text-xs font-bold text-[var(--text-subtle)] flex items-center space-x-1.5">
                   <HelpCircle className="w-4 h-4 text-[#FFC72C]" />
                   <span>
                     Explicación Didáctica (Mostrada tras revelar los resultados)
@@ -1096,19 +1095,19 @@ export default function ActivityEditorPage() {
                     })
                   }
                   placeholder="Explica a la audiencia por qué esta respuesta es la correcta..."
-                  className="w-full bg-[#001E32] border border-[#425563] rounded-xl p-3 text-xs text-white placeholder-[#ECEBE4]/30 focus:outline-none focus:border-[#FFC72C]"
+                  className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-xl p-3 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[#FFC72C]"
                 />
               </div>
             </div>
           ) : (
-            <div className="text-center text-[#ECEBE4]/50 my-auto">
+            <div className="text-center text-[var(--text-muted)] my-auto">
               Selecciona o crea una diapositiva para comenzar a editar
             </div>
           )}
         </main>
 
         {/* Column 3: Right Properties Panel */}
-        <aside className="w-80 bg-[#001E32] border-l border-[#425563] p-5 overflow-y-auto space-y-6 shrink-0">
+        <aside className="w-80 bg-[var(--surface-card)] border-l border-[var(--border-subtle)] p-5 overflow-y-auto space-y-6 shrink-0">
           <div>
             <h3 className="text-xs font-black uppercase tracking-wider text-[#FFC72C] mb-4">
               Configuración de la Diapositiva
@@ -1116,7 +1115,7 @@ export default function ActivityEditorPage() {
 
             {/* Question Type Selector */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-[#ECEBE4]/80">
+              <label className="text-xs font-bold text-[var(--text-subtle)]">
                 Tipo de Pregunta
               </label>
               <select
@@ -1124,7 +1123,7 @@ export default function ActivityEditorPage() {
                 onChange={(e) =>
                   handleUpdateCurrentQuestion({ question_type: e.target.value })
                 }
-                className="w-full bg-[#193750] border border-[#425563] text-white text-xs font-semibold rounded-xl p-3 focus:outline-none focus:border-[#FFC72C]"
+                className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] text-[var(--text-main)] text-xs font-semibold rounded-xl p-3 focus:outline-none focus:border-[#FFC72C] cursor-pointer"
               >
                 {QUESTION_TYPES.map((t) => (
                   <option key={t.id} value={t.id}>
@@ -1137,7 +1136,7 @@ export default function ActivityEditorPage() {
 
           {/* Time Limit */}
           <div className="space-y-2">
-            <label className="text-xs font-bold text-[#ECEBE4]/80 flex items-center justify-between">
+            <label className="text-xs font-bold text-[var(--text-subtle)] flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-[#FFC72C]" />
                 Límite de Tiempo
@@ -1154,10 +1153,10 @@ export default function ActivityEditorPage() {
                   onClick={() =>
                     handleUpdateCurrentQuestion({ time_limit: sec })
                   }
-                  className={`py-2 rounded-lg text-xs font-bold transition ${
+                  className={`py-2 rounded-lg text-xs font-bold transition cursor-pointer ${
                     currentQuestion?.time_limit === sec
-                      ? "bg-[#FFC72C] text-[#001E32]"
-                      : "bg-[#193750] text-[#ECEBE4] hover:bg-[#425563]"
+                      ? "bg-[#FFC72C] text-[#001E32] font-black shadow-sm"
+                      : "bg-[var(--surface-subtle)] text-[var(--text-subtle)] hover:bg-[var(--surface-hover)] border border-[var(--border-subtle)]"
                   }`}
                 >
                   {sec}s
@@ -1168,7 +1167,7 @@ export default function ActivityEditorPage() {
 
           {/* Points Base */}
           <div className="space-y-2">
-            <label className="text-xs font-bold text-[#ECEBE4]/80 flex items-center justify-between">
+            <label className="text-xs font-bold text-[var(--text-subtle)] flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <Award className="w-3.5 h-3.5 text-[#48A9C5]" />
                 Puntuación Base
@@ -1185,10 +1184,10 @@ export default function ActivityEditorPage() {
                   onClick={() =>
                     handleUpdateCurrentQuestion({ points_base: pts })
                   }
-                  className={`py-2 rounded-lg text-xs font-bold transition ${
+                  className={`py-2 rounded-lg text-xs font-bold transition cursor-pointer ${
                     currentQuestion?.points_base === pts
-                      ? "bg-[#48A9C5] text-white"
-                      : "bg-[#193750] text-[#ECEBE4] hover:bg-[#425563]"
+                      ? "bg-[#48A9C5] text-[#001E32] font-black shadow-sm"
+                      : "bg-[var(--surface-subtle)] text-[var(--text-subtle)] hover:bg-[var(--surface-hover)] border border-[var(--border-subtle)]"
                   }`}
                 >
                   {pts}
@@ -1199,7 +1198,7 @@ export default function ActivityEditorPage() {
 
           {/* Chart Display Style */}
           <div className="space-y-2">
-            <label className="text-xs font-bold text-[#ECEBE4]/80 flex items-center gap-1.5">
+            <label className="text-xs font-bold text-[var(--text-subtle)] flex items-center gap-1.5">
               <BarChart3 className="w-3.5 h-3.5 text-[#4C8C2B]" />
               Tipo de Gráfico
             </label>
@@ -1209,10 +1208,10 @@ export default function ActivityEditorPage() {
                 onClick={() =>
                   handleUpdateCurrentQuestion({ chart_type: "bar" })
                 }
-                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition ${
+                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                   currentQuestion?.chart_type === "bar"
-                    ? "bg-[#4C8C2B] text-white"
-                    : "bg-[#193750] text-[#ECEBE4] hover:bg-[#425563]"
+                    ? "bg-[#4C8C2B] text-white shadow-sm"
+                    : "bg-[var(--surface-subtle)] text-[var(--text-subtle)] hover:bg-[var(--surface-hover)] border border-[var(--border-subtle)]"
                 }`}
               >
                 <BarChart3 className="w-4 h-4" />
@@ -1224,10 +1223,10 @@ export default function ActivityEditorPage() {
                 onClick={() =>
                   handleUpdateCurrentQuestion({ chart_type: "donut" })
                 }
-                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition ${
+                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                   currentQuestion?.chart_type === "donut"
-                    ? "bg-[#4C8C2B] text-white"
-                    : "bg-[#193750] text-[#ECEBE4] hover:bg-[#425563]"
+                    ? "bg-[#4C8C2B] text-white shadow-sm"
+                    : "bg-[var(--surface-subtle)] text-[var(--text-subtle)] hover:bg-[var(--surface-hover)] border border-[var(--border-subtle)]"
                 }`}
               >
                 <PieChart className="w-4 h-4" />
@@ -1237,13 +1236,13 @@ export default function ActivityEditorPage() {
           </div>
 
           {/* Activity Global Settings */}
-          <div className="pt-4 border-t border-[#425563]/60 space-y-3">
-            <h4 className="text-xs font-black uppercase text-[#ECEBE4]/60 tracking-wider">
+          <div className="pt-4 border-t border-[var(--border-subtle)] space-y-3">
+            <h4 className="text-xs font-black uppercase text-[var(--text-muted)] tracking-wider">
               Reglas Globales
             </h4>
 
             <label className="flex items-center justify-between text-xs font-semibold cursor-pointer">
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-1.5 text-[var(--text-main)]">
                 <Zap className="w-4 h-4 text-[#FFC72C]" />
                 Bonus por Velocidad
               </span>
@@ -1275,7 +1274,7 @@ export default function ActivityEditorPage() {
             <button
               type="button"
               onClick={() => setConfirmDeleteModal(null)}
-              className="px-4 py-2 bg-[#425563] text-white rounded-xl text-xs font-bold hover:bg-[#425563]/80"
+              className="px-4 py-2 bg-[var(--surface-subtle)] text-[var(--text-subtle)] hover:text-[var(--text-main)] border border-[var(--border-subtle)] rounded-xl text-xs font-bold cursor-pointer"
             >
               Cancelar
             </button>
@@ -1285,14 +1284,14 @@ export default function ActivityEditorPage() {
                 confirmDeleteModal !== null &&
                 handleDeleteQuestion(confirmDeleteModal)
               }
-              className="px-4 py-2 bg-[#B7312C] text-white rounded-xl text-xs font-bold hover:bg-[#A32823]"
+              className="px-4 py-2 bg-[#B7312C] text-white rounded-xl text-xs font-bold hover:bg-[#A32823] cursor-pointer shadow-sm"
             >
               Confirmar Eliminación
             </button>
           </div>
         }
       >
-        <p className="text-xs text-[#ECEBE4]">
+        <p className="text-xs text-[var(--text-subtle)]">
           La diapositiva #
           {confirmDeleteModal !== null ? confirmDeleteModal + 1 : ""} será
           removida del cuestionario.
@@ -1310,14 +1309,14 @@ export default function ActivityEditorPage() {
             <button
               type="button"
               onClick={() => setSaveSuccessModal(false)}
-              className="px-4 py-2.5 bg-[#001E32] text-[#ECEBE4] hover:text-white border border-[#425563] rounded-xl text-xs font-bold transition"
+              className="px-4 py-2.5 bg-[var(--surface-subtle)] text-[var(--text-subtle)] hover:text-[var(--text-main)] border border-[var(--border-subtle)] rounded-xl text-xs font-bold transition cursor-pointer"
             >
               Seguir Editando
             </button>
             <button
               type="button"
               onClick={() => navigate("/presentations")}
-              className="px-5 py-2.5 bg-[#FFC72C] text-[#001E32] rounded-xl text-xs font-black shadow hover:bg-[#E6B327] transition flex items-center gap-1.5"
+              className="px-5 py-2.5 bg-[#FFC72C] text-[#001E32] rounded-xl text-xs font-black shadow hover:bg-[#E6B327] transition flex items-center gap-1.5 cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Volver a Presentaciones</span>
@@ -1327,7 +1326,7 @@ export default function ActivityEditorPage() {
       >
         <div className="flex items-center space-x-3 text-[#4C8C2B]">
           <CheckCircle2 className="w-6 h-6 shrink-0" />
-          <span className="text-sm font-semibold text-white">
+          <span className="text-sm font-semibold text-[var(--text-main)]">
             Tu actividad "{activity.title}" está lista para ser presentada en
             vivo o editada en cualquier momento.
           </span>
@@ -1349,19 +1348,19 @@ export default function ActivityEditorPage() {
       >
         <div className="space-y-6">
           {/* Paso 1: Descargar Plantilla Modelo */}
-          <div className="bg-[#001E32] border border-[#425563] rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="space-y-1">
               <span className="text-xs font-black text-[#FFC72C] uppercase tracking-wider block">
                 Paso 1: Plantilla Modelo Oficial
               </span>
-              <p className="text-xs text-[#ECEBE4]/70">
+              <p className="text-xs text-[var(--text-subtle)]">
                 Descarga el formato Excel (.xlsx) con ejemplos y la hoja de guía de tipos de pregunta.
               </p>
             </div>
             <button
               type="button"
               onClick={handleDownloadExcelTemplate}
-              className="bg-[#48A9C5] hover:bg-[#3996B1] text-[#001E32] font-black text-xs py-2.5 px-4 rounded-xl transition shadow flex items-center gap-2 shrink-0 active:scale-95"
+              className="bg-[#48A9C5] hover:bg-[#3996B1] text-[#001E32] font-black text-xs py-2.5 px-4 rounded-xl transition shadow-sm flex items-center gap-2 shrink-0 active:scale-95 cursor-pointer"
             >
               <Download className="w-4 h-4" />
               <span>Descargar Plantilla (.xlsx)</span>
@@ -1401,7 +1400,7 @@ export default function ActivityEditorPage() {
               className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center transition ${
                 isDraggingExcel
                   ? "border-[#FFC72C] bg-[#FFC72C]/10 scale-[1.01]"
-                  : "border-[#425563] hover:border-[#FFC72C] bg-[#001E32]/40"
+                  : "border-[var(--border-subtle)] hover:border-[#FFC72C] bg-[var(--surface-subtle)]"
               }`}
             >
               <label
@@ -1413,14 +1412,14 @@ export default function ActivityEditorPage() {
                     isDraggingExcel ? "text-[#FFC72C] animate-bounce" : "text-[#48A9C5]"
                   }`}
                 />
-                <span className="text-xs font-bold text-white text-center">
+                <span className="text-xs font-bold text-[var(--text-main)] text-center">
                   {excelFileName
                     ? excelFileName
                     : isDraggingExcel
                       ? "¡Suelta tu archivo Excel aquí!"
                       : "Haz clic o arrastra y suelta aquí tu archivo Excel"}
                 </span>
-                <span className="text-[10px] text-[#ECEBE4]/60 mt-1">
+                <span className="text-[10px] text-[var(--text-muted)] mt-1">
                   Soporta archivos .xlsx, .xls y .csv
                 </span>
               </label>
@@ -1434,7 +1433,7 @@ export default function ActivityEditorPage() {
             </div>
 
             {excelError && (
-              <div className="p-3 bg-[#B7312C]/20 border border-[#B7312C] rounded-xl flex items-center gap-2 text-xs text-white">
+              <div className="p-3 bg-[#B7312C]/10 border border-[#B7312C]/30 rounded-xl flex items-center gap-2 text-xs text-[#B7312C]">
                 <AlertCircle className="w-4 h-4 text-[#B7312C] shrink-0" />
                 <span>{excelError}</span>
               </div>
@@ -1451,24 +1450,24 @@ export default function ActivityEditorPage() {
                 <button
                   type="button"
                   onClick={() => setImportMode("append")}
-                  className={`p-3.5 rounded-xl border-2 text-left transition flex items-center gap-3 ${
+                  className={`p-3.5 rounded-xl border-2 text-left transition flex items-center gap-3 cursor-pointer ${
                     importMode === "append"
-                      ? "bg-[#193750] border-[#FFC72C] text-white"
-                      : "bg-[#001E32] border-[#425563] text-[#ECEBE4]/70"
+                      ? "bg-[var(--surface-subtle)] border-[#FFC72C] text-[var(--text-main)] shadow-sm"
+                      : "bg-[var(--surface-subtle)] border-[var(--border-subtle)] text-[var(--text-muted)]"
                   }`}
                 >
                   <Plus
                     className={`w-5 h-5 ${
                       importMode === "append"
                         ? "text-[#FFC72C]"
-                        : "text-[#ECEBE4]/40"
+                        : "text-[var(--text-muted)]"
                     }`}
                   />
                   <div>
-                    <span className="font-bold text-xs block">
+                    <span className="font-bold text-xs block text-[var(--text-main)]">
                       Añadir al final
                     </span>
-                    <span className="text-[11px] text-[#ECEBE4]/60">
+                    <span className="text-[11px] text-[var(--text-muted)]">
                       Conserva las {questions.length} diapositivas actuales
                     </span>
                   </div>
@@ -1477,24 +1476,24 @@ export default function ActivityEditorPage() {
                 <button
                   type="button"
                   onClick={() => setImportMode("replace")}
-                  className={`p-3.5 rounded-xl border-2 text-left transition flex items-center gap-3 ${
+                  className={`p-3.5 rounded-xl border-2 text-left transition flex items-center gap-3 cursor-pointer ${
                     importMode === "replace"
-                      ? "bg-[#193750] border-[#B7312C] text-white"
-                      : "bg-[#001E32] border-[#425563] text-[#ECEBE4]/70"
+                      ? "bg-[var(--surface-subtle)] border-[#B7312C] text-[var(--text-main)] shadow-sm"
+                      : "bg-[var(--surface-subtle)] border-[var(--border-subtle)] text-[var(--text-muted)]"
                   }`}
                 >
                   <RotateCcw
                     className={`w-5 h-5 ${
                       importMode === "replace"
                         ? "text-[#B7312C]"
-                        : "text-[#ECEBE4]/40"
+                        : "text-[var(--text-muted)]"
                     }`}
                   />
                   <div>
-                    <span className="font-bold text-xs block">
+                    <span className="font-bold text-xs block text-[var(--text-main)]">
                       Reemplazar existentes
                     </span>
-                    <span className="text-[11px] text-[#ECEBE4]/60">
+                    <span className="text-[11px] text-[var(--text-muted)]">
                       Sustituye todas las diapositivas actuales
                     </span>
                   </div>
@@ -1513,29 +1512,29 @@ export default function ActivityEditorPage() {
                 </span>
               </div>
 
-              <div className="max-h-56 overflow-y-auto space-y-2 pr-1 border border-[#425563] rounded-xl p-3 bg-[#001E32]">
+              <div className="max-h-56 overflow-y-auto space-y-2 pr-1 border border-[var(--border-subtle)] rounded-xl p-3 bg-[var(--surface-subtle)]">
                 {parsedExcelQuestions.map((q, idx) => (
                   <div
                     key={idx}
-                    className="p-3 bg-[#193750] rounded-lg border border-[#425563] text-xs space-y-1.5"
+                    className="p-3 bg-[var(--surface-card)] rounded-lg border border-[var(--border-subtle)] text-xs space-y-1.5 shadow-sm"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-extrabold text-[#FFC72C]">
                         #{idx + 1} {q.questionText}
                       </span>
-                      <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-[#001E32] text-[#ECEBE4]/80">
+                      <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-[var(--surface-subtle)] border border-[var(--border-subtle)] text-[var(--text-subtle)]">
                         {q.questionType} &bull; {q.timeLimit}s &bull; {q.pointsBase} pts
                       </span>
                     </div>
                     {q.options.length > 0 && (
-                      <div className="flex flex-wrap gap-2 text-[11px] text-[#ECEBE4]/80">
+                      <div className="flex flex-wrap gap-2 text-[11px] text-[var(--text-subtle)]">
                         {q.options.map((opt, oIdx) => (
                           <span
                             key={oIdx}
                             className={`px-2 py-0.5 rounded ${
                               opt.is_correct
-                                ? "bg-[#4C8C2B]/30 text-[#4C8C2B] border border-[#4C8C2B]/50 font-bold"
-                                : "bg-[#001E32]/60"
+                                ? "bg-[#4C8C2B]/15 text-[#4C8C2B] border border-[#4C8C2B]/30 font-bold"
+                                : "bg-[var(--surface-subtle)] text-[var(--text-muted)]"
                             }`}
                           >
                             {opt.is_correct ? "✓ " : ""}
@@ -1551,7 +1550,7 @@ export default function ActivityEditorPage() {
           )}
 
           {/* Acciones del Modal */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#425563]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--border-subtle)]">
             <button
               type="button"
               onClick={() => {
@@ -1560,7 +1559,7 @@ export default function ActivityEditorPage() {
                 setExcelFileName(null);
                 setExcelError(null);
               }}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-[#ECEBE4]/70 hover:bg-[#425563]/30 transition"
+              className="px-4 py-2 rounded-xl text-xs font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--surface-hover)] transition cursor-pointer"
             >
               Cancelar
             </button>
@@ -1568,7 +1567,7 @@ export default function ActivityEditorPage() {
               type="button"
               disabled={parsedExcelQuestions.length === 0}
               onClick={handleConfirmImportExcel}
-              className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2.5 px-6 rounded-xl transition shadow disabled:opacity-40 flex items-center gap-2 active:scale-95"
+              className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2.5 px-6 rounded-xl transition shadow-sm disabled:opacity-40 flex items-center gap-2 active:scale-95 cursor-pointer"
             >
               <Upload className="w-4 h-4" />
               <span>

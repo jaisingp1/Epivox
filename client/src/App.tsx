@@ -9,7 +9,6 @@ import OpenPollsPage from "./pages/OpenPollsPage";
 import QuestionBankPage from "./pages/QuestionBankPage";
 import TemplatesPage from "./pages/TemplatesPage";
 import SessionReportPage from "./pages/SessionReportPage";
-
 import ActivityEditorPage from "./pages/ActivityEditorPage";
 import PresentationPage from "./pages/PresentationPage";
 import PresenterRemotePage from "./pages/PresenterRemotePage";

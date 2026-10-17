@@ -60,9 +60,7 @@ export const Modal: React.FC<ModalProps> = ({
               {title}
             </h2>
             {description && (
-              <p className="text-xs text-[var(--text-subtle)] mt-1">
-                {description}
-              </p>
+              <p className="text-xs text-[var(--text-subtle)] mt-1">{description}</p>
             )}
           </div>
           <button

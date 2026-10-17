@@ -775,9 +775,9 @@ export default function QuestionBankPage() {
                 setExcelTargetFolderId(currentFolderId || (folders[0]?.id ?? null));
                 setIsExcelModalOpen(true);
               }}
-              className="bg-[#001E32] hover:bg-[#254F72] text-[#48A9C5] border border-[#48A9C5]/40 font-bold text-xs py-2.5 px-4 rounded-xl transition shadow flex items-center gap-2 active:scale-95 cursor-pointer"
+              className="bg-[var(--surface-card)] hover:bg-[var(--surface-hover)] text-[var(--text-main)] border border-[var(--border-subtle)] font-bold text-xs py-2.5 px-4 rounded-xl transition shadow-sm flex items-center gap-2 active:scale-95 cursor-pointer"
             >
-              <FileSpreadsheet className="w-4 h-4" />
+              <FileSpreadsheet className="w-4 h-4 text-[#48A9C5]" />
               <span>Subir Preguntas (Excel)</span>
             </button>
 
@@ -785,7 +785,7 @@ export default function QuestionBankPage() {
             <button
               type="button"
               onClick={() => handleOpenFolderModal(undefined, currentFolderId)}
-              className="bg-[#193750] hover:bg-[#254F72] text-[#ECEBE4] hover:text-white border border-[#425563] font-bold text-xs py-2.5 px-4 rounded-xl transition shadow flex items-center gap-2 cursor-pointer"
+              className="bg-[var(--surface-card)] hover:bg-[var(--surface-hover)] text-[var(--text-main)] border border-[var(--border-subtle)] font-bold text-xs py-2.5 px-4 rounded-xl transition shadow-sm flex items-center gap-2 cursor-pointer"
             >
               <FolderPlus className="w-4 h-4 text-[#FFC72C]" />
               <span>{currentFolderId ? "Nueva Subcarpeta" : "Nueva Carpeta"}</span>
@@ -795,7 +795,7 @@ export default function QuestionBankPage() {
             <button
               type="button"
               onClick={() => handleOpenQuestionModal()}
-              className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2.5 px-4 rounded-xl transition shadow flex items-center gap-2 active:scale-95 cursor-pointer"
+              className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2.5 px-4 rounded-xl transition shadow-sm flex items-center gap-2 active:scale-95 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Nueva Pregunta</span>
@@ -807,15 +807,15 @@ export default function QuestionBankPage() {
       {/* --------------------------------------------------------------------- */}
       {/* BARRA DE NAVEGACIÓN Y BREADCRUMBS DE CARPETAS                         */}
       {/* --------------------------------------------------------------------- */}
-      <div className="flex items-center justify-between gap-4 bg-[#193750] border border-[#425563] p-4 rounded-2xl flex-wrap">
-        <div className="flex items-center gap-2 text-xs font-bold text-[#ECEBE4] overflow-x-auto py-1">
+      <div className="flex items-center justify-between gap-4 bg-[var(--surface-card)] border border-[var(--border-subtle)] p-4 rounded-2xl flex-wrap shadow-sm">
+        <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-main)] overflow-x-auto py-1">
           <button
             type="button"
             onClick={() => setCurrentFolderId(null)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition cursor-pointer ${
               currentFolderId === null
                 ? "bg-[#FFC72C] text-[#001E32] shadow font-black"
-                : "bg-[#001E32] hover:bg-[#254F72] text-[#ECEBE4]"
+                : "bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[var(--text-subtle)] hover:text-[var(--text-main)] border border-[var(--border-subtle)]"
             }`}
           >
             <Home className="w-3.5 h-3.5" />
@@ -824,14 +824,14 @@ export default function QuestionBankPage() {
 
           {folderTrail.map((folder, idx) => (
             <React.Fragment key={folder.id}>
-              <ChevronRight className="w-3.5 h-3.5 text-[#ECEBE4]/40 shrink-0" />
+              <ChevronRight className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
               <button
                 type="button"
                 onClick={() => setCurrentFolderId(folder.id)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition cursor-pointer ${
                   idx === folderTrail.length - 1
                     ? "bg-[#FFC72C] text-[#001E32] shadow font-black"
-                    : "bg-[#001E32] hover:bg-[#254F72] text-[#ECEBE4]"
+                    : "bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[var(--text-subtle)] hover:text-[var(--text-main)] border border-[var(--border-subtle)]"
                 }`}
               >
                 <Folder className="w-3.5 h-3.5" style={{ color: folder.color }} />
@@ -843,19 +843,19 @@ export default function QuestionBankPage() {
 
         {/* Buscador de preguntas dentro del banco */}
         <div className="relative w-full sm:w-72">
-          <Search className="w-4 h-4 text-[#ECEBE4]/40 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por pregunta o tema..."
-            className="w-full bg-[#001E32] border border-[#425563] focus:border-[#FFC72C] rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-[#ECEBE4]/40 outline-none transition"
+            className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] focus:border-[#FFC72C] rounded-xl pl-9 pr-8 py-2 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none transition"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#ECEBE4]/50 hover:text-white"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -868,14 +868,14 @@ export default function QuestionBankPage() {
       {/* --------------------------------------------------------------------- */}
       {displayedSubfolders.length > 0 && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs font-bold text-[#ECEBE4]/80">
+          <div className="flex items-center justify-between text-xs font-bold text-[var(--text-subtle)]">
             <span className="uppercase tracking-wider">
               {currentFolderId ? "Subcarpetas" : "Carpetas Principales"} ({displayedSubfolders.length})
             </span>
             <button
               type="button"
               onClick={() => handleOpenFolderModal(undefined, currentFolderId)}
-              className="text-[#FFC72C] hover:underline flex items-center gap-1 text-[11px]"
+              className="text-[#FFC72C] hover:underline flex items-center gap-1 text-[11px] cursor-pointer"
             >
               <Plus className="w-3 h-3" />
               <span>Añadir {currentFolderId ? "Subcarpeta" : "Carpeta"}</span>
@@ -886,22 +886,22 @@ export default function QuestionBankPage() {
             {displayedSubfolders.map((folder) => (
               <div
                 key={folder.id}
-                className="bg-[#193750] border-2 border-[#425563] hover:border-[#FFC72C] p-4 rounded-2xl shadow transition group flex flex-col justify-between space-y-3 cursor-pointer"
+                className="bg-[var(--surface-card)] border border-[var(--border-subtle)] hover:border-[#FFC72C] p-4 rounded-2xl shadow-sm transition group flex flex-col justify-between space-y-3 cursor-pointer"
                 onClick={() => setCurrentFolderId(folder.id)}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2.5">
                     <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow"
+                      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
                       style={{ backgroundColor: `${folder.color}20`, border: `1px solid ${folder.color}` }}
                     >
                       <Folder className="w-5 h-5" style={{ color: folder.color }} />
                     </div>
                     <div>
-                      <h4 className="text-sm font-black text-white group-hover:text-[#FFC72C] transition-colors line-clamp-1">
+                      <h4 className="text-sm font-black text-[var(--text-main)] group-hover:text-[#FFC72C] transition-colors line-clamp-1">
                         {folder.name}
                       </h4>
-                      <span className="text-[10px] text-[#ECEBE4]/60">
+                      <span className="text-[10px] text-[var(--text-muted)]">
                         {folder.questions_count || 0} preguntas • {folder.subfolders_count || 0} subcarpetas
                       </span>
                     </div>
@@ -915,7 +915,7 @@ export default function QuestionBankPage() {
                     <button
                       type="button"
                       onClick={() => handleOpenFolderModal(folder)}
-                      className="p-1 text-[#ECEBE4]/60 hover:text-white rounded"
+                      className="p-1 text-[var(--text-muted)] hover:text-[var(--text-main)] rounded cursor-pointer"
                       title="Editar Carpeta"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
@@ -929,7 +929,7 @@ export default function QuestionBankPage() {
                           title: folder.name,
                         })
                       }
-                      className="p-1 text-[#B7312C]/70 hover:text-[#B7312C] rounded"
+                      className="p-1 text-[#B7312C]/70 hover:text-[#B7312C] rounded cursor-pointer"
                       title="Eliminar Carpeta"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -938,7 +938,7 @@ export default function QuestionBankPage() {
                 </div>
 
                 {folder.description && (
-                  <p className="text-[11px] text-[#ECEBE4]/70 line-clamp-2">
+                  <p className="text-[11px] text-[var(--text-subtle)] line-clamp-2">
                     {folder.description}
                   </p>
                 )}
@@ -951,16 +951,16 @@ export default function QuestionBankPage() {
       {/* --------------------------------------------------------------------- */}
       {/* SECCIÓN 2: PREGUNTAS ALMACENADAS                                      */}
       {/* --------------------------------------------------------------------- */}
-      <div className="bg-[#193750] border border-[#425563]/60 rounded-3xl p-6 lg:p-8 shadow-xl space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#425563]/40">
+      <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-3xl p-6 lg:p-8 shadow-sm space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--border-subtle)]">
           <div className="space-y-1">
-            <h3 className="text-lg font-black text-white flex items-center gap-2">
+            <h3 className="text-lg font-black text-[var(--text-main)] flex items-center gap-2">
               <Layers className="w-5 h-5 text-[#FFC72C]" />
               <span>
                 {currentFolder ? `Preguntas en "${currentFolder.name}"` : "Todas las Preguntas"}
               </span>
             </h3>
-            <p className="text-xs text-[#ECEBE4]/70">
+            <p className="text-xs text-[var(--text-muted)]">
               {filteredQuestions.length} {filteredQuestions.length === 1 ? "pregunta encontrada" : "preguntas encontradas"}
             </p>
           </div>
@@ -984,7 +984,7 @@ export default function QuestionBankPage() {
                 className={`text-xs font-bold px-3 py-1.5 rounded-xl transition shrink-0 cursor-pointer ${
                   typeFilter === tab.id
                     ? "bg-[#FFC72C] text-[#001E32] shadow font-black"
-                    : "bg-[#001E32] text-[#ECEBE4]/70 hover:text-white"
+                    : "bg-[var(--surface-subtle)] text-[var(--text-subtle)] hover:text-[var(--text-main)] border border-[var(--border-subtle)]"
                 }`}
               >
                 {tab.label}
@@ -995,16 +995,16 @@ export default function QuestionBankPage() {
 
         {/* Listado de preguntas */}
         {isLoading ? (
-          <div className="py-12 text-center text-xs text-[#ECEBE4]/60">
+          <div className="py-12 text-center text-xs text-[var(--text-muted)]">
             Cargando preguntas del banco...
           </div>
         ) : filteredQuestions.length === 0 ? (
-          <div className="py-12 text-center text-xs text-[#ECEBE4]/60 space-y-3">
+          <div className="py-12 text-center text-xs text-[var(--text-muted)] space-y-3">
             <HelpCircle className="w-12 h-12 mx-auto text-[#FFC72C] opacity-50" />
-            <p className="font-bold text-white text-sm">
+            <p className="font-bold text-[var(--text-main)] text-sm">
               No se encontraron preguntas en esta ubicación.
             </p>
-            <p className="max-w-md mx-auto text-[#ECEBE4]/70">
+            <p className="max-w-md mx-auto text-[var(--text-subtle)]">
               Puedes subir preguntas masivamente mediante un archivo Excel (.xlsx) o crear reactivos de forma manual.
             </p>
             <div className="flex items-center justify-center gap-3 pt-2">
@@ -1014,14 +1014,14 @@ export default function QuestionBankPage() {
                   setExcelTargetFolderId(currentFolderId || (folders[0]?.id ?? null));
                   setIsExcelModalOpen(true);
                 }}
-                className="bg-[#48A9C5] hover:bg-[#3996B1] text-[#001E32] font-black text-xs py-2 px-4 rounded-xl transition"
+                className="bg-[#48A9C5] hover:bg-[#3996B1] text-[#001E32] font-black text-xs py-2 px-4 rounded-xl transition cursor-pointer"
               >
                 Subir con Excel
               </button>
               <button
                 type="button"
                 onClick={() => handleOpenQuestionModal()}
-                className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2 px-4 rounded-xl transition"
+                className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2 px-4 rounded-xl transition cursor-pointer"
               >
                 Crear Pregunta Manual
               </button>
@@ -1043,7 +1043,7 @@ export default function QuestionBankPage() {
               return (
                 <div
                   key={q.id}
-                  className="bg-[#001E32] border border-[#425563] hover:border-[#FFC72C] p-5 rounded-2xl transition shadow-lg flex flex-col justify-between space-y-3 group"
+                  className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] hover:border-[#FFC72C] p-5 rounded-2xl transition shadow-sm flex flex-col justify-between space-y-3 group"
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between gap-2">
@@ -1056,7 +1056,7 @@ export default function QuestionBankPage() {
                         </span>
 
                         {q.folder_name && (
-                          <span className="text-[10px] text-[#ECEBE4]/60 flex items-center gap-1 bg-[#193750] px-2 py-0.5 rounded">
+                          <span className="text-[10px] text-[var(--text-muted)] flex items-center gap-1 bg-[var(--surface-card)] border border-[var(--border-subtle)] px-2 py-0.5 rounded font-medium">
                             <Folder className="w-3 h-3 text-[#FFC72C]" />
                             <span>{q.folder_name}</span>
                           </span>
@@ -1067,7 +1067,7 @@ export default function QuestionBankPage() {
                         <button
                           type="button"
                           onClick={() => handleOpenQuestionModal(q)}
-                          className="p-1 text-[#ECEBE4]/60 hover:text-white rounded"
+                          className="p-1 text-[var(--text-muted)] hover:text-[var(--text-main)] rounded cursor-pointer"
                           title="Editar Pregunta"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
@@ -1081,7 +1081,7 @@ export default function QuestionBankPage() {
                               title: q.question_text,
                             })
                           }
-                          className="p-1 text-[#B7312C]/70 hover:text-[#B7312C] rounded"
+                          className="p-1 text-[#B7312C]/70 hover:text-[#B7312C] rounded cursor-pointer"
                           title="Eliminar Pregunta"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -1089,7 +1089,7 @@ export default function QuestionBankPage() {
                       </div>
                     </div>
 
-                    <h4 className="text-sm font-bold text-white group-hover:text-[#FFC72C] transition-colors leading-relaxed">
+                    <h4 className="text-sm font-bold text-[var(--text-main)] group-hover:text-[#FFC72C] transition-colors leading-relaxed">
                       {q.question_text}
                     </h4>
 
@@ -1101,7 +1101,7 @@ export default function QuestionBankPage() {
                             className={`p-2 rounded-lg text-[11px] border flex items-center justify-between ${
                               opt.is_correct
                                 ? "bg-[#4C8C2B]/15 border-[#4C8C2B]/40 text-[#4C8C2B] font-bold"
-                                : "bg-[#193750]/60 border-[#425563]/40 text-[#ECEBE4]/70"
+                                : "bg-[var(--surface-card)] border-[var(--border-subtle)] text-[var(--text-subtle)]"
                             }`}
                           >
                             <span className="truncate">{opt.text}</span>
@@ -1112,13 +1112,13 @@ export default function QuestionBankPage() {
                     )}
 
                     {q.explanation_text && (
-                      <p className="text-[11px] text-[#ECEBE4]/60 italic line-clamp-2 pt-1 border-t border-[#425563]/30">
+                      <p className="text-[11px] text-[var(--text-muted)] italic line-clamp-2 pt-1 border-t border-[var(--border-subtle)]">
                         {q.explanation_text}
                       </p>
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-[#ECEBE4]/50 pt-2 border-t border-[#425563]/40">
+                  <div className="flex items-center justify-between text-[11px] text-[var(--text-muted)] pt-2 border-t border-[var(--border-subtle)]">
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3 text-[#FFC72C]" />
                       {q.time_limit}s
@@ -1156,12 +1156,12 @@ export default function QuestionBankPage() {
       >
         <div className="space-y-6">
           {/* Paso 1: Descargar Plantilla */}
-          <div className="bg-[#001E32] border border-[#425563] rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="space-y-1">
               <span className="text-xs font-black text-[#FFC72C] uppercase tracking-wider block">
                 Paso 1: Descargar Formato Oficial
               </span>
-              <p className="text-xs text-[#ECEBE4]/70">
+              <p className="text-xs text-[var(--text-subtle)]">
                 Descarga el archivo Excel con las 10 columnas oficiales y la hoja de guía con los 7 tipos de preguntas.
               </p>
             </div>
@@ -1177,13 +1177,13 @@ export default function QuestionBankPage() {
 
           {/* Paso 2: Seleccionar Carpeta de Destino */}
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-[#ECEBE4]">
+            <label className="block text-xs font-bold text-[var(--text-main)]">
               Paso 2: Seleccionar Carpeta o Subcarpeta de Destino
             </label>
             <select
               value={excelTargetFolderId || ""}
               onChange={(e) => setExcelTargetFolderId(Number(e.target.value))}
-              className="w-full bg-[#001E32] border border-[#425563] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#FFC72C]"
+              className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-xl px-4 py-2.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[#FFC72C]"
             >
               {folders.map((f) => (
                 <option key={f.id} value={f.id}>
@@ -1195,16 +1195,16 @@ export default function QuestionBankPage() {
 
           {/* Paso 3: Subir Archivo */}
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-[#ECEBE4]">
+            <label className="block text-xs font-bold text-[var(--text-main)]">
               Paso 3: Cargar Archivo Excel Rellenado
             </label>
-            <div className="border-2 border-dashed border-[#425563] hover:border-[#FFC72C] rounded-2xl p-6 text-center space-y-3 transition bg-[#001E32]/50">
+            <div className="border-2 border-dashed border-[var(--border-subtle)] hover:border-[#FFC72C] rounded-2xl p-6 text-center space-y-3 transition bg-[var(--surface-subtle)]">
               <Upload className="w-10 h-10 text-[#FFC72C] mx-auto opacity-70" />
               <div>
-                <span className="text-xs font-bold text-white block">
+                <span className="text-xs font-bold text-[var(--text-main)] block">
                   {excelFileName ? excelFileName : "Arrastra tu archivo Excel aquí o haz clic para seleccionar"}
                 </span>
-                <span className="text-[10px] text-[#ECEBE4]/50">Formatos soportados: .xlsx, .xls</span>
+                <span className="text-[10px] text-[var(--text-muted)]">Formatos soportados: .xlsx, .xls</span>
               </div>
               <input
                 type="file"
@@ -1218,7 +1218,7 @@ export default function QuestionBankPage() {
               />
               <label
                 htmlFor="excel-file-bank-upload"
-                className="inline-block bg-[#193750] hover:bg-[#254F72] text-[#ECEBE4] hover:text-white border border-[#425563] font-bold text-xs py-2 px-4 rounded-xl cursor-pointer transition shadow"
+                className="inline-block bg-[var(--surface-card)] hover:bg-[var(--surface-hover)] text-[var(--text-main)] border border-[var(--border-subtle)] font-bold text-xs py-2 px-4 rounded-xl cursor-pointer transition shadow-sm"
               >
                 Seleccionar Archivo
               </label>
@@ -1226,14 +1226,14 @@ export default function QuestionBankPage() {
           </div>
 
           {excelError && (
-            <div className="p-3 bg-[#B7312C]/20 border border-[#B7312C]/40 rounded-xl text-xs text-[#ECEBE4] flex items-center gap-2">
+            <div className="p-3 bg-[#B7312C]/20 border border-[#B7312C]/40 rounded-xl text-xs text-[var(--text-main)] flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-[#B7312C] shrink-0" />
               <span>{excelError}</span>
             </div>
           )}
 
           {importSuccessMsg && (
-            <div className="p-3 bg-[#4C8C2B]/20 border border-[#4C8C2B]/40 rounded-xl text-xs text-[#ECEBE4] flex items-center gap-2">
+            <div className="p-3 bg-[#4C8C2B]/20 border border-[#4C8C2B]/40 rounded-xl text-xs text-[#4C8C2B] flex items-center gap-2">
               <Check className="w-4 h-4 text-[#4C8C2B] shrink-0" />
               <span>{importSuccessMsg}</span>
             </div>
@@ -1244,15 +1244,15 @@ export default function QuestionBankPage() {
               <span className="text-xs font-bold text-[#FFC72C]">
                 Vista Previa: {parsedExcelQuestions.length} preguntas detectadas en el archivo
               </span>
-              <div className="max-h-48 overflow-y-auto space-y-1.5 p-2 bg-[#001E32] rounded-xl border border-[#425563]/50 text-xs">
+              <div className="max-h-48 overflow-y-auto space-y-1.5 p-2 bg-[var(--surface-subtle)] rounded-xl border border-[var(--border-subtle)] text-xs">
                 {parsedExcelQuestions.slice(0, 10).map((pq, idx) => (
-                  <div key={idx} className="flex items-center justify-between gap-2 p-1.5 bg-[#193750]/50 rounded">
-                    <span className="font-bold text-white truncate">{idx + 1}. {pq.questionText}</span>
+                  <div key={idx} className="flex items-center justify-between gap-2 p-1.5 bg-[var(--surface-card)] rounded border border-[var(--border-subtle)]">
+                    <span className="font-bold text-[var(--text-main)] truncate">{idx + 1}. {pq.questionText}</span>
                     <span className="text-[10px] text-[#48A9C5] shrink-0">{pq.questionType}</span>
                   </div>
                 ))}
                 {parsedExcelQuestions.length > 10 && (
-                  <p className="text-center text-[10px] text-[#ECEBE4]/50 pt-1">
+                  <p className="text-center text-[10px] text-[var(--text-muted)] pt-1">
                     ... y {parsedExcelQuestions.length - 10} preguntas más.
                   </p>
                 )}
@@ -1260,11 +1260,11 @@ export default function QuestionBankPage() {
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-[#425563]/40">
+          <div className="flex justify-end gap-2 pt-2 border-t border-[var(--border-subtle)]">
             <button
               type="button"
               onClick={() => setIsExcelModalOpen(false)}
-              className="bg-[#001E32] text-[#ECEBE4] border border-[#425563] text-xs font-bold py-2 px-4 rounded-xl"
+              className="bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[var(--text-main)] border border-[var(--border-subtle)] text-xs font-bold py-2 px-4 rounded-xl cursor-pointer"
             >
               Cancelar
             </button>
@@ -1292,7 +1292,7 @@ export default function QuestionBankPage() {
       >
         <form onSubmit={handleSaveFolder} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-[#ECEBE4] mb-1">
+            <label className="block text-xs font-bold text-[var(--text-main)] mb-1">
               Nombre de la Carpeta *
             </label>
             <input
@@ -1301,18 +1301,18 @@ export default function QuestionBankPage() {
               value={folderName}
               onChange={(e) => setFolderName(e.target.value)}
               placeholder="Ej. Seguridad Operacional y LOTO"
-              className="w-full bg-[#001E32] border border-[#425563] focus:border-[#FFC72C] rounded-xl px-3 py-2 text-xs text-white outline-none"
+              className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] focus:border-[#FFC72C] rounded-xl px-3 py-2 text-xs text-[var(--text-main)] outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#ECEBE4] mb-1">
+            <label className="block text-xs font-bold text-[var(--text-main)] mb-1">
               Carpeta Superior (Padre)
             </label>
             <select
               value={folderParentId || ""}
               onChange={(e) => setFolderParentId(Number(e.target.value) || null)}
-              className="w-full bg-[#001E32] border border-[#425563] focus:border-[#FFC72C] rounded-xl px-3 py-2 text-xs text-white outline-none"
+              className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] focus:border-[#FFC72C] rounded-xl px-3 py-2 text-xs text-[var(--text-main)] outline-none"
             >
               <option value="">(Ninguna: Es carpeta principal)</option>
               {folders
@@ -1326,7 +1326,7 @@ export default function QuestionBankPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#ECEBE4] mb-1">
+            <label className="block text-xs font-bold text-[var(--text-main)] mb-1">
               Descripción (Opcional)
             </label>
             <textarea
@@ -1334,12 +1334,12 @@ export default function QuestionBankPage() {
               value={folderDescription}
               onChange={(e) => setFolderDescription(e.target.value)}
               placeholder="Descripción del contenido o área funcional..."
-              className="w-full bg-[#001E32] border border-[#425563] focus:border-[#FFC72C] rounded-xl px-3 py-2 text-xs text-white outline-none"
+              className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] focus:border-[#FFC72C] rounded-xl px-3 py-2 text-xs text-[var(--text-main)] outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#ECEBE4] mb-1">
+            <label className="block text-xs font-bold text-[var(--text-main)] mb-1">
               Color Distintivo
             </label>
             <div className="flex items-center gap-2">
@@ -1348,8 +1348,8 @@ export default function QuestionBankPage() {
                   key={c.value}
                   type="button"
                   onClick={() => setFolderColor(c.value)}
-                  className={`w-7 h-7 rounded-full border-2 transition ${
-                    folderColor === c.value ? "border-white scale-110 shadow" : "border-transparent opacity-70"
+                  className={`w-7 h-7 rounded-full border-2 transition cursor-pointer ${
+                    folderColor === c.value ? "border-[#FFC72C] scale-110 shadow" : "border-transparent opacity-70"
                   }`}
                   style={{ backgroundColor: c.value }}
                   title={c.label}
@@ -1358,11 +1358,11 @@ export default function QuestionBankPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-[#425563]/40">
+          <div className="flex justify-end gap-2 pt-3 border-t border-[var(--border-subtle)]">
             <button
               type="button"
               onClick={() => setIsFolderModalOpen(false)}
-              className="bg-[#001E32] text-[#ECEBE4] border border-[#425563] text-xs font-bold py-2 px-4 rounded-xl"
+              className="bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[var(--text-main)] border border-[var(--border-subtle)] text-xs font-bold py-2 px-4 rounded-xl cursor-pointer"
             >
               Cancelar
             </button>

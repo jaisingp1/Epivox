@@ -51,9 +51,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                 ) : (
                   <span
                     className={`inline-flex items-center gap-1 ${
-                      isLast
-                        ? "text-[#FFC72C] font-bold"
-                        : "text-[var(--text-muted)]"
+                      isLast ? "text-[#FFC72C] font-bold" : "text-[var(--text-muted)]"
                     }`}
                     aria-current={isLast ? "page" : undefined}
                   >

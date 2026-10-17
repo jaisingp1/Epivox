@@ -985,7 +985,7 @@ export default function PresentationsPage() {
             <button
               type="button"
               onClick={() => setIsBankPickerOpen(true)}
-              className="bg-[#001E32] hover:bg-[#254F72] text-[#FFC72C] border border-[#FFC72C]/40 font-bold text-xs py-2.5 px-4 rounded-xl transition shadow flex items-center gap-2 active:scale-95 cursor-pointer"
+              className="bg-[var(--surface-card)] hover:bg-[var(--surface-hover)] text-[var(--text-main)] border border-[var(--border-subtle)] font-bold text-xs py-2.5 px-4 rounded-xl transition shadow-sm flex items-center gap-2 active:scale-95 cursor-pointer"
             >
               <HelpCircle className="w-4 h-4 text-[#FFC72C]" />
               <span>Desde Banco de Preguntas</span>
@@ -995,7 +995,7 @@ export default function PresentationsPage() {
             <button
               type="button"
               onClick={() => setIsExcelModalOpen(true)}
-              className="bg-[#001E32] hover:bg-[#254F72] text-[#48A9C5] border border-[#48A9C5]/40 font-bold text-xs py-2.5 px-4 rounded-xl transition shadow flex items-center gap-2 active:scale-95 cursor-pointer"
+              className="bg-[var(--surface-card)] hover:bg-[var(--surface-hover)] text-[var(--text-main)] border border-[var(--border-subtle)] font-bold text-xs py-2.5 px-4 rounded-xl transition shadow-sm flex items-center gap-2 active:scale-95 cursor-pointer"
             >
               <FileSpreadsheet className="w-4 h-4 text-[#48A9C5]" />
               <span>Importar Excel</span>
@@ -1005,7 +1005,7 @@ export default function PresentationsPage() {
             <button
               type="button"
               onClick={() => setIsCreatingModal(true)}
-              className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2.5 px-4 rounded-xl transition shadow flex items-center gap-2 active:scale-95 cursor-pointer"
+              className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2.5 px-4 rounded-xl transition shadow-sm flex items-center gap-2 active:scale-95 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Nueva Presentación</span>
@@ -1019,8 +1019,8 @@ export default function PresentationsPage() {
       {/* CASO 1: SESIÓN EN VIVO ACTIVA (SE MUESTRA ÚNICA Y EXCLUSIVAMENTE ESTO) */}
       {/* ===================================================================== */}
       {activeSession ? (
-        <section className="bg-gradient-to-r from-[#193750] via-[#102B41] to-[#001E32] border-2 border-[#FFC72C] rounded-3xl p-6 lg:p-8 shadow-2xl space-y-6 animate-in slide-in-from-top-4 duration-300">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#425563]/60">
+        <section className="bg-[var(--surface-card)] border-2 border-[#FFC72C] rounded-3xl p-6 lg:p-8 shadow-sm space-y-6 animate-in slide-in-from-top-4 duration-300">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[var(--border-subtle)]">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="flex h-3 w-3 relative">
@@ -1031,7 +1031,7 @@ export default function PresentationsPage() {
                   Sesión en Vivo Activa &bull; Estado: {activeSession.status}
                 </span>
               </div>
-              <h2 className="text-2xl font-black text-white">
+              <h2 className="text-2xl font-black text-[var(--text-main)]">
                 Monitor del Presentador &bull; PIN:{" "}
                 <span className="text-[#FFC72C] font-mono tracking-widest">
                   {activeSession.pin}
@@ -1044,7 +1044,7 @@ export default function PresentationsPage() {
               <button
                 type="button"
                 onClick={() => handleCopyLink(activeSession.pin)}
-                className="bg-[#001E32] hover:bg-[#254F72] text-[#FFC72C] border border-[#FFC72C]/40 font-bold text-xs py-2.5 px-4 rounded-xl transition flex items-center gap-2 shadow"
+                className="bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[#FFC72C] border border-[#FFC72C]/40 font-bold text-xs py-2.5 px-4 rounded-xl transition flex items-center gap-2 shadow-sm cursor-pointer"
               >
                 {copiedLink ? (
                   <>
@@ -1063,7 +1063,7 @@ export default function PresentationsPage() {
               <button
                 type="button"
                 onClick={() => handleOpenQR(activeSession.pin)}
-                className="bg-[#001E32] hover:bg-[#254F72] text-white border border-[#425563] font-bold text-xs py-2.5 px-3.5 rounded-xl transition flex items-center gap-1.5 shadow"
+                className="bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[var(--text-main)] border border-[var(--border-subtle)] font-bold text-xs py-2.5 px-3.5 rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer"
               >
                 <QrCode className="w-4 h-4 text-[#FFC72C]" />
                 <span>QR</span>
@@ -1085,7 +1085,7 @@ export default function PresentationsPage() {
               <button
                 type="button"
                 onClick={handleCancelActiveSession}
-                className="bg-[#B7312C] hover:bg-[#A32823] text-white font-black text-xs py-2.5 px-4 rounded-xl transition flex items-center gap-2 shadow-lg active:scale-95 cursor-pointer"
+                className="bg-[#B7312C] hover:bg-[#A32823] text-white font-black text-xs py-2.5 px-4 rounded-xl transition flex items-center gap-2 shadow-sm active:scale-95 cursor-pointer"
                 title="Detiene la sesión inmediatamente para todos los alumnos conectados"
               >
                 <XCircle className="w-4 h-4" />
@@ -1099,7 +1099,7 @@ export default function PresentationsPage() {
                   setActiveSession(null);
                   setSearchParams({});
                 }}
-                className="bg-[#193750] hover:bg-[#254F72] text-[#ECEBE4]/80 hover:text-white border border-[#425563] font-bold text-xs py-2.5 px-3.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer"
+                className="bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[var(--text-subtle)] hover:text-[var(--text-main)] border border-[var(--border-subtle)] font-bold text-xs py-2.5 px-3.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer"
                 title="Minimiza este panel manteniendo la sesión activa"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -1109,16 +1109,16 @@ export default function PresentationsPage() {
           </div>
 
           {/* Enlace destacado para enviar */}
-          <div className="bg-[#001E32]/70 border border-[#425563] p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
+          <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
             <div className="flex items-center gap-3 truncate">
               <span className="text-xs font-bold uppercase tracking-wider text-[#FFC72C] shrink-0">
                 Link de Participación:
               </span>
-              <span className="font-mono text-white/90 truncate">
+              <span className="font-mono text-[var(--text-main)] truncate">
                 {window.location.origin}/join?pin={activeSession.pin}
               </span>
             </div>
-            <span className="text-xs text-[#ECEBE4]/60 shrink-0">
+            <span className="text-xs text-[var(--text-muted)] shrink-0">
               Envía este link por Teams, correo o chat a tu audiencia
             </span>
           </div>
@@ -1126,9 +1126,9 @@ export default function PresentationsPage() {
           {/* Estadísticas en Vivo: Usuarios y Respuestas */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* 1. Usuarios Conectados */}
-            <div className="bg-[#001E32] border border-[#425563] p-5 rounded-2xl space-y-3">
+            <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] p-5 rounded-2xl space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#ECEBE4]/70">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
                   Participantes en Sala
                 </span>
                 <span className="text-xs bg-[#4C8C2B] text-white font-extrabold px-2.5 py-0.5 rounded-full">
@@ -1137,20 +1137,20 @@ export default function PresentationsPage() {
               </div>
               <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1">
                 {activeParticipants.length === 0 ? (
-                  <p className="text-xs text-[#ECEBE4]/50 italic py-2">
+                  <p className="text-xs text-[var(--text-muted)] italic py-2">
                     Esperando que los participantes ingresen...
                   </p>
                 ) : (
                   activeParticipants.map((p) => (
                     <div
                       key={p.id}
-                      className="flex items-center justify-between text-xs py-1 px-2.5 bg-[#193750] rounded-lg"
+                      className="flex items-center justify-between text-xs py-1 px-2.5 bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-lg"
                     >
-                      <span className="font-bold text-white truncate">
+                      <span className="font-bold text-[var(--text-main)] truncate">
                         {p.nickname}
                       </span>
                       {p.department && (
-                        <span className="text-[10px] text-[#ECEBE4]/60 truncate">
+                        <span className="text-[10px] text-[var(--text-muted)] truncate">
                           {p.department}
                         </span>
                       )}
@@ -1161,9 +1161,9 @@ export default function PresentationsPage() {
             </div>
 
             {/* 2. Cantidad de Respuestas Recibidas */}
-            <div className="bg-[#001E32] border border-[#425563] p-5 rounded-2xl space-y-3">
+            <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] p-5 rounded-2xl space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#ECEBE4]/70">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
                   Progreso de Respuestas
                 </span>
                 <span className="text-xs bg-[#48A9C5] text-white font-extrabold px-2.5 py-0.5 rounded-full">
@@ -1171,14 +1171,14 @@ export default function PresentationsPage() {
                 </span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-black text-white">
+                <span className="text-4xl font-black text-[var(--text-main)]">
                   {totalAnswers}
                 </span>
-                <span className="text-xs text-[#ECEBE4]/60">
+                <span className="text-xs text-[var(--text-muted)]">
                   respuestas registradas
                 </span>
               </div>
-              <div className="w-full bg-[#193750] h-3 rounded-full overflow-hidden">
+              <div className="w-full bg-[var(--surface-card)] border border-[var(--border-subtle)] h-3 rounded-full overflow-hidden">
                 <div
                   className="bg-[#FFC72C] h-full transition-all duration-500 rounded-full"
                   style={{
@@ -1194,9 +1194,9 @@ export default function PresentationsPage() {
             </div>
 
             {/* 3. Control de Diapositivas / Pregunta */}
-            <div className="bg-[#001E32] border border-[#425563] p-5 rounded-2xl space-y-3 flex flex-col justify-between">
+            <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] p-5 rounded-2xl space-y-3 flex flex-col justify-between">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#ECEBE4]/70">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
                   Acción de la Diapositiva
                 </span>
                 <span className="text-xs bg-[#FFC72C] text-[#001E32] font-black px-2 py-0.5 rounded">
@@ -1253,7 +1253,7 @@ export default function PresentationsPage() {
 
             {/* 1. Fila de Diapositiva Activa / En Vivo */}
             {currentQ && (
-              <div className="md:col-span-3 bg-[#001E32] border-2 border-[#FFC72C]/70 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-lg">
+              <div className="md:col-span-3 bg-[var(--surface-subtle)] border-2 border-[#FFC72C] p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-sm">
                 <div className="flex items-center gap-2.5 truncate flex-1 min-w-0">
                   <span className="flex items-center gap-1 font-extrabold uppercase tracking-wider text-[#FFC72C] bg-[#FFC72C]/15 px-3 py-1.5 rounded-xl border border-[#FFC72C]/40 shrink-0">
                     <Radio className="w-3.5 h-3.5 animate-pulse" />
@@ -1262,13 +1262,13 @@ export default function PresentationsPage() {
                       : `Pregunta Activa #${activeQIndex + 1}`}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-extrabold text-white truncate text-sm">
+                    <h3 className="font-extrabold text-[var(--text-main)] truncate text-sm">
                       {currentQ.question_text}
                     </h3>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0 text-[#ECEBE4]/80 flex-wrap">
+                <div className="flex items-center gap-3 shrink-0 text-[var(--text-subtle)] flex-wrap">
                   <span
                     className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getQuestionTypeBadge(currentQ.question_type).color}`}
                   >
@@ -1294,7 +1294,7 @@ export default function PresentationsPage() {
             )}
 
             {/* 2. Tarjeta Destacada: Siguiente Pregunta que Viene */}
-            <div className="md:col-span-3 bg-[#001E32] border-2 border-[#48A9C5]/50 p-4 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-lg">
+            <div className="md:col-span-3 bg-[var(--surface-subtle)] border-2 border-[#48A9C5]/50 p-4 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-sm">
               <div className="space-y-1 flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-[#48A9C5] bg-[#48A9C5]/15 border border-[#48A9C5]/40 px-2.5 py-0.5 rounded-full">
@@ -1312,13 +1312,13 @@ export default function PresentationsPage() {
                       >
                         {getQuestionTypeBadge(nextQ.question_type).label}
                       </span>
-                      <span className="text-[10px] text-[#ECEBE4]/60 font-mono">
+                      <span className="text-[10px] text-[var(--text-muted)] font-mono">
                         ⏱ {nextQ.time_limit}s
                       </span>
                     </>
                   )}
                 </div>
-                <h4 className="text-sm md:text-base font-bold text-white truncate">
+                <h4 className="text-sm md:text-base font-bold text-[var(--text-main)] truncate">
                   {nextQ
                     ? nextQ.question_text
                     : "No hay más preguntas pendientes. Al avanzar se proyectará el Podio Final."}
@@ -1334,7 +1334,7 @@ export default function PresentationsPage() {
                       isLobby ? 0 : activeQIndex + 1,
                     )
                   }
-                  className="bg-[#48A9C5] hover:bg-[#3FA1BD] text-[#001E32] font-black text-xs py-2 px-3.5 rounded-xl transition shadow flex items-center gap-1.5 shrink-0 active:scale-95"
+                  className="bg-[#48A9C5] hover:bg-[#3FA1BD] text-[#001E32] font-black text-xs py-2 px-3.5 rounded-xl transition shadow flex items-center gap-1.5 shrink-0 active:scale-95 cursor-pointer"
                 >
                   <Play className="w-3.5 h-3.5 fill-[#001E32]" />
                   <span>
@@ -1347,20 +1347,20 @@ export default function PresentationsPage() {
             </div>
 
             {/* 3. Panel Completo: Listado y Secuencia de Diapositivas */}
-            <div className="md:col-span-3 bg-[#001E32] border border-[#425563] p-5 rounded-2xl space-y-4 shadow-xl">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#425563]/60">
+            <div className="md:col-span-3 bg-[var(--surface-subtle)] border border-[var(--border-subtle)] p-5 rounded-2xl space-y-4 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--border-subtle)]">
                 <div className="flex items-center gap-2.5">
                   <div className="p-2 bg-[#FFC72C]/15 border border-[#FFC72C]/40 text-[#FFC72C] rounded-xl">
                     <ListOrdered className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-base font-black text-white flex items-center gap-2">
+                    <h3 className="text-base font-black text-[var(--text-main)] flex items-center gap-2">
                       <span>Listado y Secuencia de Preguntas</span>
-                      <span className="text-xs font-mono bg-[#193750] text-[#ECEBE4] px-2 py-0.5 rounded-full border border-[#425563]">
+                      <span className="text-xs font-mono bg-[var(--surface-card)] text-[var(--text-subtle)] px-2 py-0.5 rounded-full border border-[var(--border-subtle)]">
                         {currentQuestions.length} diapositivas
                       </span>
                     </h3>
-                    <div className="flex items-center gap-3 text-xs text-[#ECEBE4]/70 mt-0.5 flex-wrap">
+                    <div className="flex items-center gap-3 text-xs text-[var(--text-muted)] mt-0.5 flex-wrap">
                       <span className="flex items-center gap-1 text-[#4C8C2B] font-bold">
                         <CheckCircle2 className="w-3 h-3" />
                         {pastQuestionsCount} realizadas
@@ -1380,14 +1380,14 @@ export default function PresentationsPage() {
                 </div>
 
                 {/* Filtros de Pestaña */}
-                <div className="flex items-center gap-1 bg-[#193750] p-1 rounded-xl border border-[#425563] shrink-0 text-xs">
+                <div className="flex items-center gap-1 bg-[var(--surface-card)] p-1 rounded-xl border border-[var(--border-subtle)] shrink-0 text-xs">
                   <button
                     type="button"
                     onClick={() => setQuestionListFilter("all")}
-                    className={`px-2.5 py-1 rounded-lg font-bold transition ${
+                    className={`px-2.5 py-1 rounded-lg font-bold transition cursor-pointer ${
                       questionListFilter === "all"
                         ? "bg-[#FFC72C] text-[#001E32]"
-                        : "text-[#ECEBE4]/70 hover:text-white"
+                        : "text-[var(--text-subtle)] hover:text-[var(--text-main)]"
                     }`}
                   >
                     Todas ({currentQuestions.length})
@@ -1395,10 +1395,10 @@ export default function PresentationsPage() {
                   <button
                     type="button"
                     onClick={() => setQuestionListFilter("completed")}
-                    className={`px-2.5 py-1 rounded-lg font-bold transition ${
+                    className={`px-2.5 py-1 rounded-lg font-bold transition cursor-pointer ${
                       questionListFilter === "completed"
                         ? "bg-[#4C8C2B] text-white"
-                        : "text-[#ECEBE4]/70 hover:text-white"
+                        : "text-[var(--text-subtle)] hover:text-[var(--text-main)]"
                     }`}
                   >
                     Realizadas ({pastQuestionsCount})
@@ -1406,10 +1406,10 @@ export default function PresentationsPage() {
                   <button
                     type="button"
                     onClick={() => setQuestionListFilter("pending")}
-                    className={`px-2.5 py-1 rounded-lg font-bold transition ${
+                    className={`px-2.5 py-1 rounded-lg font-bold transition cursor-pointer ${
                       questionListFilter === "pending"
                         ? "bg-[#48A9C5] text-[#001E32]"
-                        : "text-[#ECEBE4]/70 hover:text-white"
+                        : "text-[var(--text-subtle)] hover:text-[var(--text-main)]"
                     }`}
                   >
                     Por Mostrar ({pendingQuestionsCount})
@@ -1420,7 +1420,7 @@ export default function PresentationsPage() {
               {/* Lista Desplegable de Preguntas */}
               <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
                 {filteredQuestionList.length === 0 ? (
-                  <p className="text-xs text-[#ECEBE4]/50 italic text-center py-4">
+                  <p className="text-xs text-[var(--text-muted)] italic text-center py-4">
                     No hay preguntas para mostrar en esta categoría.
                   </p>
                 ) : (
@@ -1431,12 +1431,12 @@ export default function PresentationsPage() {
                         key={q.id}
                         className={`p-3 rounded-xl border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs ${
                           q.status === "current"
-                            ? "bg-[#193750] border-[#FFC72C] shadow-md ring-1 ring-[#FFC72C]/40"
+                            ? "bg-[var(--surface-card)] border-[#FFC72C] shadow-sm ring-1 ring-[#FFC72C]/40"
                             : q.status === "next"
-                              ? "bg-[#102B41] border-[#48A9C5]/50"
+                              ? "bg-[var(--surface-card)] border-[#48A9C5]/50"
                               : q.status === "completed"
-                                ? "bg-[#0B1A28] border-[#4C8C2B]/30 opacity-80"
-                                : "bg-[#0B1A28] border-[#425563]/40"
+                                ? "bg-[var(--surface-card)] border-[#4C8C2B]/30 opacity-80"
+                                : "bg-[var(--surface-card)] border-[var(--border-subtle)]"
                         }`}
                       >
                         <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -1466,7 +1466,7 @@ export default function PresentationsPage() {
                                 </span>
                               )}
                               {q.status === "pending" && (
-                                <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#ECEBE4]/60 bg-[#425563]/30 border border-[#425563]/40 px-2 py-0.5 rounded-full">
+                                <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] bg-[var(--surface-subtle)] border border-[var(--border-subtle)] px-2 py-0.5 rounded-full">
                                   <Clock className="w-3 h-3" />
                                   Falta por Mostrar
                                 </span>
@@ -1479,12 +1479,12 @@ export default function PresentationsPage() {
                                 {badge.label}
                               </span>
 
-                              <span className="text-[10px] text-[#ECEBE4]/50 font-mono">
+                              <span className="text-[10px] text-[var(--text-muted)] font-mono">
                                 {q.time_limit}s
                               </span>
                             </div>
 
-                            <p className="font-bold text-white text-sm truncate">
+                            <p className="font-bold text-[var(--text-main)] text-sm truncate">
                               {q.question_text}
                             </p>
                           </div>
@@ -1506,7 +1506,7 @@ export default function PresentationsPage() {
                                   q.index,
                                 )
                               }
-                              className="text-xs font-bold bg-[#193750] hover:bg-[#FFC72C] text-[#ECEBE4] hover:text-[#001E32] px-3 py-1.5 rounded-lg border border-[#425563] transition flex items-center gap-1.5 shadow active:scale-95"
+                              className="text-xs font-bold bg-[var(--surface-subtle)] hover:bg-[#FFC72C] text-[var(--text-main)] hover:text-[#001E32] px-3 py-1.5 rounded-lg border border-[var(--border-subtle)] transition flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
                             >
                               <Play className="w-3 h-3 fill-current" />
                               <span>Lanzar Diapositiva</span>
@@ -1525,22 +1525,22 @@ export default function PresentationsPage() {
         /* ===================================================================== */
         /* CASO 2: CATÁLOGO DE PRESENTACIONES (FILTROS, BÚSQUEDA Y VISTA TABLA)  */
         /* ===================================================================== */
-        <div className="bg-[#193750] border border-[#425563]/60 rounded-3xl p-6 lg:p-8 shadow-xl space-y-6">
+        <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-3xl p-6 lg:p-8 shadow-sm space-y-6">
           {/* Barra de Filtros por Modo, Búsqueda y Switch de Vista */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#425563]/40">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[var(--border-subtle)]">
             {/* Pestañas de Modo (Trivia vs Presentación) */}
-            <div className="flex items-center gap-1.5 bg-[#001E32] p-1.5 rounded-2xl border border-[#425563] shrink-0 flex-wrap">
+            <div className="flex items-center gap-1.5 bg-[var(--surface-subtle)] p-1.5 rounded-2xl border border-[var(--border-subtle)] shrink-0 flex-wrap">
               <button
                 type="button"
                 onClick={() => setModeFilter("all")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                   modeFilter === "all"
                     ? "bg-[#FFC72C] text-[#001E32] shadow font-black"
-                    : "text-[#ECEBE4]/70 hover:text-white"
+                    : "text-[var(--text-subtle)] hover:text-[var(--text-main)]"
                 }`}
               >
                 <span>Todos</span>
-                <span className="text-[10px] bg-[#193750] text-white px-1.5 py-0.2 rounded-full">
+                <span className="text-[10px] bg-[var(--surface-card)] text-[var(--text-subtle)] border border-[var(--border-subtle)] px-1.5 py-0.2 rounded-full font-bold">
                   {counts.total}
                 </span>
               </button>
@@ -1548,15 +1548,15 @@ export default function PresentationsPage() {
               <button
                 type="button"
                 onClick={() => setModeFilter("quiz")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                   modeFilter === "quiz"
                     ? "bg-[#FFC72C] text-[#001E32] shadow font-black"
-                    : "text-[#ECEBE4]/70 hover:text-white"
+                    : "text-[var(--text-subtle)] hover:text-[var(--text-main)]"
                 }`}
               >
                 <Gamepad2 className="w-3.5 h-3.5" />
                 <span>Modo Trivia (Gamificación)</span>
-                <span className="text-[10px] bg-[#193750] text-white px-1.5 py-0.2 rounded-full">
+                <span className="text-[10px] bg-[var(--surface-card)] text-[var(--text-subtle)] border border-[var(--border-subtle)] px-1.5 py-0.2 rounded-full font-bold">
                   {counts.triviaCount}
                 </span>
               </button>
@@ -1564,15 +1564,15 @@ export default function PresentationsPage() {
               <button
                 type="button"
                 onClick={() => setModeFilter("presentation")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                   modeFilter === "presentation"
                     ? "bg-[#48A9C5] text-[#001E32] shadow font-black"
-                    : "text-[#ECEBE4]/70 hover:text-white"
+                    : "text-[var(--text-subtle)] hover:text-[var(--text-main)]"
                 }`}
               >
                 <Presentation className="w-3.5 h-3.5" />
                 <span>Modo Presentación</span>
-                <span className="text-[10px] bg-[#193750] text-white px-1.5 py-0.2 rounded-full">
+                <span className="text-[10px] bg-[var(--surface-card)] text-[var(--text-subtle)] border border-[var(--border-subtle)] px-1.5 py-0.2 rounded-full font-bold">
                   {counts.presentationCount}
                 </span>
               </button>
@@ -1582,19 +1582,19 @@ export default function PresentationsPage() {
             <div className="flex items-center gap-3">
               {/* Buscador */}
               <div className="relative w-full sm:w-72">
-                <Search className="w-4 h-4 text-[#ECEBE4]/40 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Search className="w-4 h-4 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Buscar por título o categoría..."
-                  className="w-full bg-[#001E32] border border-[#425563] focus:border-[#FFC72C] rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-[#ECEBE4]/40 focus:outline-none transition"
+                  className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] focus:border-[#FFC72C] rounded-xl pl-9 pr-8 py-2 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none transition"
                 />
                 {searchQuery && (
                   <button
                     type="button"
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#ECEBE4]/50 hover:text-white"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -1602,15 +1602,15 @@ export default function PresentationsPage() {
               </div>
 
               {/* Botones de Vista: Cuadrícula / Tabla */}
-              <div className="flex items-center bg-[#001E32] p-1 rounded-xl border border-[#425563] shrink-0">
+              <div className="flex items-center bg-[var(--surface-subtle)] p-1 rounded-xl border border-[var(--border-subtle)] shrink-0">
                 <button
                   type="button"
                   onClick={() => setViewMode("grid")}
                   title="Vista en Cuadrícula"
-                  className={`p-1.5 rounded-lg text-xs font-bold transition ${
+                  className={`p-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                     viewMode === "grid"
-                      ? "bg-[#FFC72C] text-[#001E32]"
-                      : "text-[#ECEBE4]/60 hover:text-white"
+                      ? "bg-[#FFC72C] text-[#001E32] shadow-sm"
+                      : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
                   }`}
                 >
                   <LayoutGrid className="w-4 h-4" />
@@ -1619,10 +1619,10 @@ export default function PresentationsPage() {
                   type="button"
                   onClick={() => setViewMode("table")}
                   title="Vista en Tabla"
-                  className={`p-1.5 rounded-lg text-xs font-bold transition ${
+                  className={`p-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                     viewMode === "table"
-                      ? "bg-[#FFC72C] text-[#001E32]"
-                      : "text-[#ECEBE4]/60 hover:text-white"
+                      ? "bg-[#FFC72C] text-[#001E32] shadow-sm"
+                      : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
                   }`}
                 >
                   <TableIcon className="w-4 h-4" />
@@ -1632,11 +1632,11 @@ export default function PresentationsPage() {
           </div>
 
           {isLoading ? (
-            <div className="py-12 text-center text-[#ECEBE4]/60">
+            <div className="py-12 text-center text-[var(--text-muted)]">
               Cargando catálogo de presentaciones...
             </div>
           ) : filteredPresentations.length === 0 ? (
-            <div className="py-12 text-center text-[#ECEBE4]/60 space-y-3">
+            <div className="py-12 text-center text-[var(--text-muted)] space-y-3">
               <Tv className="w-12 h-12 mx-auto text-[#FFC72C] opacity-50" />
               <p>No se encontraron presentaciones para los filtros aplicados.</p>
               <button
@@ -1645,7 +1645,7 @@ export default function PresentationsPage() {
                   setSearchQuery("");
                   setModeFilter("all");
                 }}
-                className="bg-[#001E32] border border-[#425563] hover:border-[#FFC72C] text-[#FFC72C] font-bold text-xs py-2 px-4 rounded-xl transition"
+                className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] hover:border-[#FFC72C] text-[#FFC72C] font-bold text-xs py-2 px-4 rounded-xl transition cursor-pointer"
               >
                 Limpiar Filtros
               </button>
@@ -1660,7 +1660,7 @@ export default function PresentationsPage() {
                 return (
                   <div
                     key={act.id}
-                    className="bg-[#001E32] border border-[#425563] hover:border-[#FFC72C] p-6 rounded-2xl transition shadow-lg flex flex-col justify-between space-y-4 group"
+                    className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] hover:border-[#FFC72C] p-6 rounded-2xl transition shadow-sm flex flex-col justify-between space-y-4 group"
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-2">
@@ -1673,16 +1673,16 @@ export default function PresentationsPage() {
                         >
                           {isTrivia ? "🎮 Trivia Gamificada" : "📊 Presentación"}
                         </span>
-                        <span className="text-xs text-[#ECEBE4]/60 font-semibold">
+                        <span className="text-xs text-[var(--text-muted)] font-semibold">
                           {act.questions_count || 0} diapositivas
                         </span>
                       </div>
 
-                      <h3 className="text-lg font-black text-white group-hover:text-[#FFC72C] transition-colors line-clamp-2">
+                      <h3 className="text-lg font-black text-[var(--text-main)] group-hover:text-[#FFC72C] transition-colors line-clamp-2">
                         {act.title}
                       </h3>
 
-                      <p className="text-xs text-[#ECEBE4]/70 line-clamp-2">
+                      <p className="text-xs text-[var(--text-subtle)] line-clamp-2">
                         {act.description ||
                           (isTrivia
                             ? "Cuestionario interactivo con concurso de puntos y podio."
@@ -1690,24 +1690,24 @@ export default function PresentationsPage() {
                       </p>
                     </div>
 
-                    <div className="space-y-2 pt-3 border-t border-[#425563]/40">
-                      <div className="flex items-center justify-between text-xs text-[#ECEBE4]/60">
+                    <div className="space-y-2 pt-3 border-t border-[var(--border-subtle)]">
+                      <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3.5 h-3.5 text-[#FFC72C]" />
                           {act.default_time_limit}s por pregunta
                         </span>
-                        <span className="text-[11px] font-semibold text-[#ECEBE4]/80">
+                        <span className="text-[11px] font-semibold text-[var(--text-subtle)]">
                           {act.category}
                         </span>
                       </div>
 
                       {/* Creador y Fecha de Creación */}
-                      <div className="flex items-center justify-between text-[11px] text-[#ECEBE4]/70 pt-1">
+                      <div className="flex items-center justify-between text-[11px] text-[var(--text-subtle)] pt-1">
                         <span className="flex items-center gap-1.5 font-medium truncate max-w-[150px]">
                           <User className="w-3.5 h-3.5 text-[#FFC72C] shrink-0" />
                           <span className="truncate">{act.owner_name || act.owner_username || "Creador"}</span>
                         </span>
-                        <span className="flex items-center gap-1.5 shrink-0 text-[#ECEBE4]/50">
+                        <span className="flex items-center gap-1.5 shrink-0 text-[var(--text-muted)]">
                           <Calendar className="w-3.5 h-3.5 text-[#48A9C5] shrink-0" />
                           <span>
                             {act.created_at
@@ -1722,12 +1722,11 @@ export default function PresentationsPage() {
                       </div>
 
                       {/* Acciones principales */}
-
                       <div className="grid grid-cols-2 gap-2">
                         <button
                           type="button"
                           onClick={() => handleLaunchSession(act.id)}
-                          className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow active:scale-95"
+                          className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow active:scale-95 cursor-pointer"
                         >
                           <Play className="w-3.5 h-3.5 fill-[#001E32]" />
                           <span>Lanzar en Vivo</span>
@@ -1735,7 +1734,7 @@ export default function PresentationsPage() {
 
                         <Link
                           to={`/editor/${act.id}`}
-                          className="bg-[#193750] hover:bg-[#254F72] text-[#ECEBE4] hover:text-white border border-[#425563] font-bold text-xs py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5"
+                          className="bg-[var(--surface-card)] hover:bg-[var(--surface-hover)] text-[var(--text-main)] border border-[var(--border-subtle)] font-bold text-xs py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm"
                         >
                           <Edit3 className="w-3.5 h-3.5 text-[#48A9C5]" />
                           <span>Editar</span>
@@ -1755,7 +1754,7 @@ export default function PresentationsPage() {
                                 act.my_access === "admin",
                             })
                           }
-                          className="text-[#48A9C5] hover:text-white flex items-center gap-1 transition"
+                          className="text-[#48A9C5] hover:text-[var(--text-main)] flex items-center gap-1 transition cursor-pointer"
                           title="Gestionar colaboradores"
                         >
                           <Share2 className="w-3.5 h-3.5" />
@@ -1764,7 +1763,7 @@ export default function PresentationsPage() {
                         <button
                           type="button"
                           onClick={() => handleClone(act.id)}
-                          className="text-[#ECEBE4]/60 hover:text-white flex items-center gap-1 transition"
+                          className="text-[var(--text-muted)] hover:text-[var(--text-main)] flex items-center gap-1 transition cursor-pointer"
                           title="Duplicar presentación"
                         >
                           <CopyPlus className="w-3.5 h-3.5" />
@@ -1776,7 +1775,7 @@ export default function PresentationsPage() {
                           <button
                             type="button"
                             onClick={() => setDeleteTargetId(act.id)}
-                            className="text-[#B7312C]/80 hover:text-[#B7312C] flex items-center gap-1 transition"
+                            className="text-[#B7312C]/80 hover:text-[#B7312C] flex items-center gap-1 transition cursor-pointer"
                             title="Eliminar presentación"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -1793,9 +1792,9 @@ export default function PresentationsPage() {
             /* --------------------------------------------------------------- */
             /* VISTA EN TABLA                                                  */
             /* --------------------------------------------------------------- */
-            <div className="overflow-x-auto rounded-2xl border border-[#425563]">
+            <div className="overflow-x-auto rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-card)]">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#001E32] text-[#ECEBE4]/80 uppercase tracking-wider font-extrabold border-b border-[#425563]">
+                <thead className="bg-[var(--surface-subtle)] text-[var(--text-muted)] uppercase tracking-wider font-extrabold border-b border-[var(--border-subtle)]">
                   <tr>
                     <th className="py-3.5 px-4">Título y Descripción</th>
                     <th className="py-3.5 px-4">Modo</th>
@@ -1806,20 +1805,20 @@ export default function PresentationsPage() {
                     <th className="py-3.5 px-4 text-right">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#425563]/40">
+                <tbody className="divide-y divide-[var(--border-subtle)]">
                   {filteredPresentations.map((act) => {
                     const isTrivia = act.activity_type === "quiz";
                     return (
                       <tr
                         key={act.id}
-                        className="hover:bg-[#001E32]/60 transition-colors"
+                        className="hover:bg-[var(--surface-subtle)] transition-colors"
                       >
                         <td className="py-3.5 px-4">
                           <div className="space-y-0.5">
-                            <span className="font-bold text-sm text-white block">
+                            <span className="font-bold text-sm text-[var(--text-main)] block">
                               {act.title}
                             </span>
-                            <span className="text-[11px] text-[#ECEBE4]/60 line-clamp-1">
+                            <span className="text-[11px] text-[var(--text-muted)] line-clamp-1">
                               {act.description || "Sin descripción adicional"}
                             </span>
                           </div>
@@ -1841,7 +1840,7 @@ export default function PresentationsPage() {
                           </span>
                         </td>
                         <td className="py-3.5 px-4 whitespace-nowrap">
-                          <span className="text-white font-medium">
+                          <span className="text-[var(--text-main)] font-medium">
                             {act.category}
                           </span>
                         </td>
@@ -1851,10 +1850,10 @@ export default function PresentationsPage() {
                               {(act.owner_name || act.owner_username || "C")[0].toUpperCase()}
                             </div>
                             <div className="space-y-0.5">
-                              <span className="font-bold text-white block">
+                              <span className="font-bold text-[var(--text-main)] block">
                                 {act.owner_name || act.owner_username || "Creador"}
                               </span>
-                              <span className="text-[10px] text-[#ECEBE4]/50 flex items-center gap-1">
+                              <span className="text-[10px] text-[var(--text-muted)] flex items-center gap-1">
                                 <Calendar className="w-2.5 h-2.5 text-[#48A9C5]" />
                                 <span>
                                   {act.created_at
@@ -1869,10 +1868,10 @@ export default function PresentationsPage() {
                             </div>
                           </div>
                         </td>
-                        <td className="py-3.5 px-4 text-center font-bold text-white whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-center font-bold text-[var(--text-main)] whitespace-nowrap">
                           {act.questions_count || 0}
                         </td>
-                        <td className="py-3.5 px-4 text-center text-[#ECEBE4]/80 whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-center text-[var(--text-muted)] whitespace-nowrap">
                           {act.default_time_limit}s
                         </td>
 
@@ -1881,7 +1880,7 @@ export default function PresentationsPage() {
                             <button
                               type="button"
                               onClick={() => handleLaunchSession(act.id)}
-                              className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black py-1.5 px-3 rounded-lg transition shadow flex items-center gap-1 active:scale-95"
+                              className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black py-1.5 px-3 rounded-lg transition shadow flex items-center gap-1 active:scale-95 cursor-pointer"
                             >
                               <Play className="w-3 h-3 fill-[#001E32]" />
                               <span>Lanzar</span>
@@ -1889,7 +1888,7 @@ export default function PresentationsPage() {
 
                             <Link
                               to={`/editor/${act.id}`}
-                              className="bg-[#001E32] hover:bg-[#254F72] text-[#48A9C5] border border-[#48A9C5]/40 py-1.5 px-2.5 rounded-lg transition"
+                              className="bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[#48A9C5] border border-[#48A9C5]/40 py-1.5 px-2.5 rounded-lg transition"
                               title="Editar preguntas"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
@@ -1906,7 +1905,7 @@ export default function PresentationsPage() {
                                     act.my_access === "admin",
                                 })
                               }
-                              className="bg-[#001E32] hover:bg-[#254F72] text-[#48A9C5] border border-[#48A9C5]/40 py-1.5 px-2.5 rounded-lg transition"
+                              className="bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[#48A9C5] border border-[#48A9C5]/40 py-1.5 px-2.5 rounded-lg transition cursor-pointer"
                               title="Colaboradores"
                             >
                               <Share2 className="w-3.5 h-3.5" />
@@ -1915,7 +1914,7 @@ export default function PresentationsPage() {
                             <button
                               type="button"
                               onClick={() => handleClone(act.id)}
-                              className="bg-[#001E32] hover:bg-[#254F72] text-[#ECEBE4] border border-[#425563] py-1.5 px-2.5 rounded-lg transition"
+                              className="bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[var(--text-main)] border border-[var(--border-subtle)] py-1.5 px-2.5 rounded-lg transition cursor-pointer"
                               title="Duplicar"
                             >
                               <CopyPlus className="w-3.5 h-3.5" />
@@ -1927,7 +1926,7 @@ export default function PresentationsPage() {
                               <button
                                 type="button"
                                 onClick={() => setDeleteTargetId(act.id)}
-                                className="bg-[#001E32] hover:bg-[#B7312C]/20 text-[#B7312C] border border-[#B7312C]/40 py-1.5 px-2.5 rounded-lg transition"
+                                className="bg-[var(--surface-subtle)] hover:bg-[#B7312C]/20 text-[#B7312C] border border-[#B7312C]/40 py-1.5 px-2.5 rounded-lg transition cursor-pointer"
                                 title="Eliminar"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -1960,19 +1959,19 @@ export default function PresentationsPage() {
       >
         <div className="space-y-6">
           {/* Paso 1: Descargar Excel Modelo */}
-          <div className="bg-[#001E32] border border-[#425563] rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="space-y-1">
               <span className="text-xs font-black text-[#FFC72C] uppercase tracking-wider block">
                 Paso 1: Descargar Plantilla Modelo
               </span>
-              <p className="text-xs text-[#ECEBE4]/70">
+              <p className="text-xs text-[var(--text-subtle)]">
                 Descarga nuestro formato oficial con ejemplos de trivia y preguntas abiertas listos para rellenar.
               </p>
             </div>
             <button
               type="button"
               onClick={handleDownloadExcelTemplate}
-              className="bg-[#48A9C5] hover:bg-[#3996B1] text-[#001E32] font-black text-xs py-2.5 px-4 rounded-xl transition shadow flex items-center gap-2 shrink-0 active:scale-95"
+              className="bg-[#48A9C5] hover:bg-[#3996B1] text-[#001E32] font-black text-xs py-2.5 px-4 rounded-xl transition shadow flex items-center gap-2 shrink-0 active:scale-95 cursor-pointer"
             >
               <Download className="w-4 h-4" />
               <span>Descargar Plantilla (.xlsx)</span>
@@ -1982,7 +1981,7 @@ export default function PresentationsPage() {
           {/* Paso 2: Configuración de la Actividad y Carga de Archivo */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#ECEBE4] mb-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-main)] mb-1">
                 Título de la Presentación
               </label>
               <input
@@ -1990,18 +1989,18 @@ export default function PresentationsPage() {
                 value={excelTitle}
                 onChange={(e) => setExcelTitle(e.target.value)}
                 placeholder="Ej. Cuestionario de Seguridad Faena"
-                className="w-full bg-[#001E32] border border-[#425563] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#FFC72C]"
+                className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-xl px-4 py-2.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[#FFC72C]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#ECEBE4] mb-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-main)] mb-1">
                 Categoría
               </label>
               <select
                 value={excelCategory}
                 onChange={(e) => setExcelCategory(e.target.value)}
-                className="w-full bg-[#001E32] border border-[#425563] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#FFC72C]"
+                className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-xl px-4 py-2.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[#FFC72C]"
               >
                 <option value="Presentaciones">Presentaciones</option>
                 <option value="Seguridad">Seguridad / LOTO</option>
@@ -2013,29 +2012,29 @@ export default function PresentationsPage() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#ECEBE4] mb-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-main)] mb-1">
                 Modo de la Dinámica
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setExcelType("quiz")}
-                  className={`p-3 rounded-xl border text-left transition flex items-center gap-3 ${
+                  className={`p-3 rounded-xl border text-left transition flex items-center gap-3 cursor-pointer ${
                     excelType === "quiz"
-                      ? "bg-[#001E32] border-[#FFC72C] ring-1 ring-[#FFC72C]"
-                      : "bg-[#001E32]/50 border-[#425563] text-[#ECEBE4]/60"
+                      ? "bg-[var(--surface-subtle)] border-[#FFC72C] ring-1 ring-[#FFC72C]"
+                      : "bg-[var(--surface-card)] border-[var(--border-subtle)] text-[var(--text-subtle)]"
                   }`}
                 >
                   <Gamepad2
                     className={`w-5 h-5 ${
-                      excelType === "quiz" ? "text-[#FFC72C]" : "text-[#ECEBE4]/50"
+                      excelType === "quiz" ? "text-[#FFC72C]" : "text-[var(--text-muted)]"
                     }`}
                   />
                   <div>
-                    <span className="text-xs font-bold text-white block">
+                    <span className="text-xs font-bold text-[var(--text-main)] block">
                       Modo Trivia (Gamificación)
                     </span>
-                    <span className="text-[10px] text-[#ECEBE4]/60">
+                    <span className="text-[10px] text-[var(--text-muted)]">
                       Puntajes por velocidad, rachas y podio final
                     </span>
                   </div>
@@ -2044,24 +2043,24 @@ export default function PresentationsPage() {
                 <button
                   type="button"
                   onClick={() => setExcelType("interactive_presentation")}
-                  className={`p-3 rounded-xl border text-left transition flex items-center gap-3 ${
+                  className={`p-3 rounded-xl border text-left transition flex items-center gap-3 cursor-pointer ${
                     excelType === "interactive_presentation"
-                      ? "bg-[#001E32] border-[#48A9C5] ring-1 ring-[#48A9C5]"
-                      : "bg-[#001E32]/50 border-[#425563] text-[#ECEBE4]/60"
+                      ? "bg-[var(--surface-subtle)] border-[#48A9C5] ring-1 ring-[#48A9C5]"
+                      : "bg-[var(--surface-card)] border-[var(--border-subtle)] text-[var(--text-subtle)]"
                   }`}
                 >
                   <Presentation
                     className={`w-5 h-5 ${
                       excelType === "interactive_presentation"
                         ? "text-[#48A9C5]"
-                        : "text-[#ECEBE4]/50"
+                        : "text-[var(--text-muted)]"
                     }`}
                   />
                   <div>
-                    <span className="text-xs font-bold text-white block">
+                    <span className="text-xs font-bold text-[var(--text-main)] block">
                       Modo Presentación
                     </span>
-                    <span className="text-[10px] text-[#ECEBE4]/60">
+                    <span className="text-[10px] text-[var(--text-muted)]">
                       Sondeos de opinión, gráficos en vivo sin podio
                     </span>
                   </div>
@@ -2103,7 +2102,7 @@ export default function PresentationsPage() {
               className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center transition ${
                 isDraggingExcel
                   ? "border-[#FFC72C] bg-[#FFC72C]/10 scale-[1.01]"
-                  : "border-[#425563] hover:border-[#FFC72C] bg-[#001E32]/40"
+                  : "border-[var(--border-subtle)] hover:border-[#FFC72C] bg-[var(--surface-subtle)]"
               }`}
             >
               <label
@@ -2115,14 +2114,14 @@ export default function PresentationsPage() {
                     isDraggingExcel ? "text-[#FFC72C] animate-bounce" : "text-[#48A9C5]"
                   }`}
                 />
-                <span className="text-xs font-bold text-white text-center">
+                <span className="text-xs font-bold text-[var(--text-main)] text-center">
                   {excelFileName
                     ? excelFileName
                     : isDraggingExcel
                       ? "¡Suelta tu archivo Excel aquí!"
                       : "Haz clic o arrastra y suelta aquí tu archivo Excel"}
                 </span>
-                <span className="text-[10px] text-[#ECEBE4]/60 mt-1">
+                <span className="text-[10px] text-[var(--text-muted)] mt-1">
                   Soporta archivos .xlsx, .xls y .csv
                 </span>
               </label>
@@ -2136,14 +2135,13 @@ export default function PresentationsPage() {
             </div>
 
             {excelError && (
-              <div className="p-3 bg-[#B7312C]/20 border border-[#B7312C] rounded-xl flex items-center gap-2 text-xs text-white">
+              <div className="p-3 bg-[#B7312C]/20 border border-[#B7312C] rounded-xl flex items-center gap-2 text-xs text-[var(--text-main)]">
                 <AlertCircle className="w-4 h-4 text-[#B7312C] shrink-0" />
                 <span>{excelError}</span>
               </div>
             )}
           </div>
 
-          {/* Previsualización de Preguntas Detectadas */}
           {parsedQuestions.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -2153,29 +2151,29 @@ export default function PresentationsPage() {
                 </span>
               </div>
 
-              <div className="max-h-56 overflow-y-auto space-y-2 pr-1 border border-[#425563] rounded-xl p-3 bg-[#001E32]">
+              <div className="max-h-56 overflow-y-auto space-y-2 pr-1 border border-[var(--border-subtle)] rounded-xl p-3 bg-[var(--surface-subtle)]">
                 {parsedQuestions.map((q, idx) => (
                   <div
                     key={idx}
-                    className="p-3 bg-[#193750] rounded-lg border border-[#425563] text-xs space-y-1.5"
+                    className="p-3 bg-[var(--surface-card)] rounded-lg border border-[var(--border-subtle)] text-xs space-y-1.5"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-extrabold text-[#FFC72C]">
                         #{idx + 1} {q.questionText}
                       </span>
-                      <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-[#001E32] text-[#ECEBE4]/80">
+                      <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-[var(--surface-subtle)] text-[var(--text-subtle)]">
                         {q.questionType} &bull; {q.timeLimit}s
                       </span>
                     </div>
                     {q.options.length > 0 && (
-                      <div className="flex flex-wrap gap-2 text-[11px] text-[#ECEBE4]/80">
+                      <div className="flex flex-wrap gap-2 text-[11px] text-[var(--text-subtle)]">
                         {q.options.map((opt, oIdx) => (
                           <span
                             key={oIdx}
                             className={`px-2 py-0.5 rounded ${
                               opt.is_correct
-                                ? "bg-[#4C8C2B]/30 text-[#4C8C2B] border border-[#4C8C2B]/50 font-bold"
-                                : "bg-[#001E32]/60"
+                                ? "bg-[#4C8C2B]/20 text-[#4C8C2B] border border-[#4C8C2B]/40 font-bold"
+                                : "bg-[var(--surface-subtle)]"
                             }`}
                           >
                             {opt.is_correct ? "✓ " : ""}
@@ -2196,7 +2194,7 @@ export default function PresentationsPage() {
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-2 border-t border-[#425563]/60">
+          <div className="flex justify-end gap-3 pt-2 border-t border-[var(--border-subtle)]">
             <button
               type="button"
               onClick={() => {
@@ -2204,7 +2202,7 @@ export default function PresentationsPage() {
                 setParsedQuestions([]);
                 setExcelFileName(null);
               }}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-[#ECEBE4]/70 hover:bg-[#425563]/30 transition"
+              className="px-4 py-2 rounded-xl text-xs font-bold text-[var(--text-subtle)] hover:bg-[var(--surface-hover)] transition cursor-pointer"
             >
               Cancelar
             </button>
@@ -2216,7 +2214,7 @@ export default function PresentationsPage() {
                 !excelTitle.trim()
               }
               onClick={handleSaveImportedExcel}
-              className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2 px-6 rounded-xl transition shadow disabled:opacity-50 flex items-center gap-2"
+              className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2 px-6 rounded-xl transition shadow disabled:opacity-50 flex items-center gap-2 cursor-pointer"
             >
               {isImporting ? (
                 <span>Guardando Preguntas...</span>
@@ -2241,7 +2239,7 @@ export default function PresentationsPage() {
       >
         <form onSubmit={handleCreatePresentation} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#ECEBE4] mb-1">
+            <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-main)] mb-1">
               Título de la Presentación
             </label>
             <input
@@ -2250,18 +2248,18 @@ export default function PresentationsPage() {
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               placeholder="Ej. Procedimientos de Seguridad en Faena"
-              className="w-full bg-[#001E32] border border-[#425563] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FFC72C]"
+              className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] focus:outline-none focus:border-[#FFC72C]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#ECEBE4] mb-1">
+            <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-main)] mb-1">
               Categoría
             </label>
             <select
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
-              className="w-full bg-[#001E32] border border-[#425563] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FFC72C]"
+              className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] focus:outline-none focus:border-[#FFC72C]"
             >
               <option value="Presentaciones">Presentaciones</option>
               <option value="Capacitación">Capacitación</option>
@@ -2273,13 +2271,13 @@ export default function PresentationsPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#ECEBE4] mb-1">
+            <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-main)] mb-1">
               Tipo de Dinámica
             </label>
             <select
               value={newType}
               onChange={(e) => setNewType(e.target.value)}
-              className="w-full bg-[#001E32] border border-[#425563] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FFC72C]"
+              className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] focus:outline-none focus:border-[#FFC72C]"
             >
               <option value="quiz">
                 🎮 Quiz Gamificado (Puntos, tiempo y podio)
@@ -2294,14 +2292,14 @@ export default function PresentationsPage() {
             <button
               type="button"
               onClick={() => setIsCreatingModal(false)}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-[#ECEBE4]/70 hover:bg-[#425563]/30 transition"
+              className="px-4 py-2 rounded-xl text-xs font-bold text-[var(--text-subtle)] hover:bg-[var(--surface-hover)] transition cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isSubmitting || !newTitle.trim()}
-              className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2 px-5 rounded-xl transition shadow disabled:opacity-50"
+              className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2 px-5 rounded-xl transition shadow disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? "Creando..." : "Crear Presentación"}
             </button>
@@ -2323,10 +2321,10 @@ export default function PresentationsPage() {
             <AlertCircle className="w-6 h-6" />
           </div>
           <div>
-            <h4 className="text-base font-bold text-white">
+            <h4 className="text-base font-bold text-[var(--text-main)]">
               ¿Eliminar esta presentación?
             </h4>
-            <p className="text-xs text-[#ECEBE4]/70 mt-1">
+            <p className="text-xs text-[var(--text-subtle)] mt-1">
               Esta acción no se puede deshacer. Se eliminarán todas las preguntas y estadísticas asociadas.
             </p>
           </div>
@@ -2334,14 +2332,14 @@ export default function PresentationsPage() {
             <button
               type="button"
               onClick={() => setDeleteTargetId(null)}
-              className="px-4 py-2 bg-[#001E32] border border-[#425563] text-[#ECEBE4] font-bold text-xs rounded-xl"
+              className="px-4 py-2 bg-[var(--surface-subtle)] border border-[var(--border-subtle)] text-[var(--text-main)] hover:bg-[var(--surface-hover)] font-bold text-xs rounded-xl cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="button"
               onClick={handleConfirmDelete}
-              className="px-4 py-2 bg-[#B7312C] hover:bg-[#962622] text-white font-bold text-xs rounded-xl shadow"
+              className="px-4 py-2 bg-[#B7312C] hover:bg-[#962622] text-white font-bold text-xs rounded-xl shadow cursor-pointer"
             >
               Sí, Eliminar
             </button>
@@ -2366,13 +2364,13 @@ export default function PresentationsPage() {
               className="w-64 h-64 rounded-2xl border-4 border-[#FFC72C] shadow-2xl"
             />
           )}
-          <p className="text-xs text-[#ECEBE4]">
+          <p className="text-xs text-[var(--text-subtle)]">
             Pide a los asistentes apuntar la cámara de su teléfono para unirse directamente sin escribir el PIN.
           </p>
           <button
             type="button"
             onClick={() => setQrModalUrl(null)}
-            className="w-full bg-[#FFC72C] text-[#001E32] font-black py-2 rounded-xl text-xs"
+            className="w-full bg-[#FFC72C] text-[#001E32] font-black py-2 rounded-xl text-xs cursor-pointer"
           >
             Cerrar
           </button>

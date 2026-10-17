@@ -304,7 +304,7 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
             <button
               type="button"
               onClick={onClose}
-              className="bg-[#001E32] hover:bg-[#254F72] text-[#ECEBE4] border border-[#425563] font-bold text-xs py-2 px-4 rounded-xl transition cursor-pointer"
+              className="bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[var(--text-subtle)] hover:text-[var(--text-main)] border border-[var(--border-subtle)] font-bold text-xs py-2 px-4 rounded-xl transition cursor-pointer"
             >
               Cancelar
             </button>
@@ -329,7 +329,7 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
     >
       <div className="space-y-6">
         {errorMsg && (
-          <div className="flex items-start gap-2 p-3 bg-[#B7312C]/20 border border-[#B7312C]/40 rounded-xl text-xs text-[#ECEBE4]">
+          <div className="flex items-start gap-2 p-3 bg-[#B7312C]/10 border border-[#B7312C]/30 rounded-xl text-xs text-[#B7312C]">
             <AlertCircle className="w-4 h-4 text-[#B7312C] shrink-0 mt-0.5" />
             <span>{errorMsg}</span>
           </div>
@@ -338,7 +338,7 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
         {/* ------------------------------------------------------------------- */}
         {/* PASO 1: SELECCIONAR CARPETA Y SUBCARPETAS                           */}
         {/* ------------------------------------------------------------------- */}
-        <div className="bg-[#001E32] border border-[#425563] rounded-2xl p-4 space-y-3">
+        <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-2xl p-4 space-y-3">
           <span className="text-xs font-black text-[#FFC72C] uppercase tracking-wider block">
             1. Selecciona Carpeta del Banco
           </span>
@@ -346,7 +346,7 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Selector de Carpeta Raíz */}
             <div>
-              <label className="block text-[11px] font-bold text-[#ECEBE4]/80 mb-1">
+              <label className="block text-[11px] font-bold text-[var(--text-subtle)] mb-1">
                 Carpeta Principal
               </label>
               <select
@@ -355,7 +355,7 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
                   setSelectedFolderId(Number(e.target.value) || null);
                   setSelectedSubfolderId(null);
                 }}
-                className="w-full bg-[#193750] border border-[#425563] focus:border-[#FFC72C] text-xs text-white rounded-xl px-3 py-2.5 outline-none"
+                className="w-full bg-[var(--surface-card)] border border-[var(--border-subtle)] focus:border-[#FFC72C] text-xs text-[var(--text-main)] rounded-xl px-3 py-2.5 outline-none cursor-pointer"
               >
                 {rootFolders.map((rf) => (
                   <option key={rf.id} value={rf.id}>
@@ -367,14 +367,14 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
 
             {/* Selector de Subcarpeta (si existen) */}
             <div>
-              <label className="block text-[11px] font-bold text-[#ECEBE4]/80 mb-1">
+              <label className="block text-[11px] font-bold text-[var(--text-subtle)] mb-1">
                 Subcarpeta (Opcional)
               </label>
               <select
                 value={selectedSubfolderId || ""}
                 disabled={subfolders.length === 0}
                 onChange={(e) => setSelectedSubfolderId(Number(e.target.value) || null)}
-                className="w-full bg-[#193750] border border-[#425563] focus:border-[#FFC72C] text-xs text-white rounded-xl px-3 py-2.5 outline-none disabled:opacity-50"
+                className="w-full bg-[var(--surface-card)] border border-[var(--border-subtle)] focus:border-[#FFC72C] text-xs text-[var(--text-main)] rounded-xl px-3 py-2.5 outline-none disabled:opacity-50 cursor-pointer"
               >
                 <option value="">
                   {subfolders.length > 0 ? "📂 Todas las subcarpetas del tema" : "Sin subcarpetas"}
@@ -392,7 +392,7 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
         {/* ------------------------------------------------------------------- */}
         {/* PASO 2: HERRAMIENTAS DE SELECCIÓN (TODAS / ALGUNAS / X AL AZAR)    */}
         {/* ------------------------------------------------------------------- */}
-        <div className="bg-[#001E32] border border-[#425563] rounded-2xl p-4 space-y-3">
+        <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-2xl p-4 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <span className="text-xs font-black text-[#FFC72C] uppercase tracking-wider">
               2. Opciones de Selección ({filteredQuestions.length} disponibles)
@@ -400,13 +400,13 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
 
             {/* Buscador de preguntas */}
             <div className="relative w-full sm:w-56">
-              <Search className="w-3.5 h-3.5 text-[#ECEBE4]/40 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}
                 placeholder="Filtrar por texto..."
-                className="w-full bg-[#193750] border border-[#425563] rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-[#ECEBE4]/40 outline-none focus:border-[#FFC72C]"
+                className="w-full bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-[#FFC72C]"
               />
             </div>
           </div>
@@ -417,7 +417,7 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
               type="button"
               onClick={handleSelectAll}
               disabled={filteredQuestions.length === 0}
-              className="flex items-center justify-center gap-2 bg-[#193750] hover:bg-[#254F72] text-[#ECEBE4] hover:text-white border border-[#425563] font-bold text-xs py-2 px-3 rounded-xl transition cursor-pointer disabled:opacity-50"
+              className="flex items-center justify-center gap-2 bg-[var(--surface-card)] hover:bg-[var(--surface-hover)] text-[var(--text-subtle)] hover:text-[var(--text-main)] border border-[var(--border-subtle)] font-bold text-xs py-2 px-3 rounded-xl transition cursor-pointer disabled:opacity-50"
             >
               {selectedQuestionIds.length === filteredQuestions.length && filteredQuestions.length > 0 ? (
                 <>
@@ -433,26 +433,26 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
             </button>
 
             {/* Botón 2: Seleccionar Algunas (Recordatorio / Checkboxes) */}
-            <div className="flex items-center justify-center gap-1.5 bg-[#193750]/50 border border-[#425563]/50 text-[#ECEBE4]/70 text-[11px] font-semibold py-2 px-3 rounded-xl text-center">
+            <div className="flex items-center justify-center gap-1.5 bg-[var(--surface-card)]/50 border border-[var(--border-subtle)] text-[var(--text-muted)] text-[11px] font-semibold py-2 px-3 rounded-xl text-center">
               <span>O marca casillas abajo para elegir algunas</span>
             </div>
 
             {/* Botón 3: Escoger X al Azar */}
-            <div className="flex items-center gap-1.5 bg-[#193750] border border-[#425563] rounded-xl p-1">
+            <div className="flex items-center gap-1.5 bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-xl p-1">
               <input
                 type="number"
                 min={1}
                 max={filteredQuestions.length || 10}
                 value={randomCount}
                 onChange={(e) => setRandomCount(Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-12 text-center bg-[#001E32] border border-[#425563] rounded-lg py-1 text-xs text-white font-bold outline-none"
+                className="w-12 text-center bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-lg py-1 text-xs text-[var(--text-main)] font-bold outline-none"
                 title="Cantidad al azar"
               />
               <button
                 type="button"
                 onClick={handlePickRandom}
                 disabled={filteredQuestions.length === 0}
-                className="flex-1 flex items-center justify-center gap-1 bg-[#48A9C5] hover:bg-[#3996B1] text-[#001E32] font-black text-xs py-1.5 px-2 rounded-lg transition cursor-pointer shadow disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-1 bg-[#48A9C5] hover:bg-[#3996B1] text-[#001E32] font-black text-xs py-1.5 px-2 rounded-lg transition cursor-pointer shadow-sm disabled:opacity-50"
               >
                 <Shuffle className="w-3.5 h-3.5" />
                 <span>Elegir {randomCount} al Azar</span>
@@ -465,20 +465,20 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
         {/* LISTADO DE PREGUNTAS CON CHECKBOXES                                 */}
         {/* ------------------------------------------------------------------- */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs text-[#ECEBE4]/80 px-1">
+          <div className="flex items-center justify-between text-xs text-[var(--text-subtle)] px-1">
             <span>Listado de Preguntas:</span>
             <span className="font-bold text-[#FFC72C]">
               {selectedQuestionIds.length} seleccionadas de {filteredQuestions.length}
             </span>
           </div>
 
-          <div className="max-h-60 overflow-y-auto space-y-2 pr-1 divide-y divide-[#425563]/20 border border-[#425563]/60 rounded-2xl p-2 bg-[#001E32]/60">
+          <div className="max-h-60 overflow-y-auto space-y-2 pr-1 divide-y divide-[var(--border-subtle)] border border-[var(--border-subtle)] rounded-2xl p-2 bg-[var(--surface-subtle)]">
             {isLoadingQuestions ? (
-              <div className="py-8 text-center text-xs text-[#ECEBE4]/60">
+              <div className="py-8 text-center text-xs text-[var(--text-muted)]">
                 Cargando preguntas de la carpeta...
               </div>
             ) : filteredQuestions.length === 0 ? (
-              <div className="py-8 text-center text-xs text-[#ECEBE4]/60 space-y-1">
+              <div className="py-8 text-center text-xs text-[var(--text-muted)] space-y-1">
                 <p>No se encontraron preguntas en esta carpeta o criterio de búsqueda.</p>
                 <span className="text-[11px] text-[#48A9C5]">
                   Puedes subir preguntas a esta carpeta con Excel en el Banco de Preguntas.
@@ -504,15 +504,15 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
                     onClick={() => handleToggleQuestion(q.id)}
                     className={`p-3 rounded-xl border transition flex items-start gap-3 cursor-pointer ${
                       isSelected
-                        ? "bg-[#193750] border-[#FFC72C] ring-1 ring-[#FFC72C]"
-                        : "bg-[#001E32] border-[#425563]/60 hover:border-[#425563] text-[#ECEBE4]/80"
+                        ? "bg-[var(--surface-card)] border-[#FFC72C] ring-1 ring-[#FFC72C] shadow-sm"
+                        : "bg-[var(--surface-card)] border-[var(--border-subtle)] hover:border-[#48A9C5] text-[var(--text-subtle)]"
                     }`}
                   >
                     <div className="pt-0.5 shrink-0">
                       {isSelected ? (
                         <CheckSquare className="w-4 h-4 text-[#FFC72C]" />
                       ) : (
-                        <Square className="w-4 h-4 text-[#ECEBE4]/40" />
+                        <Square className="w-4 h-4 text-[var(--text-muted)]" />
                       )}
                     </div>
 
@@ -525,24 +525,24 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
                           <span>{badge.label}</span>
                         </span>
 
-                        <span className="text-[10px] text-[#ECEBE4]/60 flex items-center gap-1">
+                        <span className="text-[10px] text-[var(--text-muted)] flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           {q.time_limit}s
                         </span>
 
                         {optionsCount > 0 && (
-                          <span className="text-[10px] text-[#ECEBE4]/60">
+                          <span className="text-[10px] text-[var(--text-muted)]">
                             • {optionsCount} opciones
                           </span>
                         )}
                       </div>
 
-                      <p className="text-xs font-bold text-white leading-relaxed">
+                      <p className="text-xs font-bold text-[var(--text-main)] leading-relaxed">
                         {q.question_text}
                       </p>
 
                       {q.explanation_text && (
-                        <p className="text-[11px] text-[#ECEBE4]/60 italic line-clamp-1">
+                        <p className="text-[11px] text-[var(--text-muted)] italic line-clamp-1">
                           {q.explanation_text}
                         </p>
                       )}
@@ -558,7 +558,7 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
         {/* PASO 3: DESTINO DE LA IMPORTACIÓN                                   */}
         {/* ------------------------------------------------------------------- */}
         {!targetActivityId && (
-          <div className="bg-[#001E32] border border-[#425563] rounded-2xl p-4 space-y-3">
+          <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-2xl p-4 space-y-3">
             <span className="text-xs font-black text-[#FFC72C] uppercase tracking-wider block">
               3. Destino de las Preguntas
             </span>
@@ -569,16 +569,16 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
                 onClick={() => setDestinationMode("new")}
                 className={`p-3 rounded-xl border text-left transition flex items-center gap-2.5 cursor-pointer ${
                   destinationMode === "new"
-                    ? "bg-[#193750] border-[#FFC72C] ring-1 ring-[#FFC72C]"
-                    : "bg-[#193750]/40 border-[#425563] text-[#ECEBE4]/60"
+                    ? "bg-[var(--surface-card)] border-[#FFC72C] ring-1 ring-[#FFC72C] shadow-sm"
+                    : "bg-[var(--surface-card)] border-[var(--border-subtle)] text-[var(--text-muted)]"
                 }`}
               >
                 <Plus className="w-4 h-4 text-[#FFC72C]" />
                 <div>
-                  <span className="text-xs font-bold text-white block">
+                  <span className="text-xs font-bold text-[var(--text-main)] block">
                     Crear Nueva Presentación
                   </span>
-                  <span className="text-[10px] text-[#ECEBE4]/60">
+                  <span className="text-[10px] text-[var(--text-muted)]">
                     Con las preguntas seleccionadas
                   </span>
                 </div>
@@ -590,16 +590,16 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
                 disabled={existingActivities.length === 0}
                 className={`p-3 rounded-xl border text-left transition flex items-center gap-2.5 cursor-pointer ${
                   destinationMode === "existing"
-                    ? "bg-[#193750] border-[#48A9C5] ring-1 ring-[#48A9C5]"
-                    : "bg-[#193750]/40 border-[#425563] text-[#ECEBE4]/60 disabled:opacity-40"
+                    ? "bg-[var(--surface-card)] border-[#48A9C5] ring-1 ring-[#48A9C5] shadow-sm"
+                    : "bg-[var(--surface-card)] border-[var(--border-subtle)] text-[var(--text-muted)] disabled:opacity-40"
                 }`}
               >
                 <Tv className="w-4 h-4 text-[#48A9C5]" />
                 <div>
-                  <span className="text-xs font-bold text-white block">
+                  <span className="text-xs font-bold text-[var(--text-main)] block">
                     Añadir a Existente
                   </span>
-                  <span className="text-[10px] text-[#ECEBE4]/60">
+                  <span className="text-[10px] text-[var(--text-muted)]">
                     Insertar al final de la diapositiva
                   </span>
                 </div>
@@ -609,7 +609,7 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
             {destinationMode === "new" ? (
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2">
                 <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-bold text-[#ECEBE4]/80 mb-1">
+                  <label className="block text-[11px] font-bold text-[var(--text-subtle)] mb-1">
                     Título de la Presentación
                   </label>
                   <input
@@ -617,17 +617,17 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
                     value={newActivityTitle}
                     onChange={(e) => setNewActivityTitle(e.target.value)}
                     placeholder="Ej. Cuestionario LOTO y Seguridad Faena"
-                    className="w-full bg-[#193750] border border-[#425563] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[#FFC72C]"
+                    className="w-full bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs text-[var(--text-main)] outline-none focus:border-[#FFC72C]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-[#ECEBE4]/80 mb-1">
+                  <label className="block text-[11px] font-bold text-[var(--text-subtle)] mb-1">
                     Categoría
                   </label>
                   <select
                     value={newActivityCategory}
                     onChange={(e) => setNewActivityCategory(e.target.value)}
-                    className="w-full bg-[#193750] border border-[#425563] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[#FFC72C]"
+                    className="w-full bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs text-[var(--text-main)] outline-none focus:border-[#FFC72C] cursor-pointer"
                   >
                     <option value="Capacitación">Capacitación</option>
                     <option value="Seguridad">Seguridad</option>
@@ -638,13 +638,13 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-[#ECEBE4]/80 mb-1">
+                  <label className="block text-[11px] font-bold text-[var(--text-subtle)] mb-1">
                     Dinámica
                   </label>
                   <select
                     value={newActivityType}
                     onChange={(e) => setNewActivityType(e.target.value as "quiz" | "interactive_presentation")}
-                    className="w-full bg-[#193750] border border-[#425563] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[#FFC72C]"
+                    className="w-full bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs text-[var(--text-main)] outline-none focus:border-[#FFC72C] cursor-pointer"
                   >
                     <option value="quiz">🎮 Modo Trivia (Gamificación)</option>
                     <option value="interactive_presentation">📊 Presentación Interactiva</option>
@@ -653,13 +653,13 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
               </div>
             ) : (
               <div className="pt-2">
-                <label className="block text-[11px] font-bold text-[#ECEBE4]/80 mb-1">
+                <label className="block text-[11px] font-bold text-[var(--text-subtle)] mb-1">
                   Selecciona la Presentación de Destino
                 </label>
                 <select
                   value={chosenActivityId}
                   onChange={(e) => setChosenActivityId(Number(e.target.value))}
-                  className="w-full bg-[#193750] border border-[#425563] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[#FFC72C]"
+                  className="w-full bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs text-[var(--text-main)] outline-none focus:border-[#FFC72C] cursor-pointer"
                 >
                   {existingActivities.map((act) => (
                     <option key={act.id} value={act.id}>
@@ -673,11 +673,11 @@ export const QuestionBankPickerModal: React.FC<QuestionBankPickerModalProps> = (
         )}
 
         {targetActivityId && (
-          <div className="p-3 bg-[#48A9C5]/10 border border-[#48A9C5]/30 rounded-xl text-xs text-[#ECEBE4] flex items-center gap-2">
+          <div className="p-3 bg-[#48A9C5]/10 border border-[#48A9C5]/30 rounded-xl text-xs text-[var(--text-subtle)] flex items-center gap-2">
             <Tv className="w-4 h-4 text-[#48A9C5] shrink-0" />
             <span>
               Las preguntas seleccionadas se añadirán al final de la presentación:{" "}
-              <strong className="text-white">"{targetActivityTitle || "Presentación actual"}"</strong>.
+              <strong className="text-[var(--text-main)] font-bold">"{targetActivityTitle || "Presentación actual"}"</strong>.
             </span>
           </div>
         )}

@@ -119,9 +119,7 @@ export default function HomePage() {
           <div className="text-3xl font-black text-[var(--text-main)]">
             {activities.length}
           </div>
-          <p className="text-xs text-[var(--text-muted)]">
-            Cuestionarios y sondeos
-          </p>
+          <p className="text-xs text-[var(--text-muted)]">Cuestionarios y sondeos</p>
         </div>
 
         {/* Preguntas Totales */}
@@ -137,9 +135,7 @@ export default function HomePage() {
           <div className="text-3xl font-black text-[var(--text-main)]">
             {activities.reduce((acc, a) => acc + (a.questions_count || 0), 0)}
           </div>
-          <p className="text-xs text-[var(--text-muted)]">
-            Diapositivas interactivas
-          </p>
+          <p className="text-xs text-[var(--text-muted)]">Diapositivas interactivas</p>
         </div>
 
         {/* Participantes */}

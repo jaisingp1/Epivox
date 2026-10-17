@@ -439,7 +439,7 @@ export default function OpenPollsPage() {
       {/* CASO 1: Formulario de Configuración y Lanzamiento (Set de Preguntas) */}
       {!activeSession ? (
         <div className="max-w-4xl mx-auto space-y-6">
-          <div className="bg-[#193750] border-2 border-[#425563] rounded-3xl p-6 lg:p-8 shadow-2xl space-y-6">
+          <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-3xl p-6 lg:p-8 shadow-sm space-y-6">
             <div className="space-y-2">
               <label className="text-xs uppercase font-black text-[#FFC72C] tracking-wider block">
                 Título General del Sondeo
@@ -449,7 +449,7 @@ export default function OpenPollsPage() {
                 value={pollTitle}
                 onChange={(e) => setPollTitle(e.target.value)}
                 placeholder="Ej. Sondeo de Seguridad Faena Norte"
-                className="w-full bg-[#001E32] border-2 border-[#425563] focus:border-[#FFC72C] rounded-2xl p-4 text-lg font-bold text-white placeholder-[#ECEBE4]/40 focus:outline-none transition"
+                className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] focus:border-[#FFC72C] rounded-2xl p-4 text-lg font-bold text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none transition"
               />
             </div>
 
@@ -459,14 +459,14 @@ export default function OpenPollsPage() {
                   <span className="text-xs uppercase font-black text-[#FFC72C] tracking-wider block">
                     Set de Preguntas Abiertas ({draftQuestions.length})
                   </span>
-                  <p className="text-xs text-[#ECEBE4]/70">
+                  <p className="text-xs text-[var(--text-muted)]">
                     Los participantes irán respondiendo a medida que tú avances a la siguiente pregunta.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={handleAddQuestion}
-                  className="bg-[#001E32] hover:bg-[#254F72] text-[#FFC72C] border border-[#FFC72C]/40 font-bold text-xs py-2 px-3.5 rounded-xl transition flex items-center gap-1.5 shadow"
+                  className="bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[#FFC72C] border border-[#FFC72C]/40 font-bold text-xs py-2 px-3.5 rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Agregar Otra Pregunta</span>
@@ -478,7 +478,7 @@ export default function OpenPollsPage() {
                 {draftQuestions.map((q, idx) => (
                   <div
                     key={q.id}
-                    className="bg-[#001E32] border border-[#425563] rounded-2xl p-5 space-y-4 shadow"
+                    className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-2xl p-5 space-y-4 shadow-sm"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs uppercase font-black text-[#48A9C5] tracking-widest flex items-center gap-1.5">
@@ -489,7 +489,7 @@ export default function OpenPollsPage() {
                         <button
                           type="button"
                           onClick={() => handleRemoveQuestion(q.id)}
-                          className="text-[#ECEBE4]/50 hover:text-[#B7312C] transition p-1"
+                          className="text-[var(--text-muted)] hover:text-[#B7312C] transition p-1 cursor-pointer"
                           title="Eliminar pregunta"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -504,12 +504,12 @@ export default function OpenPollsPage() {
                         handleUpdateDraft(q.id, "questionText", e.target.value)
                       }
                       placeholder={`Escribe aquí la pregunta abierta #${idx + 1}...`}
-                      className="w-full bg-[#193750] border border-[#425563] focus:border-[#FFC72C] rounded-xl p-3 text-base font-bold text-white placeholder-[#ECEBE4]/40 focus:outline-none transition leading-relaxed"
+                      className="w-full bg-[var(--surface-card)] border border-[var(--border-subtle)] focus:border-[#FFC72C] rounded-xl p-3 text-base font-bold text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none transition leading-relaxed"
                     />
 
                     {/* Selector de gráfico para esta pregunta */}
                     <div className="space-y-1.5">
-                      <span className="text-[11px] uppercase font-bold text-[#ECEBE4]/60 tracking-wider block">
+                      <span className="text-[11px] uppercase font-bold text-[var(--text-muted)] tracking-wider block">
                         Visualización inicial para esta pregunta:
                       </span>
                       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -523,15 +523,15 @@ export default function OpenPollsPage() {
                               onClick={() =>
                                 handleUpdateDraft(q.id, "chartType", item.id)
                               }
-                              className={`p-2.5 rounded-xl border text-left transition flex items-center space-x-2 ${
+                              className={`p-2.5 rounded-xl border text-left transition flex items-center space-x-2 cursor-pointer ${
                                 isSelected
-                                  ? "bg-[#193750] border-[#FFC72C] text-white ring-1 ring-[#FFC72C]"
-                                  : "bg-[#193750]/40 border-[#425563] text-[#ECEBE4]/70 hover:border-[#48A9C5]"
+                                  ? "bg-[var(--surface-card)] border-[#FFC72C] text-[var(--text-main)] ring-1 ring-[#FFC72C] shadow-sm"
+                                  : "bg-[var(--surface-card)]/50 border-[var(--border-subtle)] text-[var(--text-subtle)] hover:border-[#48A9C5]"
                               }`}
                             >
                               <Icon
                                 className={`w-4 h-4 shrink-0 ${
-                                  isSelected ? "text-[#FFC72C]" : "text-[#ECEBE4]/60"
+                                  isSelected ? "text-[#FFC72C]" : "text-[var(--text-muted)]"
                                 }`}
                               />
                               <span className="font-bold text-xs truncate">
@@ -554,7 +554,7 @@ export default function OpenPollsPage() {
                 draftQuestions.every((q) => !q.questionText.trim())
               }
               onClick={handleLaunchPoll}
-              className="w-full bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-lg py-4 rounded-2xl shadow-xl transition flex items-center justify-center space-x-2 active:scale-95 disabled:opacity-50"
+              className="w-full bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-lg py-4 rounded-2xl shadow-xl transition flex items-center justify-center space-x-2 active:scale-95 disabled:opacity-50 cursor-pointer"
             >
               <Play className="w-5 h-5 fill-[#001E32]" />
               <span>
@@ -569,7 +569,7 @@ export default function OpenPollsPage() {
         /* CASO 2: MONITOR EN VIVO Y VISUALIZADOR MULTI-PREGUNTA */
         <div className="space-y-6">
           {/* Barra Superior con Enlace para Enviar y PIN */}
-          <div className="bg-[#193750] border-2 border-[#FFC72C] rounded-3xl p-6 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-[var(--surface-card)] border-2 border-[#FFC72C] rounded-3xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="flex h-3 w-3 relative">
@@ -580,7 +580,7 @@ export default function OpenPollsPage() {
                   Sondeo Abierto en Vivo
                 </span>
               </div>
-              <h2 className="text-2xl font-black text-white">
+              <h2 className="text-2xl font-black text-[var(--text-main)]">
                 PIN:{" "}
                 <span className="text-[#FFC72C] font-mono tracking-widest">
                   {activeSession.pin}
@@ -593,7 +593,7 @@ export default function OpenPollsPage() {
               <button
                 type="button"
                 onClick={handleCopyLink}
-                className="bg-[#001E32] hover:bg-[#254F72] text-[#FFC72C] border border-[#FFC72C]/40 font-bold text-xs py-2.5 px-4 rounded-xl transition flex items-center gap-2 shadow"
+                className="bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[#001E32] dark:text-[#FFC72C] border border-[var(--border-subtle)] font-bold text-xs py-2.5 px-4 rounded-xl transition flex items-center gap-2 shadow-sm cursor-pointer"
               >
                 {copiedLink ? (
                   <>
@@ -612,7 +612,7 @@ export default function OpenPollsPage() {
               <button
                 type="button"
                 onClick={handleOpenQR}
-                className="bg-[#001E32] hover:bg-[#254F72] text-white border border-[#425563] font-bold text-xs py-2.5 px-3.5 rounded-xl transition flex items-center gap-1.5 shadow"
+                className="bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[var(--text-main)] border border-[var(--border-subtle)] font-bold text-xs py-2.5 px-3.5 rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer"
               >
                 <QrCode className="w-4 h-4 text-[#FFC72C]" />
                 <span>QR</span>
@@ -623,7 +623,7 @@ export default function OpenPollsPage() {
                 to={`/present/${activeSession.pin}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2.5 px-4 rounded-xl transition shadow flex items-center gap-1.5 active:scale-95"
+                className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2.5 px-4 rounded-xl transition shadow flex items-center gap-1.5 active:scale-95 cursor-pointer"
               >
                 <Tv className="w-4 h-4 fill-[#001E32]" />
                 <span>Abrir Proyector (16:9)</span>
@@ -635,7 +635,7 @@ export default function OpenPollsPage() {
                 type="button"
                 onClick={handlePushCurrentQuestion}
                 title="Sincronizar y forzar la apertura de la pregunta actual en todos los teléfonos"
-                className="bg-[#001E32] hover:bg-[#254F72] text-[#48A9C5] border border-[#48A9C5]/50 font-bold text-xs py-2.5 px-3.5 rounded-xl transition shadow flex items-center gap-1.5 active:scale-95"
+                className="bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[#48A9C5] border border-[#48A9C5]/40 font-bold text-xs py-2.5 px-3.5 rounded-xl transition shadow-sm flex items-center gap-1.5 active:scale-95 cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5 text-[#48A9C5]" />
                 <span>Reenviar a Móviles</span>
@@ -649,7 +649,7 @@ export default function OpenPollsPage() {
                   setSessionQuestions([]);
                   setCurrentQIndex(0);
                 }}
-                className="bg-[#B7312C]/20 hover:bg-[#B7312C]/40 text-[#B7312C] border border-[#B7312C]/40 font-bold text-xs py-2.5 px-3.5 rounded-xl transition flex items-center gap-1"
+                className="bg-[#B7312C]/10 hover:bg-[#B7312C]/20 text-[#B7312C] border border-[#B7312C]/30 font-bold text-xs py-2.5 px-3.5 rounded-xl transition flex items-center gap-1 cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Nuevo Sondeo</span>
@@ -658,23 +658,23 @@ export default function OpenPollsPage() {
           </div>
 
           {/* Enlace y Metadatos de Conexión */}
-          <div className="bg-[#001E32] border border-[#425563] p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
+          <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
             <div className="flex items-center gap-2 truncate">
               <span className="text-xs font-bold uppercase tracking-wider text-[#FFC72C] shrink-0">
                 Link de Participación:
               </span>
-              <span className="font-mono text-white/90 truncate">
+              <span className="font-mono text-[var(--text-main)] truncate font-semibold">
                 {window.location.origin}/join?pin={activeSession.pin}
               </span>
             </div>
-            <div className="flex items-center gap-4 text-xs text-[#ECEBE4]/70 shrink-0">
+            <div className="flex items-center gap-4 text-xs text-[var(--text-muted)] shrink-0">
               <span className="flex items-center gap-1">
                 <Users className="w-3.5 h-3.5 text-[#48A9C5]" />
-                {activeParticipants.length} conectados
+                <span className="font-bold text-[var(--text-main)]">{activeParticipants.length}</span> conectados
               </span>
               <span className="flex items-center gap-1">
                 <MessageSquare className="w-3.5 h-3.5 text-[#FFC72C]" />
-                {totalAnswers} respuestas
+                <span className="font-bold text-[var(--text-main)]">{totalAnswers}</span> respuestas
               </span>
             </div>
           </div>
@@ -689,10 +689,10 @@ export default function OpenPollsPage() {
                     key={sq.id}
                     type="button"
                     onClick={() => handleJumpToQuestion(idx)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition shrink-0 flex items-center gap-2 border ${
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition shrink-0 flex items-center gap-2 border cursor-pointer ${
                       isCur
-                        ? "bg-[#FFC72C] text-[#001E32] border-[#FFC72C] shadow"
-                        : "bg-[#193750] text-[#ECEBE4]/80 border-[#425563] hover:border-[#48A9C5]"
+                        ? "bg-[#FFC72C] text-[#001E32] border-[#FFC72C] shadow-sm font-black"
+                        : "bg-[var(--surface-card)] text-[var(--text-subtle)] border-[var(--border-subtle)] hover:border-[#48A9C5]"
                     }`}
                   >
                     <span>Pregunta {idx + 1}</span>
@@ -707,14 +707,14 @@ export default function OpenPollsPage() {
 
           {/* Panel Principal de la Pregunta Activa */}
           {sessionStatus === "finished" ? (
-            <div className="bg-[#193750] border-2 border-[#4C8C2B] rounded-3xl p-10 text-center space-y-4 shadow-2xl">
-              <div className="w-16 h-16 rounded-full bg-[#4C8C2B]/20 border-2 border-[#4C8C2B] text-[#4C8C2B] mx-auto flex items-center justify-center">
+            <div className="bg-[var(--surface-card)] border-2 border-[#4C8C2B] rounded-3xl p-10 text-center space-y-4 shadow-sm">
+              <div className="w-16 h-16 rounded-full bg-[#4C8C2B]/15 border-2 border-[#4C8C2B] text-[#4C8C2B] mx-auto flex items-center justify-center">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h3 className="text-3xl font-black text-white">
+              <h3 className="text-3xl font-black text-[var(--text-main)]">
                 ¡Sondeo de Opinión Concluido!
               </h3>
-              <p className="text-base text-[#ECEBE4]/80 max-w-xl mx-auto">
+              <p className="text-base text-[var(--text-subtle)] max-w-xl mx-auto">
                 Todas las preguntas fueron presentadas y las respuestas del público han sido registradas exitosamente.
               </p>
               <div className="pt-4 flex items-center justify-center gap-3">
@@ -725,27 +725,27 @@ export default function OpenPollsPage() {
                     setSessionQuestions([]);
                     setCurrentQIndex(0);
                   }}
-                  className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-sm py-3 px-6 rounded-xl transition shadow"
+                  className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-sm py-3 px-6 rounded-xl transition shadow-sm cursor-pointer"
                 >
                   Crear Nuevo Sondeo
                 </button>
               </div>
             </div>
           ) : (
-            <div className="bg-[#193750] border-2 border-[#425563] rounded-3xl p-6 lg:p-8 shadow-2xl space-y-6">
+            <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-3xl p-6 lg:p-8 shadow-sm space-y-6">
               {/* Encabezado de la Pregunta Activa y Controles de Cambio de Gráfico */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#425563]/60">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[var(--border-subtle)]">
                 <div className="space-y-1">
-                  <span className="inline-block text-[11px] uppercase font-black text-[#FFC72C] tracking-widest bg-[#001E32] px-3 py-1 rounded-full border border-[#425563]">
+                  <span className="inline-block text-[11px] uppercase font-black text-[#FFC72C] tracking-widest bg-[var(--surface-subtle)] px-3 py-1 rounded-full border border-[var(--border-subtle)]">
                     Pregunta {currentQIndex + 1} de {sessionQuestions.length}
                   </span>
-                  <h3 className="text-2xl font-black text-white max-w-2xl leading-snug">
+                  <h3 className="text-2xl font-black text-[var(--text-main)] max-w-2xl leading-snug">
                     {currentActiveQuestion?.question_text || "Pregunta en vivo..."}
                   </h3>
                 </div>
 
                 {/* Toolbar: Alternar Gráfico en Vivo (Mentimeter) */}
-                <div className="flex items-center gap-1.5 bg-[#001E32] p-1.5 rounded-2xl border border-[#425563] shrink-0 flex-wrap">
+                <div className="flex items-center gap-1.5 bg-[var(--surface-subtle)] p-1.5 rounded-2xl border border-[var(--border-subtle)] shrink-0 flex-wrap">
                   {CHART_TYPES.map((item) => {
                     const Icon = item.icon;
                     const isCur = activeChartType === item.id;
@@ -754,10 +754,10 @@ export default function OpenPollsPage() {
                         key={item.id}
                         type="button"
                         onClick={() => handleSwitchChart(item.id)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                           isCur
-                            ? "bg-[#FFC72C] text-[#001E32] shadow font-extrabold"
-                            : "text-[#ECEBE4]/70 hover:text-white"
+                            ? "bg-[#FFC72C] text-[#001E32] shadow-sm font-extrabold"
+                            : "text-[var(--text-subtle)] hover:text-[var(--text-main)]"
                         }`}
                       >
                         <Icon className="w-3.5 h-3.5" />
@@ -770,14 +770,14 @@ export default function OpenPollsPage() {
 
               {/* RENDERIZADOR 1: Nube de Palabras */}
               {activeChartType === "word_cloud" && (
-                <div className="bg-[#001E32] border border-[#425563] p-8 rounded-2xl min-h-[340px] flex flex-wrap items-center justify-center gap-4 content-center">
+                <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] p-8 rounded-2xl min-h-[340px] flex flex-wrap items-center justify-center gap-4 content-center">
                   {Object.keys(liveResults).length === 0 ? (
-                    <div className="text-center text-[#ECEBE4]/60 space-y-2 py-10">
-                      <Cloud className="w-16 h-16 mx-auto text-[#48A9C5] opacity-40 animate-pulse" />
-                      <p className="text-base font-bold text-white">
+                    <div className="text-center text-[var(--text-muted)] space-y-2 py-10">
+                      <Cloud className="w-16 h-16 mx-auto text-[#48A9C5] opacity-50 animate-pulse" />
+                      <p className="text-base font-bold text-[var(--text-main)]">
                         Esperando que el público envíe sus respuestas...
                       </p>
-                      <p className="text-xs text-[#ECEBE4]/60">
+                      <p className="text-xs text-[var(--text-muted)]">
                         Comparte el PIN {activeSession.pin} para participar
                       </p>
                     </div>
@@ -790,7 +790,7 @@ export default function OpenPollsPage() {
                         <span
                           key={word}
                           style={{ fontSize: `${scale}rem`, color }}
-                          className="font-black px-4 py-2 bg-[#193750]/80 border border-[#425563] rounded-2xl shadow-xl transition hover:scale-110 cursor-default select-none animate-in fade-in"
+                          className="font-black px-4 py-2 bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-2xl shadow-sm transition hover:scale-110 cursor-default select-none animate-in fade-in"
                         >
                           {word}{" "}
                           <span className="text-xs opacity-75 font-bold">
@@ -805,11 +805,11 @@ export default function OpenPollsPage() {
 
               {/* RENDERIZADOR 2: Barras */}
               {activeChartType === "bar" && (
-                <div className="bg-[#001E32] border border-[#425563] p-8 rounded-2xl min-h-[340px] flex items-end">
+                <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] p-8 rounded-2xl min-h-[340px] flex items-end">
                   {Object.keys(liveResults).length === 0 ? (
-                    <div className="w-full text-center text-[#ECEBE4]/60 py-10">
-                      <BarChart3 className="w-16 h-16 mx-auto text-[#FFC72C] opacity-40 mb-2" />
-                      <p className="text-base font-bold text-white">
+                    <div className="w-full text-center text-[var(--text-muted)] py-10">
+                      <BarChart3 className="w-16 h-16 mx-auto text-[#FFC72C] opacity-50 mb-2" />
+                      <p className="text-base font-bold text-[var(--text-main)]">
                         Esperando respuestas para graficar...
                       </p>
                     </div>
@@ -827,10 +827,10 @@ export default function OpenPollsPage() {
                             key={ans}
                             className="flex flex-col items-center h-full justify-end space-y-2"
                           >
-                            <span className="font-extrabold text-lg text-white">
+                            <span className="font-extrabold text-lg text-[var(--text-main)]">
                               {count}
                             </span>
-                            <div className="w-full bg-[#193750] rounded-t-xl p-1 h-48 flex items-end">
+                            <div className="w-full bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-t-xl p-1 h-48 flex items-end">
                               <div
                                 className="w-full rounded-t-lg transition-all duration-700 ease-out"
                                 style={{
@@ -839,7 +839,7 @@ export default function OpenPollsPage() {
                                 }}
                               />
                             </div>
-                            <span className="text-center text-xs font-bold text-white truncate max-w-[120px]">
+                            <span className="text-center text-xs font-bold text-[var(--text-main)] truncate max-w-[120px]">
                               {ans}
                             </span>
                           </div>
@@ -852,11 +852,11 @@ export default function OpenPollsPage() {
 
               {/* RENDERIZADOR 3: Líneas */}
               {activeChartType === "line" && (
-                <div className="bg-[#001E32] border border-[#425563] p-8 rounded-2xl min-h-[340px] flex flex-col justify-between">
+                <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] p-8 rounded-2xl min-h-[340px] flex flex-col justify-between">
                   {Object.keys(liveResults).length === 0 ? (
-                    <div className="text-center text-[#ECEBE4]/60 py-10 my-auto">
-                      <TrendingUp className="w-16 h-16 mx-auto text-[#48A9C5] opacity-40 mb-2" />
-                      <p className="text-base font-bold text-white">
+                    <div className="text-center text-[var(--text-muted)] py-10 my-auto">
+                      <TrendingUp className="w-16 h-16 mx-auto text-[#48A9C5] opacity-50 mb-2" />
+                      <p className="text-base font-bold text-[var(--text-main)]">
                         Esperando respuestas para trazar la línea de tendencia...
                       </p>
                     </div>
@@ -882,10 +882,10 @@ export default function OpenPollsPage() {
                                   key={e.label}
                                   className="flex flex-col items-center h-full justify-end space-y-2"
                                 >
-                                  <span className="font-bold text-sm text-white">
+                                  <span className="font-bold text-sm text-[var(--text-main)]">
                                     {e.count}
                                   </span>
-                                  <div className="w-full bg-[#193750] rounded-t-xl p-1 h-40 flex items-end">
+                                  <div className="w-full bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-t-xl p-1 h-40 flex items-end">
                                     <div
                                       className="w-full rounded-t-lg transition-all duration-700 ease-out"
                                       style={{
@@ -894,7 +894,7 @@ export default function OpenPollsPage() {
                                       }}
                                     />
                                   </div>
-                                  <span className="text-center text-xs font-bold text-white truncate max-w-[120px]">
+                                  <span className="text-center text-xs font-bold text-[var(--text-main)] truncate max-w-[120px]">
                                     {e.label}
                                   </span>
                                 </div>
@@ -910,12 +910,12 @@ export default function OpenPollsPage() {
 
               {/* RENDERIZADOR 4: Muro de Ideas (Brainstorming Cards) */}
               {activeChartType === "cards" && (
-                <div className="bg-[#001E32] border border-[#425563] p-6 rounded-2xl min-h-[340px]">
+                <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] p-6 rounded-2xl min-h-[340px]">
                   {rawAnswers.length === 0 &&
                   Object.keys(liveResults).length === 0 ? (
-                    <div className="text-center text-[#ECEBE4]/60 py-10">
-                      <LayoutGrid className="w-16 h-16 mx-auto text-[#FFC72C] opacity-40 mb-2" />
-                      <p className="text-base font-bold text-white">
+                    <div className="text-center text-[var(--text-muted)] py-10">
+                      <LayoutGrid className="w-16 h-16 mx-auto text-[#FFC72C] opacity-50 mb-2" />
+                      <p className="text-base font-bold text-[var(--text-main)]">
                         Esperando que los participantes envíen ideas...
                       </p>
                     </div>
@@ -925,12 +925,12 @@ export default function OpenPollsPage() {
                         ? rawAnswers.map((ans) => (
                             <div
                               key={ans.id}
-                              className="bg-[#193750] border border-[#425563] p-4 rounded-xl shadow space-y-2 flex flex-col justify-between"
+                              className="bg-[var(--surface-card)] border border-[var(--border-subtle)] p-4 rounded-xl shadow-sm space-y-2 flex flex-col justify-between"
                             >
-                              <p className="text-base font-bold text-white leading-relaxed">
+                              <p className="text-base font-bold text-[var(--text-main)] leading-relaxed">
                                 "{ans.answer_payload}"
                               </p>
-                              <div className="flex items-center justify-between text-xs text-[#ECEBE4]/60 border-t border-[#425563]/40 pt-2">
+                              <div className="flex items-center justify-between text-xs text-[var(--text-muted)] border-t border-[var(--border-subtle)] pt-2">
                                 <span className="font-semibold text-[#FFC72C]">
                                   {ans.nickname}
                                 </span>
@@ -941,12 +941,12 @@ export default function OpenPollsPage() {
                         : Object.entries(liveResults).map(([ans, count], i) => (
                             <div
                               key={ans}
-                              className="bg-[#193750] border border-[#425563] p-4 rounded-xl shadow space-y-2 flex flex-col justify-between"
+                              className="bg-[var(--surface-card)] border border-[var(--border-subtle)] p-4 rounded-xl shadow-sm space-y-2 flex flex-col justify-between"
                             >
-                              <p className="text-base font-bold text-white leading-relaxed">
+                              <p className="text-base font-bold text-[var(--text-main)] leading-relaxed">
                                 "{ans}"
                               </p>
-                              <div className="flex items-center justify-between text-xs text-[#ECEBE4]/60 border-t border-[#425563]/40 pt-2">
+                              <div className="flex items-center justify-between text-xs text-[var(--text-muted)] border-t border-[var(--border-subtle)] pt-2">
                                 <span className="font-semibold text-[#FFC72C]">
                                   Respuesta #{i + 1}
                                 </span>
@@ -961,11 +961,11 @@ export default function OpenPollsPage() {
 
               {/* RENDERIZADOR 5: Dona Circular (CSS Conic-Gradient - Regla 5 Compliant) */}
               {activeChartType === "donut" && (
-                <div className="bg-[#001E32] border border-[#425563] p-8 rounded-2xl min-h-[340px] flex flex-col md:flex-row items-center justify-around gap-6">
+                <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] p-8 rounded-2xl min-h-[340px] flex flex-col md:flex-row items-center justify-around gap-6">
                   {Object.keys(liveResults).length === 0 ? (
-                    <div className="text-center text-[#ECEBE4]/60 py-10">
-                      <PieChart className="w-16 h-16 mx-auto text-[#FFC72C] opacity-40 mb-2" />
-                      <p className="text-base font-bold text-white">
+                    <div className="text-center text-[var(--text-muted)] py-10">
+                      <PieChart className="w-16 h-16 mx-auto text-[#FFC72C] opacity-50 mb-2" />
+                      <p className="text-base font-bold text-[var(--text-main)]">
                         Esperando respuestas para calcular proporciones...
                       </p>
                     </div>
@@ -1002,14 +1002,14 @@ export default function OpenPollsPage() {
                         <>
                           <div className="relative w-52 h-52 shrink-0 flex items-center justify-center">
                             <div
-                              className="w-full h-full rounded-full shadow-2xl transition-all duration-700"
+                              className="w-full h-full rounded-full shadow-lg transition-all duration-700"
                               style={{ background: conicBackground }}
                             />
-                            <div className="absolute w-28 h-28 rounded-full bg-[#001E32] flex flex-col items-center justify-center shadow-inner">
-                              <span className="text-3xl font-black text-white">
+                            <div className="absolute w-28 h-28 rounded-full bg-[var(--surface-card)] border border-[var(--border-subtle)] flex flex-col items-center justify-center shadow-inner">
+                              <span className="text-3xl font-black text-[var(--text-main)]">
                                 {totalAnswers}
                               </span>
-                              <span className="block text-[10px] text-[#ECEBE4]/60 uppercase tracking-widest font-bold">
+                              <span className="block text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-bold">
                                 Respuestas
                               </span>
                             </div>
@@ -1019,14 +1019,14 @@ export default function OpenPollsPage() {
                             {legendItems.map((s) => (
                               <div
                                 key={s.id}
-                                className="flex items-center justify-between bg-[#193750] p-3 rounded-xl border border-[#425563]"
+                                className="flex items-center justify-between bg-[var(--surface-card)] p-3 rounded-xl border border-[var(--border-subtle)]"
                               >
                                 <div className="flex items-center space-x-2 truncate">
                                   <span
                                     className="w-3.5 h-3.5 rounded-full shrink-0"
                                     style={{ backgroundColor: s.color }}
                                   />
-                                  <span className="text-xs font-bold text-white truncate">
+                                  <span className="text-xs font-bold text-[var(--text-main)] truncate">
                                     {s.label}
                                   </span>
                                 </div>
@@ -1044,12 +1044,12 @@ export default function OpenPollsPage() {
               )}
 
               {/* Barra de Navegación de Preguntas (⬅️ Anterior | Siguiente ➡️) */}
-              <div className="flex items-center justify-between pt-4 border-t border-[#425563]/60">
+              <div className="flex items-center justify-between pt-4 border-t border-[var(--border-subtle)]">
                 {currentQIndex > 0 ? (
                   <button
                     type="button"
                     onClick={handlePrevQuestion}
-                    className="bg-[#001E32] hover:bg-[#254F72] text-white border border-[#425563] font-bold text-sm py-3 px-5 rounded-xl transition flex items-center gap-2 shadow"
+                    className="bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[var(--text-main)] border border-[var(--border-subtle)] font-bold text-sm py-3 px-5 rounded-xl transition flex items-center gap-2 shadow-sm cursor-pointer"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     <span>Pregunta Anterior</span>
@@ -1063,7 +1063,7 @@ export default function OpenPollsPage() {
                     <button
                       type="button"
                       onClick={handleNextQuestion}
-                      className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-sm py-3 px-6 rounded-xl transition shadow flex items-center gap-2 active:scale-95"
+                      className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-sm py-3 px-6 rounded-xl transition shadow-sm flex items-center gap-2 active:scale-95 cursor-pointer"
                     >
                       <span>Siguiente Pregunta</span>
                       <ArrowRight className="w-4 h-4 fill-[#001E32]" />
@@ -1072,7 +1072,7 @@ export default function OpenPollsPage() {
                     <button
                       type="button"
                       onClick={handleFinishSession}
-                      className="bg-[#4C8C2B] hover:bg-[#3D7122] text-white font-black text-sm py-3 px-6 rounded-xl transition shadow flex items-center gap-2 active:scale-95"
+                      className="bg-[#4C8C2B] hover:bg-[#3D7122] text-white font-black text-sm py-3 px-6 rounded-xl transition shadow-sm flex items-center gap-2 active:scale-95 cursor-pointer"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>Finalizar Sondeo</span>
@@ -1097,16 +1097,16 @@ export default function OpenPollsPage() {
             <img
               src={qrModalUrl}
               alt="QR del Sondeo"
-              className="w-64 h-64 rounded-2xl border-4 border-[#FFC72C] shadow-2xl"
+              className="w-64 h-64 rounded-2xl border-4 border-[#FFC72C] shadow-lg"
             />
           )}
-          <p className="text-xs text-[#ECEBE4]">
+          <p className="text-xs text-[var(--text-subtle)]">
             Los participantes se conectan una sola vez y van respondiendo todo el set de preguntas en vivo.
           </p>
           <button
             type="button"
             onClick={() => setQrModalUrl(null)}
-            className="w-full bg-[#FFC72C] text-[#001E32] font-black py-2 rounded-xl text-xs"
+            className="w-full bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black py-2.5 rounded-xl text-xs transition cursor-pointer shadow-sm"
           >
             Cerrar
           </button>

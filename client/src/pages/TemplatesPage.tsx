@@ -127,16 +127,16 @@ export default function TemplatesPage() {
 
       <div className="space-y-6">
         {/* Search & Category Filter Bar */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-[#193750] border border-[#425563] p-4 rounded-2xl">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-[var(--surface-card)] border border-[var(--border-subtle)] p-4 rounded-2xl shadow-sm">
           {/* Search Bar */}
           <div className="relative w-full md:w-96">
-            <Search className="w-4 h-4 text-[#ECEBE4]/50 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[var(--text-muted)] absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar por título o palabra clave..."
-              className="w-full bg-[#001E32] border border-[#425563] text-sm text-white pl-10 pr-4 py-2.5 rounded-xl focus:outline-none focus:border-[#FFC72C] placeholder-[#ECEBE4]/40 transition"
+              className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] text-sm text-[var(--text-main)] pl-10 pr-4 py-2.5 rounded-xl focus:outline-none focus:border-[#FFC72C] placeholder-[var(--text-muted)] transition"
             />
           </div>
 
@@ -147,10 +147,10 @@ export default function TemplatesPage() {
                 key={cat}
                 type="button"
                 onClick={() => setSelectedCategory(cat)}
-                className={`text-xs font-bold px-3.5 py-2 rounded-xl transition shrink-0 ${
+                className={`text-xs font-bold px-3.5 py-2 rounded-xl transition shrink-0 cursor-pointer ${
                   selectedCategory === cat
-                    ? "bg-[#FFC72C] text-[#001E32] shadow-md"
-                    : "bg-[#001E32] text-[#ECEBE4]/80 hover:bg-[#425563]/50"
+                    ? "bg-[#FFC72C] text-[#001E32] shadow-sm font-extrabold"
+                    : "bg-[var(--surface-subtle)] text-[var(--text-subtle)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-main)]"
                 }`}
               >
                 {cat}
@@ -165,12 +165,12 @@ export default function TemplatesPage() {
             <div className="w-8 h-8 border-3 border-[#FFC72C] border-t-transparent rounded-full animate-spin" />
           </div>
         ) : filteredTemplates.length === 0 ? (
-          <div className="bg-[#193750] border border-[#425563] rounded-3xl p-12 text-center space-y-3">
-            <BookOpen className="w-12 h-12 text-[#ECEBE4]/40 mx-auto" />
-            <h3 className="text-lg font-bold text-white">
+          <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-3xl p-12 text-center space-y-3 shadow-sm">
+            <BookOpen className="w-12 h-12 text-[var(--text-muted)] mx-auto" />
+            <h3 className="text-lg font-bold text-[var(--text-main)]">
               No se encontraron plantillas
             </h3>
-            <p className="text-xs text-[#ECEBE4]/70 max-w-sm mx-auto">
+            <p className="text-xs text-[var(--text-subtle)] max-w-sm mx-auto">
               Intenta cambiar los términos de búsqueda o selecciona otra
               categoría temática.
             </p>
@@ -180,7 +180,7 @@ export default function TemplatesPage() {
             {filteredTemplates.map((t) => (
               <div
                 key={t.id}
-                className="bg-[#193750] border-2 border-[#425563] hover:border-[#FFC72C] rounded-3xl p-6 shadow-xl transition-all duration-200 flex flex-col justify-between group"
+                className="bg-[var(--surface-card)] border border-[var(--border-subtle)] hover:border-[#FFC72C] rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between group"
               >
                 <div className="space-y-4">
                   {/* Category & Badge */}
@@ -193,7 +193,7 @@ export default function TemplatesPage() {
                       type="button"
                       onClick={() => setPreviewTemplate(t)}
                       title="Vista previa rápida"
-                      className="text-[#ECEBE4]/60 hover:text-[#FFC72C] p-1 rounded-lg transition"
+                      className="text-[var(--text-muted)] hover:text-[#FFC72C] p-1 rounded-lg transition cursor-pointer"
                     >
                       <Eye className="w-4 h-4" />
                     </button>
@@ -201,17 +201,17 @@ export default function TemplatesPage() {
 
                   {/* Title & Description */}
                   <div>
-                    <h3 className="text-xl font-black text-white group-hover:text-[#FFC72C] transition-colors">
+                    <h3 className="text-xl font-black text-[var(--text-main)] group-hover:text-[#FFC72C] transition-colors">
                       {t.title}
                     </h3>
-                    <p className="text-xs text-[#ECEBE4]/80 mt-2 line-clamp-3 leading-relaxed">
+                    <p className="text-xs text-[var(--text-subtle)] mt-2 line-clamp-3 leading-relaxed">
                       {t.description ||
                         "Plantilla interactiva prediseñada con las mejores prácticas corporativas de Epiroc."}
                     </p>
                   </div>
 
                   {/* Features */}
-                  <div className="flex items-center gap-3 pt-2 text-[11px] text-[#ECEBE4]/60 font-semibold border-t border-[#425563]/40">
+                  <div className="flex items-center gap-3 pt-2 text-[11px] text-[var(--text-muted)] font-semibold border-t border-[var(--border-subtle)]">
                     <span className="flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5 text-[#FFC72C]" />
                       {t.default_time_limit}s por pregunta
@@ -228,12 +228,12 @@ export default function TemplatesPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="grid grid-cols-2 gap-3 pt-6 mt-4 border-t border-[#425563]/60">
+                <div className="grid grid-cols-2 gap-3 pt-6 mt-4 border-t border-[var(--border-subtle)]">
                   <button
                     type="button"
                     onClick={() => handleClone(t.id)}
                     disabled={cloningId === t.id}
-                    className="flex items-center justify-center gap-2 bg-[#48A9C5] hover:bg-[#3B8FA8] text-white font-bold py-2.5 px-3 rounded-xl transition text-xs shadow disabled:opacity-50"
+                    className="flex items-center justify-center gap-2 bg-[#48A9C5] hover:bg-[#3B8FA8] text-[#001E32] font-black py-2.5 px-3 rounded-xl transition text-xs shadow-sm disabled:opacity-50 cursor-pointer"
                   >
                     <Copy className="w-3.5 h-3.5" />
                     <span>
@@ -244,7 +244,7 @@ export default function TemplatesPage() {
                   <button
                     type="button"
                     onClick={() => handleLaunch(t.id)}
-                    className="flex items-center justify-center gap-2 bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black py-2.5 px-3 rounded-xl transition text-xs shadow"
+                    className="flex items-center justify-center gap-2 bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black py-2.5 px-3 rounded-xl transition text-xs shadow-sm cursor-pointer"
                   >
                     <Play className="w-3.5 h-3.5 fill-[#001E32]" />
                     <span>Lanzar en Vivo</span>
@@ -268,7 +268,7 @@ export default function TemplatesPage() {
               <button
                 type="button"
                 onClick={() => setPreviewTemplate(null)}
-                className="px-4 py-2 bg-[#425563] text-white rounded-xl text-xs font-bold hover:bg-[#425563]/80"
+                className="px-4 py-2 bg-[var(--surface-subtle)] text-[var(--text-subtle)] hover:text-[var(--text-main)] border border-[var(--border-subtle)] rounded-xl text-xs font-bold cursor-pointer"
               >
                 Cerrar
               </button>
@@ -279,7 +279,7 @@ export default function TemplatesPage() {
                   setPreviewTemplate(null);
                   handleClone(id);
                 }}
-                className="px-4 py-2 bg-[#FFC72C] text-[#001E32] rounded-xl text-xs font-black hover:bg-[#E6B327]"
+                className="px-4 py-2 bg-[#FFC72C] text-[#001E32] rounded-xl text-xs font-black hover:bg-[#E6B327] cursor-pointer shadow-sm"
               >
                 Clonar y Personalizar
               </button>
@@ -287,15 +287,15 @@ export default function TemplatesPage() {
           }
         >
           <div className="space-y-4">
-            <p className="text-xs text-[#ECEBE4]/90 leading-relaxed">
+            <p className="text-xs text-[var(--text-subtle)] leading-relaxed">
               {previewTemplate.description ||
                 "Esta plantilla está optimizada para capacitaciones operacionales y dinámicas de equipo en Epiroc."}
             </p>
-            <div className="bg-[#001E32] border border-[#425563] rounded-2xl p-4 text-xs space-y-2">
+            <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-2xl p-4 text-xs space-y-2">
               <div className="font-bold text-[#FFC72C]">
                 Estructura de la Actividad:
               </div>
-              <ul className="list-disc pl-5 space-y-1 text-[#ECEBE4]/80">
+              <ul className="list-disc pl-5 space-y-1 text-[var(--text-subtle)]">
                 <li>Preguntas interactivas con gamificación y racha.</li>
                 <li>Podio animado 3D y lluvia de confetti institucional.</li>
                 <li>
