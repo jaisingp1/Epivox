@@ -7,8 +7,13 @@ import {
   listInvitations,
   revokeInvitation,
   createPasswordReset,
+  getUserById,
   AuthError,
 } from "../services/authService.js";
+import {
+  sendInvitationEmail,
+  sendPasswordResetEmail,
+} from "../services/emailService.js";
 
 const router = Router();
 
@@ -55,14 +60,31 @@ router.post("/users/:id/reset-password", async (req, res) => {
       return;
     }
     const targetUserId = Number(req.params.id);
+    const targetUser = await getUserById(targetUserId);
     const reset = await createPasswordReset(targetUserId, req.user.id);
-    const origin = req.get("origin") || "https://epivox.pastenlabs.com";
+    const origin = req.get("origin") || process.env.PUBLIC_URL || "https://epivox.pastenlabs.com";
     const resetUrl = `${origin}/reset-password?token=${reset.token}`;
+
+    let emailSent = false;
+    let emailError: string | undefined;
+
+    if (targetUser?.email) {
+      const emailResult = await sendPasswordResetEmail({
+        to: targetUser.email,
+        resetUrl,
+        userName: targetUser.full_name || targetUser.username,
+      });
+      emailSent = emailResult.success;
+      emailError = emailResult.error;
+    }
+
     res.json({
       success: true,
       token: reset.token,
       expiresAt: reset.expires_at,
       resetUrl,
+      emailSent,
+      emailError,
     });
   } catch (err: unknown) {
     if (err instanceof AuthError) {
@@ -94,13 +116,22 @@ router.post("/invitations", async (req, res) => {
     }
     const { email, role } = req.body;
     const invitation = await createInvitation(email, role, req.user.id);
-    const origin = req.get("origin") || "https://epivox.pastenlabs.com";
+    const origin = req.get("origin") || process.env.PUBLIC_URL || "https://epivox.pastenlabs.com";
     const inviteUrl = `${origin}/register?token=${invitation.token}`;
+
+    const emailResult = await sendInvitationEmail({
+      to: email,
+      inviteUrl,
+      role,
+      invitedByName: req.user.full_name || req.user.username,
+    });
 
     res.status(201).json({
       success: true,
       invitation,
       inviteUrl,
+      emailSent: emailResult.success,
+      emailError: emailResult.error,
     });
   } catch (err: unknown) {
     if (err instanceof AuthError) {

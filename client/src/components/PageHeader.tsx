@@ -27,7 +27,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   helpDocSlug,
 }) => {
   return (
-    <div className="w-full flex flex-col gap-4 pb-6 border-b border-[#425563]/40 animate-in fade-in duration-300">
+    <div className="w-full flex flex-col gap-4 pb-6 border-b border-[var(--border-subtle)] animate-in fade-in duration-300">
       {breadcrumbs && breadcrumbs.length > 0 && (
         <nav aria-label="Breadcrumb" className="w-full">
           <ol className="flex items-center flex-wrap gap-1.5 text-xs font-semibold">
@@ -38,7 +38,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                 crumb.href && !isLast ? (
                   <Link
                     to={crumb.href}
-                    className="inline-flex items-center gap-1 text-[#ECEBE4]/70 hover:text-[#FFC72C] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC72C] rounded px-1 py-0.5"
+                    className="inline-flex items-center gap-1 text-[var(--text-subtle)] hover:text-[#FFC72C] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC72C] rounded px-1 py-0.5"
                   >
                     {isFirst && (
                       <Home
@@ -51,7 +51,9 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                 ) : (
                   <span
                     className={`inline-flex items-center gap-1 ${
-                      isLast ? "text-[#FFC72C] font-bold" : "text-[#ECEBE4]/50"
+                      isLast
+                        ? "text-[#FFC72C] font-bold"
+                        : "text-[var(--text-muted)]"
                     }`}
                     aria-current={isLast ? "page" : undefined}
                   >
@@ -72,7 +74,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                 >
                   {index > 0 && (
                     <ChevronRight
-                      className="w-3 h-3 text-[#ECEBE4]/40 shrink-0"
+                      className="w-3 h-3 text-[var(--text-muted)] shrink-0"
                       aria-hidden="true"
                     />
                   )}
@@ -87,7 +89,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex flex-col gap-1.5 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl md:text-3xl font-black text-white tracking-wide truncate">
+            <h1 className="text-2xl md:text-3xl font-black text-[var(--text-main)] tracking-wide truncate">
               {title}
             </h1>
             {badge && <div className="shrink-0">{badge}</div>}
@@ -97,14 +99,14 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                 target="_blank"
                 rel="noreferrer"
                 title="Ver documentación de ayuda"
-                className="text-[#ECEBE4]/60 hover:text-[#FFC72C] transition-colors p-1 rounded-full hover:bg-[#425563]/30"
+                className="text-[var(--text-muted)] hover:text-[#FFC72C] transition-colors p-1 rounded-full hover:bg-[var(--surface-subtle)]"
               >
                 <HelpCircle className="w-5 h-5" />
               </a>
             )}
           </div>
           {description && (
-            <div className="text-sm text-[#ECEBE4]/80 max-w-3xl leading-relaxed">
+            <div className="text-sm text-[var(--text-subtle)] max-w-3xl leading-relaxed">
               {description}
             </div>
           )}

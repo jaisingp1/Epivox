@@ -121,8 +121,13 @@ export const AdminUsersPage: React.FC = () => {
       }
 
       setLatestInviteUrl(data.inviteUrl);
+      const targetEmail = inviteEmail.trim();
       setInviteEmail("");
-      setSuccessMsg("¡Enlace de invitación generado con éxito!");
+      if (data.emailSent) {
+        setSuccessMsg(`¡Invitación enviada por correo exitosamente a ${targetEmail}!`);
+      } else {
+        setSuccessMsg("¡Enlace de invitación generado! Puedes copiar el enlace a continuación.");
+      }
       fetchInvitations();
     } catch {
       setErrorMsg("Error de conexión");
@@ -190,7 +195,11 @@ export const AdminUsersPage: React.FC = () => {
       const data = await res.json();
       if (res.ok && data.resetUrl) {
         setResetModalUrl(data.resetUrl);
-        setSuccessMsg(`Enlace de restablecimiento generado para @${username}`);
+        if (data.emailSent) {
+          setSuccessMsg(`¡Enlace generado y enviado por correo a @${username}!`);
+        } else {
+          setSuccessMsg(`Enlace de restablecimiento generado para @${username}`);
+        }
       } else {
         setErrorMsg(data.error || "Error al generar enlace de restablecimiento");
       }

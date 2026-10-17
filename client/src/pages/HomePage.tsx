@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Play,
-  Smartphone,
   Tv,
   MessageSquare,
   Users,
   Layers,
   ArrowRight,
   TrendingUp,
+  Edit3,
 } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 
@@ -74,7 +74,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <div className="space-y-6 animate-in fade-in duration-300">
       <PageHeader
         title="Epivox Hub"
         description="Plataforma Corporativa de Gamificación, Presentaciones Interactivas y Sondeos en Vivo de Epiroc."
@@ -87,15 +87,15 @@ export default function HomePage() {
           <div className="flex items-center gap-3">
             <Link
               to="/open-polls"
-              className="bg-[#193750] hover:bg-[#254F72] text-[#ECEBE4] hover:text-white border border-[#425563] font-bold text-sm py-2.5 px-4 rounded-xl transition flex items-center gap-2"
+              className="bg-[var(--surface-subtle)] hover:bg-[var(--surface-hover)] text-[var(--text-main)] border border-[var(--border-subtle)] font-bold text-xs py-2.5 px-4 rounded-xl transition flex items-center gap-2"
             >
               <MessageSquare className="w-4 h-4 text-[#48A9C5]" />
-              <span>Preguntas Abiertas (Mentimeter)</span>
+              <span>Preguntas Abiertas</span>
             </Link>
 
             <Link
               to="/presentations"
-              className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-sm py-2.5 px-5 rounded-xl transition shadow-lg flex items-center gap-2 active:scale-95"
+              className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2.5 px-5 rounded-xl transition shadow flex items-center gap-2 active:scale-95"
             >
               <Play className="w-4 h-4 fill-[#001E32]" />
               <span>Ver Presentaciones</span>
@@ -106,209 +106,151 @@ export default function HomePage() {
 
       {/* KPI Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-[#193750] border border-[#425563]/60 p-5 rounded-2xl shadow space-y-2">
-          <div className="flex items-center justify-between text-[#ECEBE4]/70">
+        {/* Presentaciones */}
+        <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] p-5 rounded-2xl shadow-sm space-y-2">
+          <div className="flex items-center justify-between text-[var(--text-subtle)]">
             <span className="text-xs font-bold uppercase tracking-wider">
               Presentaciones
             </span>
-            <div className="p-2 bg-[#FFC72C]/10 rounded-xl text-[#FFC72C]">
+            <div className="p-2 bg-[#FFC72C]/15 rounded-xl text-[#FFC72C]">
               <Tv className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl font-black text-white">
+          <div className="text-3xl font-black text-[var(--text-main)]">
             {activities.length}
           </div>
-          <p className="text-xs text-[#ECEBE4]/60">Cuestionarios y sondeos</p>
+          <p className="text-xs text-[var(--text-muted)]">
+            Cuestionarios y sondeos
+          </p>
         </div>
 
-        <div className="bg-[#193750] border border-[#425563]/60 p-5 rounded-2xl shadow space-y-2">
-          <div className="flex items-center justify-between text-[#ECEBE4]/70">
+        {/* Preguntas Totales */}
+        <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] p-5 rounded-2xl shadow-sm space-y-2">
+          <div className="flex items-center justify-between text-[var(--text-subtle)]">
             <span className="text-xs font-bold uppercase tracking-wider">
               Preguntas Totales
             </span>
-            <div className="p-2 bg-[#48A9C5]/10 rounded-xl text-[#48A9C5]">
+            <div className="p-2 bg-[#48A9C5]/15 rounded-xl text-[#48A9C5]">
               <Layers className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl font-black text-white">
+          <div className="text-3xl font-black text-[var(--text-main)]">
             {activities.reduce((acc, a) => acc + (a.questions_count || 0), 0)}
           </div>
-          <p className="text-xs text-[#ECEBE4]/60">Diapositivas interactivas</p>
+          <p className="text-xs text-[var(--text-muted)]">
+            Diapositivas interactivas
+          </p>
         </div>
 
-        <div className="bg-[#193750] border border-[#425563]/60 p-5 rounded-2xl shadow space-y-2">
-          <div className="flex items-center justify-between text-[#ECEBE4]/70">
+        {/* Participantes */}
+        <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] p-5 rounded-2xl shadow-sm space-y-2">
+          <div className="flex items-center justify-between text-[var(--text-subtle)]">
             <span className="text-xs font-bold uppercase tracking-wider">
               Participantes
             </span>
-            <div className="p-2 bg-[#4C8C2B]/10 rounded-xl text-[#4C8C2B]">
+            <div className="p-2 bg-[#86C8BC]/20 rounded-xl text-[var(--status-success)]">
               <Users className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl font-black text-white">
+          <div className="text-3xl font-black text-[var(--text-main)]">
             {stats.totalParticipants}
           </div>
-          <p className="text-xs text-[#ECEBE4]/60">
-            {stats.totalParticipants === 1 ? "Participante histórico" : "Participantes totales"}
+          <p className="text-xs text-[var(--text-muted)]">
+            {stats.totalParticipants === 1
+              ? "Participante histórico"
+              : "Participantes totales"}
           </p>
         </div>
 
-        <div className="bg-[#193750] border border-[#425563]/60 p-5 rounded-2xl shadow space-y-2">
-          <div className="flex items-center justify-between text-[#ECEBE4]/70">
+        {/* Acierto y Feedback */}
+        <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] p-5 rounded-2xl shadow-sm space-y-2">
+          <div className="flex items-center justify-between text-[var(--text-subtle)]">
             <span className="text-xs font-bold uppercase tracking-wider">
               Acierto y Feedback
             </span>
-            <div className="p-2 bg-[#86C8BC]/10 rounded-xl text-[#86C8BC]">
+            <div className="p-2 bg-[#86C8BC]/20 rounded-xl text-[var(--status-success)]">
               <TrendingUp className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl font-black text-white">
+          <div className="text-3xl font-black text-[var(--status-success)]">
             {stats.accuracyRate !== null ? `${stats.accuracyRate}%` : "—"}
           </div>
-          <p className="text-xs text-[#ECEBE4]/60">
-            {stats.accuracyRate !== null ? "Promedio en sesiones" : "Sin sesiones evaluadas"}
+          <p className="text-xs text-[var(--text-muted)]">
+            {stats.accuracyRate !== null
+              ? "Promedio en sesiones"
+              : "Sin sesiones evaluadas"}
           </p>
-        </div>
-      </div>
-
-      {/* Hero Action Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-gradient-to-br from-[#193750] to-[#0F2D44] border-2 border-[#FFC72C]/50 p-6 rounded-3xl shadow-xl flex flex-col justify-between space-y-4">
-          <div className="space-y-2">
-            <div className="w-12 h-12 rounded-2xl bg-[#FFC72C] text-[#001E32] flex items-center justify-center font-black shadow-lg">
-              <Play className="w-6 h-6 fill-[#001E32]" />
-            </div>
-            <h3 className="text-xl font-black text-white">
-              Lanzar Presentación en Vivo
-            </h3>
-            <p className="text-sm text-[#ECEBE4]/80 leading-relaxed">
-              Inicia una sesión interactiva gamificada con podio 3D, tiempo de
-              respuesta y ranking de participantes.
-            </p>
-          </div>
-          <Link
-            to="/presentations"
-            className="w-full bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black py-3 px-4 rounded-xl flex items-center justify-center space-x-2 transition shadow active:scale-95"
-          >
-            <span>Ir al Catálogo de Presentaciones</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-
-        <div className="bg-gradient-to-br from-[#193750] to-[#0F2D44] border-2 border-[#48A9C5]/50 p-6 rounded-3xl shadow-xl flex flex-col justify-between space-y-4">
-          <div className="space-y-2">
-            <div className="w-12 h-12 rounded-2xl bg-[#48A9C5] text-white flex items-center justify-center font-black shadow-lg">
-              <MessageSquare className="w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-black text-white">
-              Preguntas Abiertas (Mentimeter)
-            </h3>
-            <p className="text-sm text-[#ECEBE4]/80 leading-relaxed">
-              Sondeos instantáneos sin concurso. Recopila opiniones y proyecta
-              en Nube de Palabras, Barras o Muro de Ideas.
-            </p>
-          </div>
-          <Link
-            to="/open-polls"
-            className="w-full bg-[#48A9C5] hover:bg-[#3B8FA8] text-white font-black py-3 px-4 rounded-xl flex items-center justify-center space-x-2 transition shadow active:scale-95"
-          >
-            <span>Lanzar Pregunta Abierta</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-
-        <div className="bg-gradient-to-br from-[#193750] to-[#0F2D44] border-2 border-[#425563] p-6 rounded-3xl shadow-xl flex flex-col justify-between space-y-4">
-          <div className="space-y-2">
-            <div className="w-12 h-12 rounded-2xl bg-[#001E32] border border-[#425563] text-[#ECEBE4] flex items-center justify-center font-black shadow-lg">
-              <Smartphone className="w-6 h-6 text-[#FFC72C]" />
-            </div>
-            <h3 className="text-xl font-black text-white">
-              Unirse como Móvil (PIN)
-            </h3>
-            <p className="text-sm text-[#ECEBE4]/80 leading-relaxed">
-              Permite a los asistentes ingresar a cualquier sesión activa
-              digitando el PIN de 6 dígitos desde sus teléfonos.
-            </p>
-          </div>
-          <Link
-            to="/join"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full bg-[#001E32] hover:bg-[#193750] text-[#FFC72C] border-2 border-[#FFC72C]/40 font-black py-3 px-4 rounded-xl flex items-center justify-center space-x-2 transition shadow active:scale-95"
-          >
-            <span>Abrir Pantalla Móvil</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
         </div>
       </div>
 
       {/* Recent Presentations List */}
-      <div className="bg-[#193750] border border-[#425563]/60 rounded-3xl p-6 shadow-xl space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-[#425563]/40">
+      <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-3xl p-6 shadow-sm space-y-5">
+        <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
           <div>
-            <h2 className="text-xl font-black text-white">
+            <h2 className="text-xl font-black text-[var(--text-main)] tracking-wide">
               Presentaciones Disponibles
             </h2>
-            <p className="text-xs text-[#ECEBE4]/70">
-              Listado central de actividades gamificadas y sondeos
+            <p className="text-xs text-[var(--text-muted)] mt-0.5">
+              Listado central de actividades gamificadas y sondeos de opinión
             </p>
           </div>
           <Link
             to="/presentations"
-            className="text-xs font-bold text-[#FFC72C] hover:underline flex items-center gap-1"
+            className="text-xs font-bold text-[#FFC72C] hover:underline flex items-center gap-1.5 focus-visible:outline-none"
           >
-            <span>Ver todas</span>
+            <span>Ver todas las presentaciones</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
         {isLoading ? (
-          <div className="p-8 text-center text-[#ECEBE4]/60">
+          <div className="p-8 text-center text-[var(--text-muted)]">
             Cargando presentaciones...
           </div>
         ) : activities.length === 0 ? (
-          <div className="p-8 text-center text-[#ECEBE4]/60">
+          <div className="p-8 text-center text-[var(--text-muted)]">
             No hay presentaciones registradas.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {activities.slice(0, 4).map((act) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {activities.slice(0, 6).map((act) => (
               <div
                 key={act.id}
-                className="bg-[#001E32] border border-[#425563]/60 hover:border-[#FFC72C]/60 p-5 rounded-2xl transition flex flex-col justify-between space-y-4 group"
+                className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] hover:border-[#FFC72C]/60 p-5 rounded-2xl transition-all duration-200 flex flex-col justify-between space-y-4 group hover:shadow-md"
               >
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[#FFC72C]/10 text-[#FFC72C] border border-[#FFC72C]/20">
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[#FFC72C]/15 text-[#FFC72C] border border-[#FFC72C]/30">
                       {act.category}
                     </span>
-                    <span className="text-xs text-[#ECEBE4]/60 font-semibold">
+                    <span className="text-xs text-[var(--text-muted)] font-semibold">
                       {act.questions_count || 0} diapositivas
                     </span>
                   </div>
-                  <h4 className="text-lg font-extrabold text-white group-hover:text-[#FFC72C] transition-colors">
+                  <h4 className="text-base font-extrabold text-[var(--text-main)] group-hover:text-[#FFC72C] transition-colors leading-snug">
                     {act.title}
                   </h4>
-                  <p className="text-xs text-[#ECEBE4]/70 line-clamp-2">
+                  <p className="text-xs text-[var(--text-subtle)] line-clamp-2 leading-relaxed">
                     {act.activity_type === "open_poll"
-                      ? "Pregunta Abierta sin concurso (estilo Mentimeter) para recopilar opiniones en tiempo real."
-                      : "Cuestionario gamificado con preguntas de selección, verdadero/falso y podio."}
+                      ? "Sondeo abierto sin concurso para recopilar opiniones y proyectar en vivo."
+                      : "Cuestionario gamificado con preguntas interactivas, tiempo de respuesta y podio."}
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-[#425563]/30">
+                <div className="flex items-center justify-between pt-3 border-t border-[var(--border-subtle)]">
                   <Link
                     to={`/editor/${act.id}`}
-                    className="text-xs font-bold text-[#48A9C5] hover:underline"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#48A9C5] hover:underline"
                   >
-                    Editar Contenido
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>Editar</span>
                   </Link>
 
                   <button
                     type="button"
                     disabled={isLaunching}
                     onClick={() => handleLaunchFirst(act.id)}
-                    className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2 px-3.5 rounded-xl transition flex items-center gap-1.5 shadow"
+                    className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-xs py-2 px-3.5 rounded-xl transition flex items-center gap-1.5 shadow active:scale-95 cursor-pointer disabled:opacity-50"
                   >
                     <Play className="w-3.5 h-3.5 fill-[#001E32]" />
                     <span>Lanzar en Vivo</span>

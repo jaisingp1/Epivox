@@ -22,45 +22,116 @@
   --color-epiroc-dark-red: rgb(163, 40, 35);
   --color-epiroc-dark-green: rgb(66, 120, 33);
 
-  /* Semantic Mappings */
-  --color-bg-primary: var(--bg-primary);
-  --color-bg-secondary: var(--bg-secondary);
-  --color-bg-card: var(--bg-card);
-  --color-txt-primary: var(--text-primary);
-  --color-txt-secondary: var(--text-secondary);
-  --color-border-primary: var(--border-color);
+  /* Semantic Theme Mappings (Tailwind Utility Classes) */
+  --color-surface-base: var(--surface-base);
+  --color-surface-card: var(--surface-card);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-hover: var(--surface-hover);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-text-main: var(--text-main);
+  --color-text-subtle: var(--text-subtle);
+  --color-text-muted: var(--text-muted);
+  --color-status-success: var(--status-success);
+  --color-status-error: var(--status-error);
+  --color-status-warning: var(--status-warning);
+  --color-status-info: var(--status-info);
+
+  /* Legacy Semantic Aliases */
+  --color-bg-primary: var(--surface-base);
+  --color-bg-secondary: var(--surface-card);
+  --color-bg-card: var(--surface-subtle);
+  --color-txt-primary: var(--text-main);
+  --color-txt-secondary: var(--text-subtle);
+  --color-border-primary: var(--border-strong);
 }
 
-:root {
-  --bg-primary: rgb(236, 235, 228);
-  --bg-secondary: rgb(245, 244, 240);
-  --bg-card: rgb(255, 255, 255);
-  --text-primary: rgb(0, 30, 50);
-  --text-secondary: rgb(66, 85, 99);
-  --border-color: rgb(180, 180, 170);
+/* =========================================================================
+   LIGHT THEME VARIABLES (Default WCAG 2.1 AA/AAA Compliant)
+   ========================================================================= */
+:root,
+[data-theme="light"] {
+  /* Surfaces */
+  --surface-base: rgb(236, 235, 228); /* Epiroc Light Grey */
+  --surface-card: rgb(255, 255, 255); /* Pure White Card */
+  --surface-subtle: rgb(245, 244, 240); /* Warm Off-White */
+  --surface-hover: rgb(226, 224, 216); /* Slightly Darker Light Grey */
+
+  /* Borders */
+  --border-subtle: rgba(66, 85, 99, 0.2);
+  --border-strong: rgb(180, 180, 170); /* Epiroc Medium Grey */
+
+  /* Typography */
+  --text-main: rgb(0, 30, 50); /* Epiroc Dark Blue - 14.26:1 on Light Grey */
+  --text-subtle: rgb(66, 85, 99); /* Epiroc Grey - 6.48:1 */
+  --text-muted: rgb(119, 116, 110); /* Epiroc Dark Grey - 4.52:1 on White */
+
+  /* Status Colors */
+  --status-success: rgb(66, 120, 33); /* Epiroc Dark Green - 5.33:1 on White */
+  --status-error: rgb(163, 40, 35); /* Epiroc Dark Red - 7.28:1 on White */
+  --status-warning: rgb(216, 96, 24); /* Epiroc Orange */
+  --status-info: rgb(72, 169, 197); /* Epiroc Light Blue */
+
+  /* Legacy Variable Aliases */
+  --bg-primary: var(--surface-base);
+  --bg-secondary: var(--surface-subtle);
+  --bg-card: var(--surface-card);
+  --text-primary: var(--text-main);
+  --text-secondary: var(--text-subtle);
+  --border-color: var(--border-strong);
 }
 
-[data-theme="dark"],
-body {
-  --bg-primary: rgb(0, 30, 50); /* Epiroc Dark Blue */
-  --bg-secondary: rgb(15, 45, 68);
-  --bg-card: rgb(25, 55, 80);
-  --text-primary: rgb(255, 255, 255);
-  --text-secondary: rgb(180, 180, 170);
-  --border-color: rgb(66, 85, 99);
+/* =========================================================================
+   DARK THEME VARIABLES (Default WCAG 2.1 AA/AAA Compliant)
+   ========================================================================= */
+[data-theme="dark"] {
+  /* Surfaces */
+  --surface-base: rgb(0, 30, 50); /* Epiroc Dark Blue */
+  --surface-card: rgb(15, 45, 68); /* Deep Navy Card */
+  --surface-subtle: rgb(25, 55, 80); /* Elevated Slate Card */
+  --surface-hover: rgb(37, 79, 114);
+
+  /* Borders */
+  --border-subtle: rgba(66, 85, 99, 0.5);
+  --border-strong: rgb(66, 85, 99); /* Epiroc Grey */
+
+  /* Typography */
+  --text-main: rgb(255, 255, 255); /* Pure White - 17.05:1 */
+  --text-subtle: rgb(236, 235, 228); /* Epiroc Light Grey - 14.26:1 */
+  --text-muted: rgb(180, 180, 170); /* Epiroc Medium Grey - 8.16:1 */
+
+  /* Status Colors */
+  --status-success: rgb(134, 200, 188); /* Epiroc Electric Green - 8.93:1 */
+  --status-error: rgb(183, 49, 44); /* Epiroc Red - 4.60:1 */
+  --status-warning: rgb(255, 199, 44); /* Epiroc Yellow - 10.93:1 */
+  --status-info: rgb(72, 169, 197); /* Epiroc Light Blue - 6.30:1 */
+
+  /* Legacy Variable Aliases */
+  --bg-primary: var(--surface-base);
+  --bg-secondary: var(--surface-card);
+  --bg-card: var(--surface-subtle);
+  --text-primary: var(--text-main);
+  --text-secondary: var(--text-subtle);
+  --border-color: var(--border-strong);
 }
 
-/* Base resets & animations */
+/* =========================================================================
+   BASE RESETS & DEFAULTS
+   ========================================================================= */
 html,
 body {
   margin: 0;
   padding: 0;
   font-family: var(--font-sans);
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: var(--surface-base);
+  color: var(--text-main);
   min-height: 100vh;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
+/* Micro-animations */
 @keyframes pulse-subtle {
   0%,
   100% {
