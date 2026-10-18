@@ -39,7 +39,22 @@ export default function PresenterRemotePage() {
   useEffect(() => {
     if (!pin) return;
     const socket = getSocket();
-    socket.emit("presenter:join", { pin });
+
+    const syncRemote = () => {
+      socket.emit("presenter:join", { pin });
+    };
+
+    syncRemote();
+    socket.on("connect", syncRemote);
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        if (!socket.connected) socket.connect();
+        syncRemote();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("focus", syncRemote);
 
     socket.on(
       "presenter:sync",
@@ -77,6 +92,9 @@ export default function PresenterRemotePage() {
     });
 
     return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("focus", syncRemote);
+      socket.off("connect", syncRemote);
       socket.off("presenter:sync");
       socket.off("lobby:participants_update");
       socket.off("session:state_changed");
@@ -276,7 +294,8 @@ export default function PresenterRemotePage() {
                 <span>¿Detener la sesión ahora?</span>
               </div>
               <p className="text-[11px] text-[#ECEBE4]/80">
-                Las preguntas se cerrarán de inmediato para todos los alumnos en sus móviles.
+                Las preguntas se cerrarán de inmediato para todos los alumnos en
+                sus móviles.
               </p>
               <div className="flex items-center gap-2 pt-1">
                 <button
@@ -407,7 +426,8 @@ export default function PresenterRemotePage() {
                           )}
                           {q.status === "next" && (
                             <span className="flex items-center gap-0.5 text-[9px] font-black uppercase text-[#48A9C5]">
-                              <ArrowRightCircle className="w-2.5 h-2.5" /> Siguiente
+                              <ArrowRightCircle className="w-2.5 h-2.5" />{" "}
+                              Siguiente
                             </span>
                           )}
                           {q.status === "pending" && (

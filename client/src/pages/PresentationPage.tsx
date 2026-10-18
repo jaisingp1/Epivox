@@ -86,7 +86,9 @@ export default function PresentationPage() {
   const [totalAnswers, setTotalAnswers] = useState<number>(0);
   const [liveResults, setLiveResults] = useState<Record<string, number>>({});
   const [rawAnswers, setRawAnswers] = useState<RawAnswerItem[]>([]);
-  const [overrideChartType, setOverrideChartType] = useState<string | null>(null);
+  const [overrideChartType, setOverrideChartType] = useState<string | null>(
+    null,
+  );
   const [leaderboard, setLeaderboard] = useState<ParticipantData[]>([]);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
@@ -115,7 +117,11 @@ export default function PresentationPage() {
 
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (pin && session?.status !== "finished" && session?.status !== "cancelled") {
+      if (
+        pin &&
+        session?.status !== "finished" &&
+        session?.status !== "cancelled"
+      ) {
         navigator.sendBeacon(`/api/epivox/sessions/${pin}/cancel`);
       }
     };
@@ -139,7 +145,11 @@ export default function PresentationPage() {
       .catch(console.error);
 
     const socket = getSocket();
-    socket.emit("presenter:join", { pin });
+    const handlePresenterConnect = () => {
+      socket.emit("presenter:join", { pin });
+    };
+    handlePresenterConnect();
+    socket.on("connect", handlePresenterConnect);
 
     socket.on(
       "presenter:sync",
@@ -261,6 +271,7 @@ export default function PresentationPage() {
     });
 
     return () => {
+      socket.off("connect", handlePresenterConnect);
       socket.off("presenter:sync");
       socket.off("lobby:participants_update");
       socket.off("session:state_changed");
@@ -470,7 +481,8 @@ export default function PresentationPage() {
                   Esperando que el público envíe sus respuestas...
                 </p>
                 <p className="text-xs text-[#ECEBE4]/60">
-                  Las palabras aparecerán y crecerán dinámicamente aquí en tiempo real.
+                  Las palabras aparecerán y crecerán dinámicamente aquí en
+                  tiempo real.
                 </p>
               </div>
             ) : (
@@ -484,7 +496,10 @@ export default function PresentationPage() {
                     style={{ fontSize: `${scale}rem`, color }}
                     className="font-black px-4 py-1.5 bg-[#001E32]/80 border border-[#425563]/80 rounded-2xl shadow-xl transition-all hover:scale-110 cursor-default select-none animate-in fade-in"
                   >
-                    {word} <span className="text-xs opacity-75 font-bold">({count})</span>
+                    {word}{" "}
+                    <span className="text-xs opacity-75 font-bold">
+                      ({count})
+                    </span>
                   </span>
                 );
               })
@@ -495,7 +510,8 @@ export default function PresentationPage() {
         {/* Gráfico 2: Muro de Ideas / Tarjetas */}
         {effectiveType === "cards" && (
           <div className="bg-[#193750] border-2 border-[#425563] p-6 rounded-3xl max-h-[400px] overflow-y-auto space-y-4">
-            {rawAnswers.length === 0 && Object.keys(liveResults).length === 0 ? (
+            {rawAnswers.length === 0 &&
+            Object.keys(liveResults).length === 0 ? (
               <div className="text-center text-[#ECEBE4]/60 py-10">
                 <LayoutGrid className="w-16 h-16 mx-auto text-[#FFC72C] opacity-50 mb-2 animate-pulse" />
                 <p className="text-lg font-bold text-white">
@@ -514,7 +530,9 @@ export default function PresentationPage() {
                           "{ans.answer_payload}"
                         </p>
                         <div className="flex items-center justify-between text-xs text-[#ECEBE4]/60 border-t border-[#425563]/40 pt-2">
-                          <span className="font-semibold text-[#FFC72C]">{ans.nickname}</span>
+                          <span className="font-semibold text-[#FFC72C]">
+                            {ans.nickname}
+                          </span>
                           {ans.department && <span>{ans.department}</span>}
                         </div>
                       </div>
@@ -528,7 +546,9 @@ export default function PresentationPage() {
                           "{ans}"
                         </p>
                         <div className="flex items-center justify-between text-xs text-[#ECEBE4]/60 border-t border-[#425563]/40 pt-2">
-                          <span className="font-semibold text-[#FFC72C]">Aporte #{i + 1}</span>
+                          <span className="font-semibold text-[#FFC72C]">
+                            Aporte #{i + 1}
+                          </span>
                           <span>{count} menciones</span>
                         </div>
                       </div>
@@ -553,16 +573,29 @@ export default function PresentationPage() {
                 <div className="flex items-end gap-3 h-52 border-b-2 border-l-2 border-[#425563] p-4">
                   {Object.entries(liveResults).map(([label, count], idx) => {
                     const maxCount = Math.max(...Object.values(liveResults), 1);
-                    const pct = Math.min(100, Math.round((count / maxCount) * 100));
+                    const pct = Math.min(
+                      100,
+                      Math.round((count / maxCount) * 100),
+                    );
                     const color = OPTION_COLORS[idx % OPTION_COLORS.length];
                     return (
-                      <div key={label} className="flex-1 flex flex-col items-center justify-end h-full">
-                        <span className="text-xs font-bold text-[#FFC72C] mb-1">{count}</span>
+                      <div
+                        key={label}
+                        className="flex-1 flex flex-col items-center justify-end h-full"
+                      >
+                        <span className="text-xs font-bold text-[#FFC72C] mb-1">
+                          {count}
+                        </span>
                         <div
-                          style={{ height: `${Math.max(12, pct)}%`, backgroundColor: color }}
+                          style={{
+                            height: `${Math.max(12, pct)}%`,
+                            backgroundColor: color,
+                          }}
                           className="w-full rounded-t-lg transition-all duration-500"
                         />
-                        <span className="text-[10px] text-[#ECEBE4]/80 truncate max-w-[80px] mt-2 font-bold">{label}</span>
+                        <span className="text-[10px] text-[#ECEBE4]/80 truncate max-w-[80px] mt-2 font-bold">
+                          {label}
+                        </span>
                       </div>
                     );
                   })}
@@ -576,7 +609,10 @@ export default function PresentationPage() {
         {effectiveType === "donut" && (
           <div className="bg-[#193750] border-2 border-[#425563] p-8 rounded-3xl min-h-[320px] flex flex-col sm:flex-row items-center justify-around gap-6">
             {(() => {
-              const entries = Object.entries(liveResults).map(([k, v]) => ({ label: k, count: v }));
+              const entries = Object.entries(liveResults).map(([k, v]) => ({
+                label: k,
+                count: v,
+              }));
               const sum = entries.reduce((a, b) => a + b.count, 0) || 1;
               if (entries.length === 0) {
                 return (
@@ -601,7 +637,9 @@ export default function PresentationPage() {
                   end: acc,
                 };
               });
-              const gradientStr = segments.map((s) => `${s.color} ${s.start}% ${s.end}%`).join(", ");
+              const gradientStr = segments
+                .map((s) => `${s.color} ${s.start}% ${s.end}%`)
+                .join(", ");
               return (
                 <>
                   <div
@@ -609,18 +647,32 @@ export default function PresentationPage() {
                     className="relative w-48 h-48 rounded-full flex items-center justify-center shadow-2xl shrink-0"
                   >
                     <div className="w-28 h-28 bg-[#193750] rounded-full flex flex-col items-center justify-center shadow-inner">
-                      <span className="text-2xl font-black text-white">{totalAnswers}</span>
-                      <span className="text-[10px] text-[#ECEBE4]/60 uppercase tracking-widest font-bold">Votos</span>
+                      <span className="text-2xl font-black text-white">
+                        {totalAnswers}
+                      </span>
+                      <span className="text-[10px] text-[#ECEBE4]/60 uppercase tracking-widest font-bold">
+                        Votos
+                      </span>
                     </div>
                   </div>
                   <div className="flex flex-col gap-2 max-w-sm w-full">
                     {segments.map((s) => (
-                      <div key={s.label} className="flex items-center justify-between bg-[#001E32] p-2.5 rounded-xl border border-[#425563]">
+                      <div
+                        key={s.label}
+                        className="flex items-center justify-between bg-[#001E32] p-2.5 rounded-xl border border-[#425563]"
+                      >
                         <div className="flex items-center space-x-2 truncate">
-                          <span className="w-3.5 h-3.5 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
-                          <span className="text-xs font-bold text-white truncate">{s.label}</span>
+                          <span
+                            className="w-3.5 h-3.5 rounded-full shrink-0"
+                            style={{ backgroundColor: s.color }}
+                          />
+                          <span className="text-xs font-bold text-white truncate">
+                            {s.label}
+                          </span>
                         </div>
-                        <span className="text-xs font-mono font-bold text-[#FFC72C] shrink-0">{s.pct}% ({s.count})</span>
+                        <span className="text-xs font-mono font-bold text-[#FFC72C] shrink-0">
+                          {s.pct}% ({s.count})
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -650,11 +702,19 @@ export default function PresentationPage() {
               ) : (
                 Object.entries(liveResults).map(([optText, count], idx) => {
                   const maxCount = Math.max(...Object.values(liveResults), 1);
-                  const heightPct = Math.min(100, Math.round((count / maxCount) * 100));
+                  const heightPct = Math.min(
+                    100,
+                    Math.round((count / maxCount) * 100),
+                  );
                   const color = OPTION_COLORS[idx % OPTION_COLORS.length];
                   return (
-                    <div key={optText} className="flex flex-col items-center h-full justify-end space-y-2">
-                      <span className="font-extrabold text-xl text-white">{count}</span>
+                    <div
+                      key={optText}
+                      className="flex flex-col items-center h-full justify-end space-y-2"
+                    >
+                      <span className="font-extrabold text-xl text-white">
+                        {count}
+                      </span>
                       <div className="w-full bg-[#001E32] rounded-t-2xl p-1 h-44 flex items-end">
                         <div
                           className="w-full rounded-t-xl transition-all duration-700 ease-out flex items-center justify-center font-bold text-lg"
@@ -665,7 +725,9 @@ export default function PresentationPage() {
                           }}
                         />
                       </div>
-                      <span className="text-center text-xs font-bold truncate max-w-[130px]">{optText}</span>
+                      <span className="text-center text-xs font-bold truncate max-w-[130px]">
+                        {optText}
+                      </span>
                     </div>
                   );
                 })
@@ -908,7 +970,8 @@ export default function PresentationPage() {
                     className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-lg py-3 px-6 rounded-xl shadow-xl flex items-center space-x-2 transition active:scale-95"
                   >
                     <span>
-                      Siguiente Pregunta ({currentQIndex + 2}/{questions.length})
+                      Siguiente Pregunta ({currentQIndex + 2}/{questions.length}
+                      )
                     </span>
                     <ArrowRight className="w-5 h-5" />
                   </button>
@@ -956,7 +1019,11 @@ export default function PresentationPage() {
                 {[
                   { type: "bar", label: "Barras", icon: BarChart3 },
                   { type: "line", label: "Líneas", icon: TrendingUp },
-                  { type: "word_cloud", label: "Nube de Palabras", icon: Cloud },
+                  {
+                    type: "word_cloud",
+                    label: "Nube de Palabras",
+                    icon: Cloud,
+                  },
                   { type: "cards", label: "Muro de Ideas", icon: LayoutGrid },
                   { type: "donut", label: "Dona", icon: PieChart },
                 ].map((item) => {
@@ -1436,10 +1503,12 @@ export default function PresentationPage() {
                 ¡Sondeo de Opinión Concluido!
               </h2>
               <p className="text-xl text-[#FFC72C] font-bold">
-                Gracias a todos los asistentes por participar y compartir sus ideas.
+                Gracias a todos los asistentes por participar y compartir sus
+                ideas.
               </p>
               <p className="text-base text-[#ECEBE4]/80 max-w-xl mx-auto">
-                Las respuestas han sido recolectadas en tiempo real. Todas las opiniones quedan consolidadas para el informe de la sesión.
+                Las respuestas han sido recolectadas en tiempo real. Todas las
+                opiniones quedan consolidadas para el informe de la sesión.
               </p>
             </div>
             <div className="pt-6 flex justify-center gap-4">
@@ -1549,7 +1618,10 @@ export default function PresentationPage() {
                 Esta acción detendrá la sesión para todos los participantes.
               </p>
               <p>
-                Los alumnos conectados (PIN: <strong className="font-mono text-[#FFC72C]">{pin}</strong>) ya no verán preguntas activas y su pantalla mostrará que la presentación ha finalizado.
+                Los alumnos conectados (PIN:{" "}
+                <strong className="font-mono text-[#FFC72C]">{pin}</strong>) ya
+                no verán preguntas activas y su pantalla mostrará que la
+                presentación ha finalizado.
               </p>
             </div>
           </div>
@@ -1569,7 +1641,9 @@ export default function PresentationPage() {
               className="px-5 py-2.5 bg-[#B7312C] hover:bg-[#A32823] text-white text-xs font-black rounded-xl transition shadow-lg flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <XCircle className="w-4 h-4" />
-              <span>{isCancelling ? "Cancelando..." : "Sí, Cancelar Presentación"}</span>
+              <span>
+                {isCancelling ? "Cancelando..." : "Sí, Cancelar Presentación"}
+              </span>
             </button>
           </div>
         </div>

@@ -69,6 +69,17 @@ export interface SessionReport {
   participants: Participant[];
 }
 
+let writeQueue = Promise.resolve();
+
+function withWriteLock<T>(fn: () => Promise<T>): Promise<T> {
+  const result = writeQueue.then(fn, fn);
+  writeQueue = result.then(
+    () => {},
+    () => {},
+  );
+  return result;
+}
+
 export function generatePin(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -78,33 +89,35 @@ export async function createSession(
   presenterUserId = 1,
   options?: { mode?: string; anonymous?: boolean; maxParticipants?: number },
 ): Promise<Session> {
-  const pin = generatePin();
+  return withWriteLock(async () => {
+    const pin = generatePin();
 
-  const nextIdRows = await query<{ next_id: number }>(`
-    SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM epivox_sessions
-  `);
-  const id = nextIdRows[0]?.next_id || 1;
+    const nextIdRows = await query<{ next_id: number }>(`
+      SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM epivox_sessions
+    `);
+    const id = nextIdRows[0]?.next_id || 1;
 
-  const mode = options?.mode || "live";
-  const anonymous = options?.anonymous ? "TRUE" : "FALSE";
-  const maxParts = options?.maxParticipants || 500;
+    const mode = options?.mode || "live";
+    const anonymous = options?.anonymous ? "TRUE" : "FALSE";
+    const maxParts = options?.maxParticipants || 500;
 
-  const sql = `
-    INSERT INTO epivox_sessions (
-      id, pin, activity_id, presenter_user_id, status, current_question_index, 
-      current_step, session_mode, anonymous_mode, max_participants
-    ) VALUES (
-      ${id}, '${pin}', ${activityId}, ${presenterUserId}, 'lobby', 0, 
-      'lobby', '${mode}', ${anonymous}, ${maxParts}
-    )
-  `;
-  await exec(sql);
+    const sql = `
+      INSERT INTO epivox_sessions (
+        id, pin, activity_id, presenter_user_id, status, current_question_index, 
+        current_step, session_mode, anonymous_mode, max_participants
+      ) VALUES (
+        ${id}, '${pin}', ${activityId}, ${presenterUserId}, 'lobby', 0, 
+        'lobby', '${mode}', ${anonymous}, ${maxParts}
+      )
+    `;
+    await exec(sql);
 
-  const rows = await query<Session>(
-    `SELECT * FROM epivox_sessions WHERE id = ?`,
-    [id],
-  );
-  return rows[0];
+    const rows = await query<Session>(
+      `SELECT * FROM epivox_sessions WHERE id = ?`,
+      [id],
+    );
+    return rows[0];
+  });
 }
 
 export async function getAllSessions(): Promise<Session[]> {
@@ -154,27 +167,29 @@ export async function addParticipant(
   avatarSeed: string,
   department?: string,
 ): Promise<Participant> {
-  const nextIdRows = await query<{ next_id: number }>(`
-    SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM epivox_participants
-  `);
-  const id = nextIdRows[0]?.next_id || 1;
+  return withWriteLock(async () => {
+    const nextIdRows = await query<{ next_id: number }>(`
+      SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM epivox_participants
+    `);
+    const id = nextIdRows[0]?.next_id || 1;
 
-  const deptVal = department ? `'${department.replace(/'/g, "''")}'` : "NULL";
+    const deptVal = department ? `'${department.replace(/'/g, "''")}'` : "NULL";
 
-  const sql = `
-    INSERT INTO epivox_participants (
-      id, session_id, nickname, avatar_seed, department, score, correct_count, current_streak, best_streak, is_active
-    ) VALUES (
-      ${id}, ${sessionId}, '${nickname.replace(/'/g, "''")}', '${avatarSeed}', ${deptVal}, 0, 0, 0, 0, TRUE
-    )
-  `;
-  await exec(sql);
+    const sql = `
+      INSERT INTO epivox_participants (
+        id, session_id, nickname, avatar_seed, department, score, correct_count, current_streak, best_streak, is_active
+      ) VALUES (
+        ${id}, ${sessionId}, '${nickname.replace(/'/g, "''")}', '${avatarSeed}', ${deptVal}, 0, 0, 0, 0, TRUE
+      )
+    `;
+    await exec(sql);
 
-  const rows = await query<Participant>(
-    `SELECT * FROM epivox_participants WHERE id = ?`,
-    [id],
-  );
-  return rows[0];
+    const rows = await query<Participant>(
+      `SELECT * FROM epivox_participants WHERE id = ?`,
+      [id],
+    );
+    return rows[0];
+  });
 }
 
 export async function getParticipants(
@@ -215,7 +230,9 @@ export async function updateSessionState(
   await exec(sql);
 }
 
-export async function cancelSession(idOrPin: number | string): Promise<boolean> {
+export async function cancelSession(
+  idOrPin: number | string,
+): Promise<boolean> {
   const isNumber = typeof idOrPin === "number" || /^\d+$/.test(String(idOrPin));
   const filter = isNumber ? `id = ${idOrPin}` : `pin = '${idOrPin}'`;
   await exec(`
@@ -236,33 +253,35 @@ export async function recordAnswer(
   pointsAwarded: number,
   newStreak: number,
 ): Promise<void> {
-  const nextIdRows = await query<{ next_id: number }>(`
-    SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM epivox_answers
-  `);
-  const id = nextIdRows[0]?.next_id || 1;
+  return withWriteLock(async () => {
+    const nextIdRows = await query<{ next_id: number }>(`
+      SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM epivox_answers
+    `);
+    const id = nextIdRows[0]?.next_id || 1;
 
-  const isCorrectSql = isCorrect ? "TRUE" : "FALSE";
+    const isCorrectSql = isCorrect ? "TRUE" : "FALSE";
 
-  const sqlAnswer = `
-    INSERT INTO epivox_answers (
-      id, session_id, question_id, participant_id, answer_payload, is_correct, time_taken_ms, points_awarded
-    ) VALUES (
-      ${id}, ${sessionId}, ${questionId}, ${participantId}, '${answerPayload.replace(/'/g, "''")}', 
-      ${isCorrectSql}, ${timeTakenMs}, ${pointsAwarded}
-    )
-  `;
-  await exec(sqlAnswer);
+    const sqlAnswer = `
+      INSERT INTO epivox_answers (
+        id, session_id, question_id, participant_id, answer_payload, is_correct, time_taken_ms, points_awarded
+      ) VALUES (
+        ${id}, ${sessionId}, ${questionId}, ${participantId}, '${answerPayload.replace(/'/g, "''")}', 
+        ${isCorrectSql}, ${timeTakenMs}, ${pointsAwarded}
+      )
+    `;
+    await exec(sqlAnswer);
 
-  const correctIncrement = isCorrect ? 1 : 0;
-  const sqlParticipant = `
-    UPDATE epivox_participants 
-    SET score = score + ${pointsAwarded},
-        correct_count = correct_count + ${correctIncrement},
-        current_streak = ${newStreak},
-        best_streak = CASE WHEN ${newStreak} > best_streak THEN ${newStreak} ELSE best_streak END
-    WHERE id = ${participantId}
-  `;
-  await exec(sqlParticipant);
+    const correctIncrement = isCorrect ? 1 : 0;
+    const sqlParticipant = `
+      UPDATE epivox_participants 
+      SET score = score + ${pointsAwarded},
+          correct_count = correct_count + ${correctIncrement},
+          current_streak = ${newStreak},
+          best_streak = CASE WHEN ${newStreak} > best_streak THEN ${newStreak} ELSE best_streak END
+      WHERE id = ${participantId}
+    `;
+    await exec(sqlParticipant);
+  });
 }
 
 export async function hasParticipantAnsweredQuestion(
@@ -480,4 +499,3 @@ export async function getHubGlobalStats(): Promise<HubGlobalStats> {
     totalSessions,
   };
 }
-

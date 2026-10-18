@@ -28,10 +28,12 @@ export function broadcastSessionCancelled(pin: string): void {
     ioInstance.to(`session:${pin}`).emit("session:state_changed", {
       status: "cancelled",
       currentStep: "cancelled",
-      message: "La presentación ha sido cancelada o terminada por el presentador.",
+      message:
+        "La presentación ha sido cancelada o terminada por el presentador.",
     });
     ioInstance.to(`session:${pin}`).emit("session:cancelled", {
-      message: "La presentación ha sido cancelada o terminada por el presentador.",
+      message:
+        "La presentación ha sido cancelada o terminada por el presentador.",
     });
   }
 }
@@ -181,7 +183,10 @@ export function setupSocketManager(io: SocketIOServer): void {
             currentStep: session.current_step,
             currentQuestionIndex: currentQIndex,
             question:
-              session.status === "question_active" ? currentQuestion : null,
+              session.status === "question_active" ||
+              session.status === "question_closed"
+                ? currentQuestion
+                : null,
             remainingSeconds,
             hasAnswered,
           });
@@ -315,6 +320,7 @@ export function setupSocketManager(io: SocketIOServer): void {
               status: "question_closed",
               currentQuestionIndex: currentQIndex,
               currentStep: "results",
+              question: currentQuestion,
               results,
               rawAnswers,
               totalAnswers,
@@ -334,8 +340,14 @@ export function setupSocketManager(io: SocketIOServer): void {
               currentStep: "leaderboard",
               leaderboard,
             });
-          } else if (action === "jump_to_question" && questionIndex !== undefined) {
-            const targetIdx = Math.max(0, Math.min(questionIndex, questions.length - 1));
+          } else if (
+            action === "jump_to_question" &&
+            questionIndex !== undefined
+          ) {
+            const targetIdx = Math.max(
+              0,
+              Math.min(questionIndex, questions.length - 1),
+            );
             const targetQuestion = questions[targetIdx];
             await updateSessionState(
               session.id,
@@ -571,8 +583,10 @@ export function setupSocketManager(io: SocketIOServer): void {
               return (
                 optId === target ||
                 optText === target ||
-                (target === "opt_t" && (optId === "true" || optText.includes("verdadero"))) ||
-                (target === "opt_f" && (optId === "false" || optText.includes("falso")))
+                (target === "opt_t" &&
+                  (optId === "true" || optText.includes("verdadero"))) ||
+                (target === "opt_f" &&
+                  (optId === "false" || optText.includes("falso")))
               );
             });
 
@@ -581,12 +595,21 @@ export function setupSocketManager(io: SocketIOServer): void {
             );
 
             const isCorrectValueMatch = Boolean(
-              question.correct_answer_value && (
-                question.correct_answer_value.toString().trim().toLowerCase() === cleanPayload.toLowerCase() ||
-                (selected && question.correct_answer_value.toString().trim().toLowerCase() === (selected.id || "").toString().trim().toLowerCase()) ||
-                (question.correct_answer_value.toLowerCase() === "true" && (cleanPayload === "opt_t" || cleanPayload.toLowerCase() === "verdadero")) ||
-                (question.correct_answer_value.toLowerCase() === "false" && (cleanPayload === "opt_f" || cleanPayload.toLowerCase() === "falso"))
-              ),
+              question.correct_answer_value &&
+              (question.correct_answer_value.toString().trim().toLowerCase() ===
+                cleanPayload.toLowerCase() ||
+                (selected &&
+                  question.correct_answer_value
+                    .toString()
+                    .trim()
+                    .toLowerCase() ===
+                    (selected.id || "").toString().trim().toLowerCase()) ||
+                (question.correct_answer_value.toLowerCase() === "true" &&
+                  (cleanPayload === "opt_t" ||
+                    cleanPayload.toLowerCase() === "verdadero")) ||
+                (question.correct_answer_value.toLowerCase() === "false" &&
+                  (cleanPayload === "opt_f" ||
+                    cleanPayload.toLowerCase() === "falso"))),
             );
 
             isCorrect = isOptionMarkedCorrect || isCorrectValueMatch;
@@ -612,7 +635,9 @@ export function setupSocketManager(io: SocketIOServer): void {
           });
 
           const finalPoints = isSurveyOrOpen ? 0 : scoreCalc.pointsAwarded;
-          const finalStreak = isSurveyOrOpen ? currentStreak : scoreCalc.newStreak;
+          const finalStreak = isSurveyOrOpen
+            ? currentStreak
+            : scoreCalc.newStreak;
 
           await recordAnswer(
             session.id,

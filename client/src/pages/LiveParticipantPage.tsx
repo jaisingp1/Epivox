@@ -34,6 +34,15 @@ interface QuestionData {
   explanation_text?: string;
 }
 
+function ConnectionBanner({ isConnected }: { isConnected: boolean }) {
+  if (isConnected) return null;
+  return (
+    <div className="bg-[#B7312C] text-white text-xs font-bold py-1.5 px-3 rounded-lg text-center shadow-lg animate-pulse my-2">
+      Reconectando con la presentación en vivo...
+    </div>
+  );
+}
+
 export default function LiveParticipantPage() {
   const { pin } = useParams<{ pin: string }>();
   const navigate = useNavigate();
@@ -63,6 +72,8 @@ export default function LiveParticipantPage() {
     Date.now(),
   );
 
+  const [isConnected, setIsConnected] = useState<boolean>(true);
+
   useEffect(() => {
     const stored = sessionStorage.getItem("epivox_participant");
     if (!stored) {
@@ -74,12 +85,56 @@ export default function LiveParticipantPage() {
 
     const socket = getSocket();
 
-    // Sincronización proactiva inmediata al montar la pantalla móvil
-    socket.emit("participant:sync", {
-      pin,
-      participantId: part.id,
-    });
+    const requestSync = () => {
+      if (!pin) return;
+      socket.emit("participant:sync", {
+        pin,
+        participantId: part.id,
+      });
+    };
 
+    // 1. Sincronización proactiva inicial
+    requestSync();
+
+    // 2. Reconexión automática de socket (vital para celulares al desbloquear pantalla o cambiar de red)
+    const handleConnect = () => {
+      setIsConnected(true);
+      requestSync();
+    };
+
+    const handleDisconnect = () => {
+      setIsConnected(false);
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+
+    // 3. Al desbloquear el celular o volver a la pestaña activa (visibilitychange / focus)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        if (!socket.connected) {
+          socket.connect();
+        }
+        requestSync();
+      }
+    };
+
+    const handleWindowFocus = () => {
+      if (!socket.connected) {
+        socket.connect();
+      }
+      requestSync();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleWindowFocus);
+
+    // 4. Heartbeat de respaldo cada 3.5 segundos para evitar cualquier desincronización por paquetes perdidos
+    const syncInterval = setInterval(() => {
+      requestSync();
+    }, 3500);
+
+    // 5. Procesamiento de sincronización de estado completo
     socket.on(
       "participant:sync_state",
       (data: {
@@ -90,19 +145,38 @@ export default function LiveParticipantPage() {
         remainingSeconds?: number;
         hasAnswered?: boolean;
       }) => {
+        setIsConnected(true);
         setSessionStatus(data.status);
         setCurrentStep(data.currentStep);
 
+        if (data.question) {
+          setCurrentQuestion((prev) => {
+            if (!prev || prev.id !== data.question?.id) {
+              if (!data.hasAnswered) {
+                setHasAnswered(false);
+                setSelectedAnswer(null);
+                setSelectedRating(0);
+                setTextAnswer("");
+                setLastFeedback(null);
+              }
+              setQuestionStartTime(Date.now());
+            }
+            return data.question || null;
+          });
+        }
+
         if (data.status === "question_active" && data.question) {
-          setCurrentQuestion(data.question);
-          setRemainingTime(data.remainingSeconds ?? data.question.time_limit);
-          setHasAnswered(!!data.hasAnswered);
-          setQuestionStartTime(Date.now());
+          if (data.remainingSeconds !== undefined) {
+            setRemainingTime(data.remainingSeconds);
+          }
+          if (data.hasAnswered !== undefined) {
+            setHasAnswered(!!data.hasAnswered);
+          }
         }
       },
     );
 
-    // Sincronización de eventos de sesión
+    // 6. Sincronización reactiva por eventos emitidos por el presentador
     socket.on(
       "session:state_changed",
       (data: {
@@ -122,8 +196,11 @@ export default function LiveParticipantPage() {
         setSessionStatus(data.status);
         setCurrentStep(data.currentStep);
 
-        if (data.status === "question_active" && data.question) {
+        if (data.question) {
           setCurrentQuestion(data.question);
+        }
+
+        if (data.status === "question_active" && data.question) {
           setRemainingTime(data.question.time_limit);
           setHasAnswered(false);
           setSelectedAnswer(null);
@@ -165,6 +242,11 @@ export default function LiveParticipantPage() {
     );
 
     return () => {
+      clearInterval(syncInterval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleWindowFocus);
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
       socket.off("participant:sync_state");
       socket.off("session:state_changed");
       socket.off("session:cancelled");
@@ -205,6 +287,8 @@ export default function LiveParticipantPage() {
             PIN: {pin}
           </span>
         </header>
+
+        <ConnectionBanner isConnected={isConnected} />
 
         <main className="text-center space-y-6 my-auto">
           <div className="inline-block p-4 bg-[#FFC72C]/10 border-2 border-[#FFC72C] rounded-full animate-bounce">
@@ -321,7 +405,9 @@ export default function LiveParticipantPage() {
       return (
         <div className="min-h-screen bg-[#001E32] text-white flex flex-col justify-between p-6 text-center animate-in fade-in">
           <header className="py-2 border-b border-[#425563]">
-            <span className="font-extrabold text-xl text-[#FFC72C]">EPIVOX</span>
+            <span className="font-extrabold text-xl text-[#FFC72C]">
+              EPIVOX
+            </span>
           </header>
 
           <main className="my-auto space-y-6">
@@ -336,7 +422,8 @@ export default function LiveParticipantPage() {
                 ¡Muchas gracias por tus ideas y opiniones!
               </p>
               <p className="text-xs text-[#ECEBE4] opacity-80 pt-2">
-                El presentador está proyectando el resumen de respuestas en la pantalla principal.
+                El presentador está proyectando el resumen de respuestas en la
+                pantalla principal.
               </p>
             </div>
           </main>
@@ -392,6 +479,8 @@ export default function LiveParticipantPage() {
             Tiempo Cerrado
           </span>
         </header>
+
+        <ConnectionBanner isConnected={isConnected} />
 
         <main className="my-auto space-y-4 max-w-md mx-auto w-full">
           {currentQuestion?.question_text && (
@@ -486,6 +575,8 @@ export default function LiveParticipantPage() {
           {participant?.nickname} ({participant?.score || 0} pts)
         </span>
       </header>
+
+      <ConnectionBanner isConnected={isConnected} />
 
       {/* Cuerpo principal según si ya respondió o no */}
       <main className="my-auto max-w-md w-full mx-auto space-y-4">
@@ -607,7 +698,8 @@ export default function LiveParticipantPage() {
                 <div className="min-h-[24px] text-xs font-bold text-[#ECEBE4]/80">
                   {selectedRating > 0 ? (
                     <span className="text-[#FFC72C] font-black text-sm">
-                      {selectedRating === 1 && "★ 1 Estrella (Muy insatisfecho)"}
+                      {selectedRating === 1 &&
+                        "★ 1 Estrella (Muy insatisfecho)"}
                       {selectedRating === 2 && "★★ 2 Estrellas (Insatisfecho)"}
                       {selectedRating === 3 && "★★★ 3 Estrellas (Neutral)"}
                       {selectedRating === 4 && "★★★★ 4 Estrellas (Satisfecho)"}
@@ -625,14 +717,18 @@ export default function LiveParticipantPage() {
                   className="w-full bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-base py-3.5 rounded-xl transition shadow-xl disabled:opacity-40 active:scale-95 flex items-center justify-center gap-2"
                 >
                   <Star className="w-5 h-5 fill-[#001E32]" />
-                  <span>Enviar Calificación {selectedRating > 0 ? `(${selectedRating} ⭐)` : ""}</span>
+                  <span>
+                    Enviar Calificación{" "}
+                    {selectedRating > 0 ? `(${selectedRating} ⭐)` : ""}
+                  </span>
                 </button>
               </div>
             )}
 
             {/* Pregunta tipo: Selección Múltiple (adaptable para 2 a 6 opciones sin tapar ninguna) */}
             {(currentQuestion?.question_type === "multiple_choice" ||
-              (!currentQuestion?.question_type && currentQuestion?.question_type !== "rating")) && (
+              (!currentQuestion?.question_type &&
+                currentQuestion?.question_type !== "rating")) && (
               <div className="grid grid-cols-2 gap-2.5 max-h-[56vh] overflow-y-auto p-1">
                 {parsedOptions.map((opt, idx) => {
                   const cfg =
