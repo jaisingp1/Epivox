@@ -1613,14 +1613,16 @@ export default function PresentationPage() {
         <div className="space-y-4">
           <div className="p-4 bg-[#B7312C]/10 border border-[#B7312C]/30 rounded-2xl flex items-start gap-3">
             <AlertCircle className="w-6 h-6 text-[#B7312C] shrink-0 mt-0.5" />
-            <div className="text-xs text-[#ECEBE4] space-y-1">
-              <p className="font-bold text-white text-sm">
+            <div className="text-xs space-y-1.5">
+              <p className="font-bold text-[#A32823] dark:text-[#FFA6A3] text-sm">
                 Esta acción detendrá la sesión para todos los participantes.
               </p>
-              <p>
+              <p className="text-[#001E32] dark:text-[#ECEBE4] leading-relaxed">
                 Los alumnos conectados (PIN:{" "}
-                <strong className="font-mono text-[#FFC72C]">{pin}</strong>) ya
-                no verán preguntas activas y su pantalla mostrará que la
+                <strong className="font-mono bg-[#FFC72C] text-[#001E32] px-1.5 py-0.5 rounded font-black">
+                  {pin}
+                </strong>
+                ) ya no verán preguntas activas y su pantalla mostrará que la
                 presentación ha finalizado.
               </p>
             </div>

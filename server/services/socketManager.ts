@@ -557,6 +557,19 @@ export function setupSocketManager(io: SocketIOServer): void {
           const question = questions.find((q) => q.id === questionId);
           if (!question) return;
 
+          // Protección contra envíos dobles o rápidos del mismo participante
+          const alreadyAnswered = await hasParticipantAnsweredQuestion(
+            session.id,
+            questionId,
+            participantId,
+          );
+          if (alreadyAnswered) {
+            console.warn(
+              `[Socket submit_answer] Participante #${participantId} ya respondió la pregunta #${questionId}. Ignorando duplicado.`,
+            );
+            return;
+          }
+
           // Comprobar si es encuesta / pregunta abierta sin concurso (Mentimeter mode)
           const isSurveyOrOpen =
             question.points_base === 0 ||
@@ -657,6 +670,8 @@ export function setupSocketManager(io: SocketIOServer): void {
             pointsAwarded: finalPoints,
             newStreak: finalStreak,
             multiplier: scoreCalc.multiplier,
+            explanationText: question.explanation_text || undefined,
+            correctAnswerValue: question.correct_answer_value || undefined,
           });
 
           // Notificar en tiempo real a la pantalla del presentador sobre el nuevo voto

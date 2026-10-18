@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Sparkles,
@@ -22,6 +22,7 @@ interface QuestionOption {
   id: string;
   text: string;
   is_correct?: boolean;
+  isCorrect?: boolean;
 }
 
 interface QuestionData {
@@ -31,6 +32,7 @@ interface QuestionData {
   chart_type?: string;
   time_limit: number;
   options_json: string;
+  correct_answer_value?: string;
   explanation_text?: string;
 }
 
@@ -43,9 +45,94 @@ function ConnectionBanner({ isConnected }: { isConnected: boolean }) {
   );
 }
 
+function getCorrectAnswerDisplay(q: QuestionData | null): string | null {
+  if (!q) return null;
+  try {
+    const options: QuestionOption[] = JSON.parse(q.options_json || "[]");
+
+    // 1. Buscar en opciones marcadas como correctas
+    const markedCorrect = options.find((opt) =>
+      Boolean(opt.is_correct ?? opt.isCorrect),
+    );
+    if (markedCorrect && markedCorrect.text) {
+      return markedCorrect.text;
+    }
+
+    // 2. Buscar si coincide con correct_answer_value
+    if (q.correct_answer_value) {
+      const val = q.correct_answer_value.trim().toLowerCase();
+      const match = options.find(
+        (opt) =>
+          (opt.id && opt.id.toLowerCase() === val) ||
+          (opt.text && opt.text.toLowerCase() === val),
+      );
+      if (match) return match.text;
+
+      // Casos Verdadero / Falso
+      if (q.question_type === "true_false") {
+        if (
+          val === "true" ||
+          val === "verdadero" ||
+          val === "opt_t" ||
+          val === "a"
+        )
+          return "Verdadero";
+        if (
+          val === "false" ||
+          val === "falso" ||
+          val === "opt_f" ||
+          val === "b"
+        )
+          return "Falso";
+      }
+
+      return q.correct_answer_value;
+    }
+
+    // Caso Verdadero/Falso con opción id 'true' / 'false'
+    if (q.question_type === "true_false") {
+      const tOpt = options.find((o) => o.id === "true" || o.id === "A");
+      if (tOpt?.is_correct || tOpt?.isCorrect) return "Verdadero";
+      const fOpt = options.find((o) => o.id === "false" || o.id === "B");
+      if (fOpt?.is_correct || fOpt?.isCorrect) return "Falso";
+    }
+
+    return null;
+  } catch {
+    return q.correct_answer_value || null;
+  }
+}
+
+function getSelectedAnswerDisplay(
+  selectedId: string | null,
+  q: QuestionData | null,
+): string | null {
+  if (!selectedId || !q) return null;
+  try {
+    const options: QuestionOption[] = JSON.parse(q.options_json || "[]");
+    const found = options.find(
+      (opt) => opt.id.toLowerCase() === selectedId.toLowerCase(),
+    );
+    if (found) return found.text;
+
+    if (q.question_type === "true_false") {
+      const clean = selectedId.toLowerCase();
+      if (clean === "true" || clean === "a" || clean === "opt_t")
+        return "Verdadero";
+      if (clean === "false" || clean === "b" || clean === "opt_f")
+        return "Falso";
+    }
+
+    return selectedId;
+  } catch {
+    return selectedId;
+  }
+}
+
 export default function LiveParticipantPage() {
   const { pin } = useParams<{ pin: string }>();
   const navigate = useNavigate();
+  const hasSubmittedRef = useRef<boolean>(false);
 
   const [sessionStatus, setSessionStatus] = useState<string>("lobby");
   const [currentStep, setCurrentStep] = useState<string>("lobby");
@@ -62,6 +149,8 @@ export default function LiveParticipantPage() {
     isPoll?: boolean;
     pointsAwarded: number;
     newStreak: number;
+    explanationText?: string;
+    correctAnswerValue?: string;
   } | null>(null);
   const [participant, setParticipant] = useState<{
     id: number;
@@ -153,6 +242,7 @@ export default function LiveParticipantPage() {
           setCurrentQuestion((prev) => {
             if (!prev || prev.id !== data.question?.id) {
               if (!data.hasAnswered) {
+                hasSubmittedRef.current = false;
                 setHasAnswered(false);
                 setSelectedAnswer(null);
                 setSelectedRating(0);
@@ -171,7 +261,15 @@ export default function LiveParticipantPage() {
           }
           if (data.hasAnswered !== undefined) {
             setHasAnswered(!!data.hasAnswered);
+            if (data.hasAnswered) {
+              hasSubmittedRef.current = true;
+            }
           }
+        } else if (
+          data.status === "question_closed" ||
+          data.currentStep === "results"
+        ) {
+          hasSubmittedRef.current = true;
         }
       },
     );
@@ -186,6 +284,7 @@ export default function LiveParticipantPage() {
         podium?: Array<{ id: number; nickname: string; score: number }>;
       }) => {
         if (data.status === "cancelled" || data.currentStep === "cancelled") {
+          hasSubmittedRef.current = true;
           setSessionStatus("cancelled");
           setCurrentStep("cancelled");
           setCurrentQuestion(null);
@@ -201,6 +300,7 @@ export default function LiveParticipantPage() {
         }
 
         if (data.status === "question_active" && data.question) {
+          hasSubmittedRef.current = false;
           setRemainingTime(data.question.time_limit);
           setHasAnswered(false);
           setSelectedAnswer(null);
@@ -208,11 +308,17 @@ export default function LiveParticipantPage() {
           setTextAnswer("");
           setLastFeedback(null);
           setQuestionStartTime(Date.now());
+        } else if (
+          data.status === "question_closed" ||
+          data.currentStep === "results"
+        ) {
+          hasSubmittedRef.current = true;
         }
       },
     );
 
     socket.on("session:cancelled", () => {
+      hasSubmittedRef.current = true;
       setSessionStatus("cancelled");
       setCurrentStep("cancelled");
       setCurrentQuestion(null);
@@ -230,7 +336,10 @@ export default function LiveParticipantPage() {
         isPoll?: boolean;
         pointsAwarded: number;
         newStreak: number;
+        explanationText?: string;
+        correctAnswerValue?: string;
       }) => {
+        hasSubmittedRef.current = true;
         setLastFeedback(data);
         setParticipant((prev) => {
           if (!prev) return prev;
@@ -262,7 +371,15 @@ export default function LiveParticipantPage() {
   };
 
   const handleAnswerSubmit = (payload: string) => {
-    if (hasAnswered || !pin || !participant || !currentQuestion) return;
+    if (
+      hasSubmittedRef.current ||
+      hasAnswered ||
+      !pin ||
+      !participant ||
+      !currentQuestion
+    )
+      return;
+    hasSubmittedRef.current = true;
     const timeTakenMs = Date.now() - questionStartTime;
     setHasAnswered(true);
     setSelectedAnswer(payload);
@@ -494,54 +611,227 @@ export default function LiveParticipantPage() {
             </div>
           )}
 
-          {lastFeedback ? (
-            lastFeedback.isPoll ||
-            currentQuestion?.question_type === "word_cloud" ||
-            currentQuestion?.question_type === "open_ended" ||
-            currentQuestion?.question_type === "rating" ? (
-              <div className="bg-[#48A9C5]/20 border-2 border-[#48A9C5] p-6 rounded-3xl space-y-3">
-                <CheckCircle2 className="w-16 h-16 text-[#48A9C5] mx-auto" />
-                <h2 className="text-3xl font-black text-white">
-                  ¡Respuesta Recibida!
-                </h2>
-                <p className="text-base text-[#ECEBE4]">
-                  Tu opinión ya se visualiza en la pantalla principal.
-                </p>
-              </div>
-            ) : lastFeedback.isCorrect ? (
-              <div className="bg-[#4C8C2B]/20 border-2 border-[#4C8C2B] p-6 rounded-3xl space-y-3">
-                <CheckCircle2 className="w-16 h-16 text-[#4C8C2B] mx-auto" />
-                <h2 className="text-3xl font-black text-white">¡Correcto!</h2>
-                <p className="text-2xl font-extrabold text-[#FFC72C]">
-                  +{lastFeedback.pointsAwarded} pts
-                </p>
-                {lastFeedback.newStreak > 1 && (
-                  <p className="text-sm font-bold text-orange-400 flex items-center justify-center space-x-1">
-                    <Flame className="w-5 h-5 text-orange-500 fill-orange-500 inline" />
-                    <span>¡Racha de {lastFeedback.newStreak} aciertos!</span>
+          {(() => {
+            const correctAnswerText = currentQuestion
+              ? getCorrectAnswerDisplay(currentQuestion)
+              : null;
+            const userAnswerText =
+              selectedAnswer && currentQuestion
+                ? getSelectedAnswerDisplay(selectedAnswer, currentQuestion)
+                : selectedAnswer;
+            const explanation =
+              lastFeedback?.explanationText ||
+              currentQuestion?.explanation_text;
+
+            if (lastFeedback) {
+              const isPollOrOpen =
+                lastFeedback.isPoll ||
+                currentQuestion?.question_type === "word_cloud" ||
+                currentQuestion?.question_type === "open_ended" ||
+                currentQuestion?.question_type === "rating";
+
+              if (isPollOrOpen) {
+                return (
+                  <div className="space-y-3">
+                    <div className="bg-[#48A9C5]/20 border-2 border-[#48A9C5] p-5 rounded-3xl space-y-2 text-center shadow-lg">
+                      <CheckCircle2 className="w-14 h-14 text-[#48A9C5] mx-auto" />
+                      <h2 className="text-2xl font-black text-white">
+                        ¡Respuesta Recibida!
+                      </h2>
+                      <p className="text-sm text-[#ECEBE4]">
+                        Tu opinión ya se visualiza en la pantalla principal.
+                      </p>
+                    </div>
+
+                    {userAnswerText && (
+                      <div className="bg-[#193750] border border-[#425563] p-3 rounded-2xl text-center">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#48A9C5] block mb-0.5">
+                          Tu Aporte Registrado
+                        </span>
+                        <p className="text-sm font-black text-white">
+                          {userAnswerText}
+                        </p>
+                      </div>
+                    )}
+
+                    {explanation && (
+                      <div className="bg-[#193750] border border-[#FFC72C]/40 p-4 rounded-2xl text-left space-y-1.5 shadow-md">
+                        <div className="flex items-center gap-2 text-[#FFC72C]">
+                          <Lightbulb className="w-4 h-4 fill-[#FFC72C]/20" />
+                          <span className="text-xs font-black uppercase tracking-wider">
+                            Retroalimentación
+                          </span>
+                        </div>
+                        <p className="text-xs sm:text-sm text-[#ECEBE4] leading-relaxed">
+                          {explanation}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              if (lastFeedback.isCorrect) {
+                return (
+                  <div className="space-y-3">
+                    <div className="bg-[#4C8C2B]/20 border-2 border-[#4C8C2B] p-5 rounded-3xl space-y-2 text-center shadow-lg">
+                      <CheckCircle2 className="w-14 h-14 text-[#4C8C2B] mx-auto" />
+                      <h2 className="text-2xl font-black text-white">
+                        ¡Correcto!
+                      </h2>
+                      <p className="text-2xl font-extrabold text-[#FFC72C]">
+                        +{lastFeedback.pointsAwarded} pts
+                      </p>
+                      {lastFeedback.newStreak > 1 && (
+                        <p className="text-sm font-bold text-[#FFC72C] flex items-center justify-center space-x-1">
+                          <Flame className="w-5 h-5 text-orange-500 fill-orange-500 inline" />
+                          <span>
+                            ¡Racha de {lastFeedback.newStreak} aciertos!
+                          </span>
+                        </p>
+                      )}
+                    </div>
+
+                    {correctAnswerText && (
+                      <div className="bg-[#001E32]/90 border border-[#4C8C2B] p-3.5 rounded-2xl text-left flex items-start gap-3 shadow-md">
+                        <div className="p-1.5 bg-[#4C8C2B]/20 rounded-lg text-[#4C8C2B] mt-0.5 shrink-0">
+                          <CheckCircle2 className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className="text-[10px] font-black uppercase text-[#86C8BC] tracking-wider block">
+                            Respuesta Correcta
+                          </span>
+                          <p className="text-sm font-bold text-white break-words">
+                            {correctAnswerText}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {explanation && (
+                      <div className="bg-[#193750] border border-[#FFC72C]/40 p-4 rounded-2xl text-left space-y-1.5 shadow-md">
+                        <div className="flex items-center gap-2 text-[#FFC72C]">
+                          <Lightbulb className="w-4 h-4 fill-[#FFC72C]/20" />
+                          <span className="text-xs font-black uppercase tracking-wider">
+                            Retroalimentación / Explicación
+                          </span>
+                        </div>
+                        <p className="text-xs sm:text-sm text-[#ECEBE4] leading-relaxed">
+                          {explanation}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              // Falló la respuesta
+              return (
+                <div className="space-y-3">
+                  <div className="bg-[#B7312C]/20 border-2 border-[#B7312C] p-5 rounded-3xl space-y-2 text-center shadow-lg">
+                    <XCircle className="w-14 h-14 text-[#B7312C] mx-auto" />
+                    <h2 className="text-2xl font-black text-white">
+                      ¡Ups, no era esa!
+                    </h2>
+                    <p className="text-xs text-[#ECEBE4]">
+                      ¡Ánimo! Revisa la retroalimentación a continuación:
+                    </p>
+                  </div>
+
+                  {userAnswerText && (
+                    <div className="bg-[#001E32]/90 border border-[#B7312C]/60 p-3.5 rounded-2xl text-left flex items-start gap-3 shadow-md">
+                      <div className="p-1.5 bg-[#B7312C]/20 rounded-lg text-[#B7312C] mt-0.5 shrink-0">
+                        <XCircle className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] font-black uppercase text-[#FFA6A3] tracking-wider block">
+                          Tu Respuesta
+                        </span>
+                        <p className="text-sm font-bold text-white line-through opacity-80 break-words">
+                          {userAnswerText}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {correctAnswerText && (
+                    <div className="bg-[#001E32]/90 border border-[#4C8C2B] p-3.5 rounded-2xl text-left flex items-start gap-3 shadow-md">
+                      <div className="p-1.5 bg-[#4C8C2B]/20 rounded-lg text-[#4C8C2B] mt-0.5 shrink-0">
+                        <CheckCircle2 className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] font-black uppercase text-[#86C8BC] tracking-wider block">
+                          Respuesta Correcta
+                        </span>
+                        <p className="text-sm font-black text-white break-words">
+                          {correctAnswerText}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {explanation && (
+                    <div className="bg-[#193750] border-2 border-[#FFC72C]/50 p-4 rounded-2xl text-left space-y-1.5 shadow-md">
+                      <div className="flex items-center gap-2 text-[#FFC72C]">
+                        <Lightbulb className="w-5 h-5 fill-[#FFC72C]/20" />
+                        <span className="text-xs font-black uppercase tracking-wider">
+                          Retroalimentación / Explicación
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-[#ECEBE4] leading-relaxed font-medium">
+                        {explanation}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            // Tiempo agotado sin respuesta
+            return (
+              <div className="space-y-3">
+                <div className="bg-[#193750] border border-[#425563] p-5 rounded-3xl space-y-2 text-center shadow-lg">
+                  <Clock className="w-12 h-12 text-[#FFC72C] mx-auto" />
+                  <h2 className="text-2xl font-bold text-white">
+                    Tiempo Agotado
+                  </h2>
+                  <p className="text-xs text-[#ECEBE4]">
+                    No alcanzaste a enviar tu respuesta a tiempo.
                   </p>
+                </div>
+
+                {correctAnswerText && (
+                  <div className="bg-[#001E32]/90 border border-[#4C8C2B] p-3.5 rounded-2xl text-left flex items-start gap-3 shadow-md">
+                    <div className="p-1.5 bg-[#4C8C2B]/20 rounded-lg text-[#4C8C2B] mt-0.5 shrink-0">
+                      <CheckCircle2 className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[10px] font-black uppercase text-[#86C8BC] tracking-wider block">
+                        Respuesta Correcta
+                      </span>
+                      <p className="text-sm font-black text-white break-words">
+                        {correctAnswerText}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {explanation && (
+                  <div className="bg-[#193750] border-2 border-[#FFC72C]/50 p-4 rounded-2xl text-left space-y-1.5 shadow-md">
+                    <div className="flex items-center gap-2 text-[#FFC72C]">
+                      <Lightbulb className="w-5 h-5 fill-[#FFC72C]/20" />
+                      <span className="text-xs font-black uppercase tracking-wider">
+                        Retroalimentación / Explicación
+                      </span>
+                    </div>
+                    <p className="text-xs sm:text-sm text-[#ECEBE4] leading-relaxed font-medium">
+                      {explanation}
+                    </p>
+                  </div>
                 )}
               </div>
-            ) : (
-              <div className="bg-[#B7312C]/20 border-2 border-[#B7312C] p-6 rounded-3xl space-y-3">
-                <XCircle className="w-16 h-16 text-[#B7312C] mx-auto" />
-                <h2 className="text-3xl font-black text-white">
-                  ¡Ups, no era esa!
-                </h2>
-                <p className="text-sm text-[#ECEBE4]">
-                  ¡Ánimo! Mantén la concentración para la siguiente.
-                </p>
-              </div>
-            )
-          ) : (
-            <div className="bg-[#193750] border border-[#425563] p-6 rounded-3xl space-y-3">
-              <Clock className="w-12 h-12 text-[#FFC72C] mx-auto" />
-              <h2 className="text-2xl font-bold text-white">Tiempo Agotado</h2>
-              <p className="text-sm text-[#ECEBE4]">
-                Mira la respuesta correcta en la pantalla grande.
-              </p>
-            </div>
-          )}
+            );
+          })()}
         </main>
 
         <footer className="text-center text-xs text-[#ECEBE4] opacity-60">
@@ -600,7 +890,9 @@ export default function LiveParticipantPage() {
             )}
             {selectedAnswer && (
               <p className="text-xs uppercase tracking-wider text-[#FFC72C] font-bold">
-                Opción registrada: {selectedAnswer}
+                Opción registrada:{" "}
+                {getSelectedAnswerDisplay(selectedAnswer, currentQuestion) ||
+                  selectedAnswer}
               </p>
             )}
             <p className="text-sm text-[#ECEBE4] opacity-80">
@@ -626,6 +918,7 @@ export default function LiveParticipantPage() {
               <div className="grid grid-cols-1 gap-4">
                 <button
                   type="button"
+                  disabled={hasAnswered || hasSubmittedRef.current}
                   onClick={() => {
                     const optT = parsedOptions.find(
                       (o) =>
@@ -635,13 +928,14 @@ export default function LiveParticipantPage() {
                     );
                     handleAnswerSubmit(optT ? optT.id : "true");
                   }}
-                  className="bg-[#4C8C2B] hover:bg-[#3E7323] text-white font-black text-2xl py-8 rounded-2xl shadow-xl active:scale-95 transition flex items-center justify-center space-x-3"
+                  className="bg-[#4C8C2B] hover:bg-[#3E7323] text-white font-black text-2xl py-8 rounded-2xl shadow-xl active:scale-95 transition flex items-center justify-center space-x-3 disabled:opacity-50"
                 >
                   <CheckCircle2 className="w-8 h-8" />
                   <span>VERDADERO</span>
                 </button>
                 <button
                   type="button"
+                  disabled={hasAnswered || hasSubmittedRef.current}
                   onClick={() => {
                     const optF = parsedOptions.find(
                       (o) =>
@@ -651,7 +945,7 @@ export default function LiveParticipantPage() {
                     );
                     handleAnswerSubmit(optF ? optF.id : "false");
                   }}
-                  className="bg-[#B7312C] hover:bg-[#962824] text-white font-black text-2xl py-8 rounded-2xl shadow-xl active:scale-95 transition flex items-center justify-center space-x-3"
+                  className="bg-[#B7312C] hover:bg-[#962824] text-white font-black text-2xl py-8 rounded-2xl shadow-xl active:scale-95 transition flex items-center justify-center space-x-3 disabled:opacity-50"
                 >
                   <XCircle className="w-8 h-8" />
                   <span>FALSO</span>
@@ -679,8 +973,9 @@ export default function LiveParticipantPage() {
                       <button
                         key={starVal}
                         type="button"
+                        disabled={hasAnswered || hasSubmittedRef.current}
                         onClick={() => setSelectedRating(starVal)}
-                        className="p-1 transition-transform active:scale-90 hover:scale-110 focus:outline-none"
+                        className="p-1 transition-transform active:scale-90 hover:scale-110 focus:outline-none disabled:opacity-40"
                         aria-label={`${starVal} estrellas`}
                       >
                         <Star
@@ -712,7 +1007,11 @@ export default function LiveParticipantPage() {
 
                 <button
                   type="button"
-                  disabled={selectedRating === 0}
+                  disabled={
+                    selectedRating === 0 ||
+                    hasAnswered ||
+                    hasSubmittedRef.current
+                  }
                   onClick={() => handleAnswerSubmit(String(selectedRating))}
                   className="w-full bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-base py-3.5 rounded-xl transition shadow-xl disabled:opacity-40 active:scale-95 flex items-center justify-center gap-2"
                 >
@@ -738,10 +1037,11 @@ export default function LiveParticipantPage() {
                     <button
                       key={opt.id}
                       type="button"
+                      disabled={hasAnswered || hasSubmittedRef.current}
                       onClick={() => handleAnswerSubmit(opt.id)}
                       className={`${cfg.bgColor} ${cfg.textColor} ${
                         is5thCentered ? "col-span-2" : ""
-                      } font-extrabold p-3.5 rounded-2xl shadow-xl active:scale-95 transition flex flex-col items-center justify-center min-h-[95px]`}
+                      } font-extrabold p-3.5 rounded-2xl shadow-xl active:scale-95 transition flex flex-col items-center justify-center min-h-[95px] disabled:opacity-50`}
                     >
                       <div className="mb-1 flex items-center justify-center">
                         <EpirocOptionIcon index={idx} size="md" />
@@ -769,14 +1069,17 @@ export default function LiveParticipantPage() {
                   id="word-input"
                   type="text"
                   maxLength={30}
+                  disabled={hasAnswered || hasSubmittedRef.current}
                   value={textAnswer}
                   onChange={(e) => setTextAnswer(e.target.value)}
                   placeholder="Escribe aquí..."
-                  className="w-full text-center text-xl font-bold py-3 px-4 rounded-xl bg-[#001E32] border-2 border-[#425563] focus:border-[#FFC72C] text-white focus:outline-none"
+                  className="w-full text-center text-xl font-bold py-3 px-4 rounded-xl bg-[#001E32] border-2 border-[#425563] focus:border-[#FFC72C] text-white focus:outline-none disabled:opacity-50"
                 />
                 <button
                   type="button"
-                  disabled={!textAnswer.trim()}
+                  disabled={
+                    !textAnswer.trim() || hasAnswered || hasSubmittedRef.current
+                  }
                   onClick={() => handleAnswerSubmit(textAnswer.trim())}
                   className="w-full bg-[#FFC72C] text-[#001E32] font-black text-lg py-4 rounded-xl hover:bg-[#E6B327] transition shadow-lg disabled:opacity-50"
                 >
@@ -796,8 +1099,9 @@ export default function LiveParticipantPage() {
                     <button
                       key={num}
                       type="button"
+                      disabled={hasAnswered || hasSubmittedRef.current}
                       onClick={() => handleAnswerSubmit(num.toString())}
-                      className="bg-[#001E32] hover:bg-[#FFC72C] hover:text-[#001E32] text-white border-2 border-[#425563] font-black text-2xl py-6 rounded-xl transition shadow active:scale-95"
+                      className="bg-[#001E32] hover:bg-[#FFC72C] hover:text-[#001E32] text-white border-2 border-[#425563] font-black text-2xl py-6 rounded-xl transition shadow active:scale-95 disabled:opacity-50"
                     >
                       {num}
                     </button>

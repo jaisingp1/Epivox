@@ -254,6 +254,18 @@ export async function recordAnswer(
   newStreak: number,
 ): Promise<void> {
   return withWriteLock(async () => {
+    // Idempotencia: Evitar registrar más de una respuesta por participante y pregunta
+    const existing = await query<{ id: number }>(
+      `SELECT id FROM epivox_answers WHERE session_id = ? AND question_id = ? AND participant_id = ? LIMIT 1`,
+      [sessionId, questionId, participantId],
+    );
+    if (existing.length > 0) {
+      console.warn(
+        `[DB recordAnswer] Respuesta duplicada prevenida para participante #${participantId} en pregunta #${questionId}`,
+      );
+      return;
+    }
+
     const nextIdRows = await query<{ next_id: number }>(`
       SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM epivox_answers
     `);
