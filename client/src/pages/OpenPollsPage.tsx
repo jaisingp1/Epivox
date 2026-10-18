@@ -94,16 +94,20 @@ interface SessionQuestion {
 
 export default function OpenPollsPage() {
   // Configuración del set de preguntas previo al lanzamiento
-  const [pollTitle, setPollTitle] = useState("Sondeo de Opinión y Feedback en Vivo");
+  const [pollTitle, setPollTitle] = useState(
+    "Sondeo de Opinión y Feedback en Vivo",
+  );
   const [draftQuestions, setDraftQuestions] = useState<DraftQuestion[]>([
     {
       id: "q-1",
-      questionText: "¿Qué iniciativa o idea propones para fortalecer la seguridad en nuestras faenas?",
+      questionText:
+        "¿Qué iniciativa o idea propones para fortalecer la seguridad en nuestras faenas?",
       chartType: "word_cloud",
     },
     {
       id: "q-2",
-      questionText: "¿Cuál es el principal desafío operativo que enfrentas en tu día a día?",
+      questionText:
+        "¿Cuál es el principal desafío operativo que enfrentas en tu día a día?",
       chartType: "bar",
     },
   ]);
@@ -114,7 +118,9 @@ export default function OpenPollsPage() {
     id: number;
     pin: string;
   } | null>(null);
-  const [sessionQuestions, setSessionQuestions] = useState<SessionQuestion[]>([]);
+  const [sessionQuestions, setSessionQuestions] = useState<SessionQuestion[]>(
+    [],
+  );
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [sessionStatus, setSessionStatus] = useState<string>("lobby");
   const [activeParticipants, setActiveParticipants] = useState<
@@ -138,7 +144,12 @@ export default function OpenPollsPage() {
     socket.on(
       "presenter:sync",
       (data: {
-        session: { id: number; pin: string; status: string; current_question_index: number };
+        session: {
+          id: number;
+          pin: string;
+          status: string;
+          current_question_index: number;
+        };
         participants: Array<{ id: number; nickname: string }>;
         questions: SessionQuestion[];
         liveResults?: Record<string, number>;
@@ -254,7 +265,9 @@ export default function OpenPollsPage() {
 
   // Lanzar el set completo de sondeos abiertos
   const handleLaunchPoll = async () => {
-    const validQuestions = draftQuestions.filter((q) => q.questionText.trim().length > 0);
+    const validQuestions = draftQuestions.filter(
+      (q) => q.questionText.trim().length > 0,
+    );
     if (validQuestions.length === 0) return;
 
     setIsLaunching(true);
@@ -460,7 +473,8 @@ export default function OpenPollsPage() {
                     Set de Preguntas Abiertas ({draftQuestions.length})
                   </span>
                   <p className="text-xs text-[var(--text-muted)]">
-                    Los participantes irán respondiendo a medida que tú avances a la siguiente pregunta.
+                    Los participantes irán respondiendo a medida que tú avances
+                    a la siguiente pregunta.
                   </p>
                 </div>
                 <button
@@ -531,7 +545,9 @@ export default function OpenPollsPage() {
                             >
                               <Icon
                                 className={`w-4 h-4 shrink-0 ${
-                                  isSelected ? "text-[#FFC72C]" : "text-[var(--text-muted)]"
+                                  isSelected
+                                    ? "text-[#FFC72C]"
+                                    : "text-[var(--text-muted)]"
                                 }`}
                               />
                               <span className="font-bold text-xs truncate">
@@ -670,11 +686,17 @@ export default function OpenPollsPage() {
             <div className="flex items-center gap-4 text-xs text-[var(--text-muted)] shrink-0">
               <span className="flex items-center gap-1">
                 <Users className="w-3.5 h-3.5 text-[#48A9C5]" />
-                <span className="font-bold text-[var(--text-main)]">{activeParticipants.length}</span> conectados
+                <span className="font-bold text-[var(--text-main)]">
+                  {activeParticipants.length}
+                </span>{" "}
+                conectados
               </span>
               <span className="flex items-center gap-1">
                 <MessageSquare className="w-3.5 h-3.5 text-[#FFC72C]" />
-                <span className="font-bold text-[var(--text-main)]">{totalAnswers}</span> respuestas
+                <span className="font-bold text-[var(--text-main)]">
+                  {totalAnswers}
+                </span>{" "}
+                respuestas
               </span>
             </div>
           </div>
@@ -715,7 +737,8 @@ export default function OpenPollsPage() {
                 ¡Sondeo de Opinión Concluido!
               </h3>
               <p className="text-base text-[var(--text-subtle)] max-w-xl mx-auto">
-                Todas las preguntas fueron presentadas y las respuestas del público han sido registradas exitosamente.
+                Todas las preguntas fueron presentadas y las respuestas del
+                público han sido registradas exitosamente.
               </p>
               <div className="pt-4 flex items-center justify-center gap-3">
                 <button
@@ -740,7 +763,8 @@ export default function OpenPollsPage() {
                     Pregunta {currentQIndex + 1} de {sessionQuestions.length}
                   </span>
                   <h3 className="text-2xl font-black text-[var(--text-main)] max-w-2xl leading-snug">
-                    {currentActiveQuestion?.question_text || "Pregunta en vivo..."}
+                    {currentActiveQuestion?.question_text ||
+                      "Pregunta en vivo..."}
                   </h3>
                 </div>
 
@@ -783,8 +807,14 @@ export default function OpenPollsPage() {
                     </div>
                   ) : (
                     Object.entries(liveResults).map(([word, count], i) => {
-                      const maxCount = Math.max(...Object.values(liveResults), 1);
-                      const scale = Math.min(3.2, 1.2 + (count / maxCount) * 2.0);
+                      const maxCount = Math.max(
+                        ...Object.values(liveResults),
+                        1,
+                      );
+                      const scale = Math.min(
+                        3.2,
+                        1.2 + (count / maxCount) * 2.0,
+                      );
                       const color = OPTION_COLORS[i % OPTION_COLORS.length];
                       return (
                         <span
@@ -805,7 +835,7 @@ export default function OpenPollsPage() {
 
               {/* RENDERIZADOR 2: Barras */}
               {activeChartType === "bar" && (
-                <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] p-8 rounded-2xl min-h-[340px] flex items-end">
+                <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] p-6 sm:p-8 rounded-2xl min-h-[340px] space-y-6">
                   {Object.keys(liveResults).length === 0 ? (
                     <div className="w-full text-center text-[var(--text-muted)] py-10">
                       <BarChart3 className="w-16 h-16 mx-auto text-[#FFC72C] opacity-50 mb-2" />
@@ -814,38 +844,123 @@ export default function OpenPollsPage() {
                       </p>
                     </div>
                   ) : (
-                    <div className="w-full grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 items-end h-64">
-                      {Object.entries(liveResults).map(([ans, count], idx) => {
-                        const maxCount = Math.max(...Object.values(liveResults), 1);
-                        const heightPct = Math.min(
-                          100,
-                          Math.round((count / maxCount) * 100),
-                        );
-                        const color = OPTION_COLORS[idx % OPTION_COLORS.length];
-                        return (
-                          <div
-                            key={ans}
-                            className="flex flex-col items-center h-full justify-end space-y-2"
-                          >
-                            <span className="font-extrabold text-lg text-[var(--text-main)]">
-                              {count}
+                    (() => {
+                      const totalVotes = Object.values(liveResults).reduce(
+                        (a, b) => a + b,
+                        0,
+                      );
+                      const maxVotes = Math.max(
+                        ...Object.values(liveResults),
+                        1,
+                      );
+                      const entries = Object.entries(liveResults);
+
+                      return (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between text-xs text-[var(--text-muted)] border-b border-[var(--border-subtle)] pb-2 px-1">
+                            <span className="font-extrabold uppercase tracking-wider text-[var(--text-main)]">
+                              Distribución de Respuestas
                             </span>
-                            <div className="w-full bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-t-xl p-1 h-48 flex items-end">
-                              <div
-                                className="w-full rounded-t-lg transition-all duration-700 ease-out"
-                                style={{
-                                  height: `${Math.max(12, heightPct)}%`,
-                                  backgroundColor: color,
-                                }}
-                              />
-                            </div>
-                            <span className="text-center text-xs font-bold text-[var(--text-main)] truncate max-w-[120px]">
-                              {ans}
+                            <span className="bg-[var(--surface-card)] px-3 py-1 rounded-full border border-[var(--border-subtle)] font-bold text-[#FFC72C]">
+                              {totalVotes} {totalVotes === 1 ? "voto" : "votos"}
                             </span>
                           </div>
-                        );
-                      })}
-                    </div>
+
+                          <div className="flex items-end justify-around gap-3 sm:gap-6 h-64 sm:h-72 pt-6 pb-2 border-b-2 border-[var(--border-subtle)]">
+                            {entries.map(([ans, count], idx) => {
+                              const pct =
+                                totalVotes > 0
+                                  ? Math.round((count / totalVotes) * 100)
+                                  : 0;
+                              const barHeightPct =
+                                totalVotes > 0 && maxVotes > 0
+                                  ? Math.round((count / maxVotes) * 100)
+                                  : 0;
+                              const color =
+                                OPTION_COLORS[idx % OPTION_COLORS.length];
+
+                              return (
+                                <div
+                                  key={ans}
+                                  className="flex-1 flex flex-col items-center justify-end h-full max-w-[130px] sm:max-w-[160px] min-w-0"
+                                >
+                                  <div className="flex flex-col items-center justify-center mb-2 transition-all duration-500">
+                                    <span
+                                      className={`text-2xl sm:text-3xl font-black leading-none ${
+                                        count > 0
+                                          ? "text-[var(--text-main)] scale-105"
+                                          : "text-[var(--text-muted)]/50 text-lg sm:text-xl"
+                                      }`}
+                                    >
+                                      {count}
+                                    </span>
+                                    {totalVotes > 0 && (
+                                      <span
+                                        className={`text-[11px] sm:text-xs font-black mt-1 px-2 py-0.5 rounded-full ${
+                                          count > 0
+                                            ? "bg-[var(--surface-card)] text-[#FFC72C] border border-[var(--border-subtle)]"
+                                            : "text-[var(--text-muted)]/40"
+                                        }`}
+                                      >
+                                        {pct}%
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <div className="w-full flex items-end justify-center h-40 sm:h-48">
+                                    <div
+                                      className={`w-full max-w-[70px] sm:max-w-[85px] rounded-t-2xl transition-all duration-700 ease-out relative flex items-start justify-center ${
+                                        count > 0 ? "shadow-lg" : ""
+                                      }`}
+                                      style={{
+                                        height:
+                                          count > 0
+                                            ? `${Math.max(12, Math.min(100, barHeightPct))}%`
+                                            : "6px",
+                                        backgroundColor:
+                                          count > 0
+                                            ? color
+                                            : "var(--surface-card)",
+                                        border:
+                                          count === 0
+                                            ? "1px solid var(--border-subtle)"
+                                            : undefined,
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          <div className="flex items-start justify-around gap-3 sm:gap-6 pt-1">
+                            {entries.map(([ans, _], idx) => {
+                              const color =
+                                OPTION_COLORS[idx % OPTION_COLORS.length];
+                              return (
+                                <div
+                                  key={ans}
+                                  className="flex-1 flex flex-col items-center text-center max-w-[130px] sm:max-w-[160px] min-w-0 space-y-1.5"
+                                >
+                                  <span
+                                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shadow shrink-0"
+                                    style={{
+                                      backgroundColor: color,
+                                      color: idx === 0 ? "#001E32" : "#FFFFFF",
+                                    }}
+                                  >
+                                    {idx + 1}
+                                  </span>
+                                  <span className="text-xs sm:text-sm font-bold text-[var(--text-main)] line-clamp-3 leading-snug break-words">
+                                    {ans}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })()
                   )}
                 </div>
               )}
@@ -857,16 +972,22 @@ export default function OpenPollsPage() {
                     <div className="text-center text-[var(--text-muted)] py-10 my-auto">
                       <TrendingUp className="w-16 h-16 mx-auto text-[#48A9C5] opacity-50 mb-2" />
                       <p className="text-base font-bold text-[var(--text-main)]">
-                        Esperando respuestas para trazar la línea de tendencia...
+                        Esperando respuestas para trazar la línea de
+                        tendencia...
                       </p>
                     </div>
                   ) : (
                     (() => {
-                      const entries = Object.entries(liveResults).map(([k, v]) => ({
-                        label: k,
-                        count: v,
-                      }));
-                      const maxVal = Math.max(...entries.map((e) => e.count), 1);
+                      const entries = Object.entries(liveResults).map(
+                        ([k, v]) => ({
+                          label: k,
+                          count: v,
+                        }),
+                      );
+                      const maxVal = Math.max(
+                        ...entries.map((e) => e.count),
+                        1,
+                      );
 
                       return (
                         <div className="w-full space-y-6">
@@ -876,7 +997,8 @@ export default function OpenPollsPage() {
                                 100,
                                 Math.round((e.count / maxVal) * 100),
                               );
-                              const color = OPTION_COLORS[idx % OPTION_COLORS.length];
+                              const color =
+                                OPTION_COLORS[idx % OPTION_COLORS.length];
                               return (
                                 <div
                                   key={e.label}
@@ -934,7 +1056,9 @@ export default function OpenPollsPage() {
                                 <span className="font-semibold text-[#FFC72C]">
                                   {ans.nickname}
                                 </span>
-                                {ans.department && <span>{ans.department}</span>}
+                                {ans.department && (
+                                  <span>{ans.department}</span>
+                                )}
                               </div>
                             </div>
                           ))
@@ -1101,7 +1225,8 @@ export default function OpenPollsPage() {
             />
           )}
           <p className="text-xs text-[var(--text-subtle)]">
-            Los participantes se conectan una sola vez y van respondiendo todo el set de preguntas en vivo.
+            Los participantes se conectan una sola vez y van respondiendo todo
+            el set de preguntas en vivo.
           </p>
           <button
             type="button"
