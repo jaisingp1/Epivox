@@ -30,6 +30,7 @@ interface QuestionOption {
   id: string;
   text: string;
   is_correct?: boolean;
+  isCorrect?: boolean;
 }
 
 interface QuestionData {
@@ -40,6 +41,7 @@ interface QuestionData {
   time_limit: number;
   options_json: string;
   explanation_text?: string;
+  correct_answer_value?: string;
 }
 
 interface ParticipantData {
@@ -331,6 +333,89 @@ export default function PresentationPage() {
     currentQ?.question_type === "open_ended" ||
     currentQ?.question_type === "rating" ||
     session?.session_mode === "poll";
+
+  const isOptionCorrect = (opt: QuestionOption): boolean => {
+    if (opt.isCorrect !== undefined) return Boolean(opt.isCorrect);
+    if (opt.is_correct !== undefined) return Boolean(opt.is_correct);
+    if (currentQ?.correct_answer_value) {
+      const target = currentQ.correct_answer_value
+        .toString()
+        .trim()
+        .toLowerCase();
+      const optId = (opt.id || "").toString().trim().toLowerCase();
+      const optText = (opt.text || "").toString().trim().toLowerCase();
+      if (optId === target || optText === target) return true;
+      if (
+        target === "true" &&
+        (optId === "true" || optText.includes("verdadero"))
+      )
+        return true;
+      if (
+        target === "false" &&
+        (optId === "false" || optText.includes("falso"))
+      )
+        return true;
+    }
+    return false;
+  };
+
+  const getOptionVotes = (
+    opt: QuestionOption,
+    results: Record<string, number>,
+  ): number => {
+    if (!results || Object.keys(results).length === 0) return 0;
+
+    const optIdLower = (opt.id || "").toString().trim().toLowerCase();
+    const optTextLower = (opt.text || "").toString().trim().toLowerCase();
+
+    let total = 0;
+    let matched = false;
+
+    for (const [k, v] of Object.entries(results)) {
+      const kLower = k.toString().trim().toLowerCase();
+
+      // Coincidencia exacta o en minúsculas por ID
+      if (kLower === optIdLower) {
+        total += Number(v) || 0;
+        matched = true;
+        continue;
+      }
+
+      // Coincidencia por texto de la opción
+      if (optTextLower && kLower === optTextLower) {
+        total += Number(v) || 0;
+        matched = true;
+        continue;
+      }
+
+      // Mapeo especial Verdadero / Falso
+      if (optIdLower === "true" || optTextLower.includes("verdadero")) {
+        if (
+          kLower === "true" ||
+          kLower === "opt_t" ||
+          kLower.includes("verdadero")
+        ) {
+          total += Number(v) || 0;
+          matched = true;
+          continue;
+        }
+      }
+      if (optIdLower === "false" || optTextLower.includes("falso")) {
+        if (
+          kLower === "false" ||
+          kLower === "opt_f" ||
+          kLower.includes("falso")
+        ) {
+          total += Number(v) || 0;
+          matched = true;
+          continue;
+        }
+      }
+    }
+
+    if (matched) return total;
+    return results[opt.id] !== undefined ? Number(results[opt.id]) : 0;
+  };
 
   const renderRatingVisualization = () => {
     // Calcular conteos por estrella: 1 a 5
@@ -682,57 +767,144 @@ export default function PresentationPage() {
           </div>
         )}
 
-        {/* Gráfico 5: Barras */}
+        {/* Gráfico 5: Barras en Vivo */}
         {effectiveType === "bar" && (
-          <div className="bg-[#193750] border-2 border-[#425563] p-8 rounded-3xl space-y-6">
-            <div
-              className={`grid gap-4 h-64 items-end ${
-                Object.keys(liveResults).length >= 5
-                  ? "grid-cols-3 sm:grid-cols-5 lg:grid-cols-6"
-                  : "grid-cols-2 sm:grid-cols-4"
-              }`}
-            >
-              {Object.keys(liveResults).length === 0 ? (
-                <div className="col-span-full text-center text-[#ECEBE4]/60 py-10">
-                  <BarChart3 className="w-16 h-16 mx-auto text-[#FFC72C] opacity-50 mb-2 animate-pulse" />
-                  <p className="text-lg font-bold text-white">
-                    Esperando respuestas del público para graficar...
-                  </p>
-                </div>
-              ) : (
-                Object.entries(liveResults).map(([optText, count], idx) => {
-                  const maxCount = Math.max(...Object.values(liveResults), 1);
-                  const heightPct = Math.min(
-                    100,
-                    Math.round((count / maxCount) * 100),
-                  );
-                  const color = OPTION_COLORS[idx % OPTION_COLORS.length];
-                  return (
-                    <div
-                      key={optText}
-                      className="flex flex-col items-center h-full justify-end space-y-2"
-                    >
-                      <span className="font-extrabold text-xl text-white">
-                        {count}
-                      </span>
-                      <div className="w-full bg-[#001E32] rounded-t-2xl p-1 h-44 flex items-end">
-                        <div
-                          className="w-full rounded-t-xl transition-all duration-700 ease-out flex items-center justify-center font-bold text-lg"
-                          style={{
-                            height: `${Math.max(10, heightPct)}%`,
-                            backgroundColor: color,
-                            color: idx === 0 ? "#001E32" : "#FFFFFF",
-                          }}
-                        />
-                      </div>
-                      <span className="text-center text-xs font-bold truncate max-w-[130px]">
-                        {optText}
+          <div className="bg-[#193750] border-2 border-[#425563] p-6 sm:p-8 rounded-3xl space-y-6 shadow-2xl">
+            {(() => {
+              const optionsList: QuestionOption[] =
+                parsedOptions.length > 0
+                  ? parsedOptions
+                  : Object.keys(liveResults).map((k) => ({
+                      id: k,
+                      text: k,
+                    }));
+
+              const totalVotes = Object.values(liveResults).reduce(
+                (a, b) => a + b,
+                0,
+              );
+              const maxVotes = Math.max(
+                ...optionsList.map((o) => getOptionVotes(o, liveResults)),
+                1,
+              );
+
+              if (optionsList.length === 0) {
+                return (
+                  <div className="text-center text-[#ECEBE4]/60 py-10">
+                    <BarChart3 className="w-16 h-16 mx-auto text-[#FFC72C] opacity-50 mb-2 animate-pulse" />
+                    <p className="text-lg font-bold text-white">
+                      Esperando respuestas del público para graficar...
+                    </p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-xs text-[#ECEBE4]/80 px-2 border-b border-[#425563]/50 pb-3">
+                    <div className="flex items-center gap-2">
+                      <BarChart3 className="w-4 h-4 text-[#FFC72C]" />
+                      <span className="font-extrabold uppercase tracking-wider text-white">
+                        Votación en Vivo
                       </span>
                     </div>
-                  );
-                })
-              )}
-            </div>
+                    <span className="bg-[#001E32] px-3 py-1 rounded-full border border-[#425563] font-bold text-[#FFC72C]">
+                      {totalVotes} {totalVotes === 1 ? "voto" : "votos"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-end justify-around gap-3 sm:gap-6 h-64 sm:h-72 pt-6 pb-2 border-b-2 border-[#425563]">
+                    {optionsList.map((opt, idx) => {
+                      const count = getOptionVotes(opt, liveResults);
+                      const pct =
+                        totalVotes > 0
+                          ? Math.round((count / totalVotes) * 100)
+                          : 0;
+                      const barHeightPct =
+                        totalVotes > 0 && maxVotes > 0
+                          ? Math.round((count / maxVotes) * 100)
+                          : 0;
+                      const barColor =
+                        OPTION_COLORS[idx % OPTION_COLORS.length];
+
+                      return (
+                        <div
+                          key={opt.id}
+                          className="flex-1 flex flex-col items-center justify-end h-full max-w-[130px] sm:max-w-[160px] min-w-0"
+                        >
+                          <div className="flex flex-col items-center justify-center mb-2 transition-all duration-500">
+                            <span
+                              className={`text-2xl sm:text-3xl font-black leading-none ${
+                                count > 0
+                                  ? "text-white"
+                                  : "text-[#ECEBE4]/40 text-lg sm:text-xl"
+                              }`}
+                            >
+                              {count}
+                            </span>
+                            {totalVotes > 0 && (
+                              <span
+                                className={`text-[11px] sm:text-xs font-black mt-1 px-2 py-0.5 rounded-full ${
+                                  count > 0
+                                    ? "bg-[#001E32] text-[#FFC72C] border border-[#425563]"
+                                    : "text-[#ECEBE4]/30"
+                                }`}
+                              >
+                                {pct}%
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="w-full flex items-end justify-center h-40 sm:h-48">
+                            <div
+                              className={`w-full max-w-[70px] sm:max-w-[85px] rounded-t-2xl transition-all duration-700 ease-out relative flex items-start justify-center ${
+                                count > 0 ? "shadow-lg" : ""
+                              }`}
+                              style={{
+                                height:
+                                  count > 0
+                                    ? `${Math.max(12, Math.min(100, barHeightPct))}%`
+                                    : "6px",
+                                backgroundColor:
+                                  count > 0 ? barColor : "#001E32",
+                                border:
+                                  count === 0 ? "1px solid #425563" : undefined,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex items-start justify-around gap-3 sm:gap-6 pt-1">
+                    {optionsList.map((opt, idx) => {
+                      const barColor =
+                        OPTION_COLORS[idx % OPTION_COLORS.length];
+                      return (
+                        <div
+                          key={opt.id}
+                          className="flex-1 flex flex-col items-center text-center max-w-[130px] sm:max-w-[160px] min-w-0 space-y-1.5"
+                        >
+                          <span
+                            className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shadow shrink-0"
+                            style={{
+                              backgroundColor: barColor,
+                              color: idx === 0 ? "#001E32" : "#FFFFFF",
+                            }}
+                          >
+                            {opt.id && opt.id.length <= 2 ? opt.id : idx + 1}
+                          </span>
+                          <span className="text-xs sm:text-sm font-bold text-white line-clamp-3 leading-snug break-words">
+                            {opt.text}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
       </div>
@@ -1173,7 +1345,7 @@ export default function PresentationPage() {
                   parsedOptions.length > 0
                     ? parsedOptions.map((o) => ({
                         label: o.text,
-                        count: liveResults[o.id] || 0,
+                        count: getOptionVotes(o, liveResults),
                       }))
                     : Object.entries(liveResults).map(([k, v]) => ({
                         label: k,
@@ -1271,7 +1443,7 @@ export default function PresentationPage() {
                     ? parsedOptions.map((o) => ({
                         id: o.id,
                         label: o.text,
-                        count: liveResults[o.id] || 0,
+                        count: getOptionVotes(o, liveResults),
                       }))
                     : Object.entries(liveResults).map(([k, v]) => ({
                         id: k,
@@ -1348,60 +1520,172 @@ export default function PresentationPage() {
               !["line", "word_cloud", "cards", "donut"].includes(
                 currentQ.chart_type || "",
               )) && (
-              <div className="bg-[#193750] border border-[#425563] p-8 rounded-3xl space-y-6">
-                <div
-                  className={`grid gap-4 h-64 items-end ${
-                    (parsedOptions.length > 0
-                      ? parsedOptions.length
-                      : Object.keys(liveResults).length) >= 5
-                      ? "grid-cols-3 sm:grid-cols-5 lg:grid-cols-6"
-                      : "grid-cols-2 sm:grid-cols-4"
-                  }`}
-                >
-                  {(parsedOptions.length > 0
-                    ? parsedOptions
-                    : Object.keys(liveResults).map((k) => ({
-                        id: k,
-                        text: k,
-                        is_correct: false,
-                      }))
-                  ).map((opt, idx) => {
-                    const count = liveResults[opt.id] || 0;
-                    const maxCount = Math.max(...Object.values(liveResults), 1);
-                    const heightPct = Math.min(
-                      100,
-                      Math.round((count / maxCount) * 100),
-                    );
+              <div className="bg-[#193750] border-2 border-[#425563] p-6 sm:p-8 rounded-3xl space-y-6 shadow-2xl">
+                {(() => {
+                  const optionsList: QuestionOption[] =
+                    parsedOptions.length > 0
+                      ? parsedOptions
+                      : Object.keys(liveResults).map((k) => ({
+                          id: k,
+                          text: k,
+                          isCorrect: false,
+                        }));
 
-                    return (
-                      <div
-                        key={opt.id}
-                        className="flex flex-col items-center h-full justify-end space-y-2"
-                      >
-                        <span className="font-extrabold text-xl text-white">
-                          {count}
-                        </span>
-                        <div className="w-full bg-[#001E32] rounded-t-2xl p-1 h-44 flex items-end">
-                          <div
-                            className="w-full rounded-t-xl transition-all duration-700 ease-out flex items-center justify-center font-bold text-lg"
-                            style={{
-                              height: `${Math.max(10, heightPct)}%`,
-                              backgroundColor: opt.is_correct
-                                ? "#4C8C2B"
-                                : OPTION_COLORS[idx % OPTION_COLORS.length],
-                              color: "#FFFFFF",
-                            }}
-                          >
-                            {opt.is_correct && "✓"}
-                          </div>
+                  const totalVotes = Object.values(liveResults).reduce(
+                    (a, b) => a + b,
+                    0,
+                  );
+                  const maxVotes = Math.max(
+                    ...optionsList.map((o) => getOptionVotes(o, liveResults)),
+                    1,
+                  );
+
+                  return (
+                    <div className="space-y-4">
+                      {/* Cabecera del Gráfico con Resumen */}
+                      <div className="flex items-center justify-between text-xs text-[#ECEBE4]/80 px-2 border-b border-[#425563]/50 pb-3">
+                        <div className="flex items-center gap-2">
+                          <BarChart3 className="w-4 h-4 text-[#FFC72C]" />
+                          <span className="font-extrabold uppercase tracking-wider text-white">
+                            Distribución de Votos
+                          </span>
                         </div>
-                        <span className="text-center text-xs font-bold truncate max-w-[130px]">
-                          {opt.text}
+                        <span className="bg-[#001E32] px-3 py-1 rounded-full border border-[#425563] font-bold text-[#FFC72C]">
+                          {totalVotes}{" "}
+                          {totalVotes === 1
+                            ? "voto registrado"
+                            : "votos registrados"}
                         </span>
                       </div>
-                    );
-                  })}
-                </div>
+
+                      {/* Área Principal del Gráfico de Barras con Eje X */}
+                      <div className="flex items-end justify-around gap-3 sm:gap-6 h-72 sm:h-80 pt-6 pb-2 border-b-2 border-[#425563]">
+                        {optionsList.map((opt, idx) => {
+                          const count = getOptionVotes(opt, liveResults);
+                          const pct =
+                            totalVotes > 0
+                              ? Math.round((count / totalVotes) * 100)
+                              : 0;
+                          const isCorrect = isOptionCorrect(opt);
+
+                          // Altura relativa proporcional al máximo de votos
+                          const barHeightPct =
+                            totalVotes > 0 && maxVotes > 0
+                              ? Math.round((count / maxVotes) * 100)
+                              : 0;
+
+                          const barColor = isCorrect
+                            ? "#4C8C2B"
+                            : OPTION_COLORS[idx % OPTION_COLORS.length];
+
+                          return (
+                            <div
+                              key={opt.id}
+                              className="flex-1 flex flex-col items-center justify-end h-full max-w-[130px] sm:max-w-[160px] min-w-0"
+                            >
+                              {/* Valor y porcentaje flotando SOBRE la barra */}
+                              <div className="flex flex-col items-center justify-center mb-2 transition-all duration-500">
+                                <span
+                                  className={`text-2xl sm:text-3xl font-black leading-none ${
+                                    count > 0
+                                      ? "text-white scale-105"
+                                      : "text-[#ECEBE4]/40 text-lg sm:text-xl"
+                                  }`}
+                                >
+                                  {count}
+                                </span>
+                                {totalVotes > 0 && (
+                                  <span
+                                    className={`text-[11px] sm:text-xs font-black mt-1 px-2 py-0.5 rounded-full ${
+                                      count > 0
+                                        ? "bg-[#001E32] text-[#FFC72C] border border-[#425563]"
+                                        : "text-[#ECEBE4]/30"
+                                    }`}
+                                  >
+                                    {pct}%
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* La Barra Auténtica que crece desde el fondo */}
+                              <div className="w-full flex items-end justify-center h-44 sm:h-52">
+                                <div
+                                  className={`w-full max-w-[70px] sm:max-w-[85px] rounded-t-2xl transition-all duration-700 ease-out relative flex items-start justify-center ${
+                                    isCorrect && count > 0
+                                      ? "ring-4 ring-[#4C8C2B]/60 shadow-[0_0_25px_rgba(76,140,43,0.5)]"
+                                      : count > 0
+                                        ? "shadow-lg"
+                                        : ""
+                                  }`}
+                                  style={{
+                                    height:
+                                      count > 0
+                                        ? `${Math.max(12, Math.min(100, barHeightPct))}%`
+                                        : "6px",
+                                    backgroundColor:
+                                      count > 0 ? barColor : "#001E32",
+                                    border:
+                                      count === 0
+                                        ? "1px solid #425563"
+                                        : undefined,
+                                  }}
+                                >
+                                  {isCorrect && count > 0 && (
+                                    <div className="mt-2 bg-[#001E32]/90 text-white px-2 py-0.5 rounded-full text-xs font-black flex items-center gap-1 shadow">
+                                      <span>✓</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Etiquetas de las Opciones DEBAJO del Eje X */}
+                      <div className="flex items-start justify-around gap-3 sm:gap-6 pt-1">
+                        {optionsList.map((opt, idx) => {
+                          const isCorrect = isOptionCorrect(opt);
+                          const barColor = isCorrect
+                            ? "#4C8C2B"
+                            : OPTION_COLORS[idx % OPTION_COLORS.length];
+
+                          return (
+                            <div
+                              key={opt.id}
+                              className="flex-1 flex flex-col items-center text-center max-w-[130px] sm:max-w-[160px] min-w-0 space-y-1.5"
+                            >
+                              <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                                <span
+                                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shadow shrink-0"
+                                  style={{
+                                    backgroundColor: barColor,
+                                    color:
+                                      idx === 0 && !isCorrect
+                                        ? "#001E32"
+                                        : "#FFFFFF",
+                                  }}
+                                >
+                                  {opt.id && opt.id.length <= 2
+                                    ? opt.id
+                                    : idx + 1}
+                                </span>
+                                {isCorrect && (
+                                  <span className="text-[10px] uppercase font-black tracking-wider text-[#86C8BC] bg-[#4C8C2B]/30 border border-[#4C8C2B] px-1.5 py-0.5 rounded shadow-sm">
+                                    Correcta
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-xs sm:text-sm font-bold text-white line-clamp-3 leading-snug break-words">
+                                {opt.text}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
 
