@@ -22,6 +22,7 @@ import {
 } from "../services/activityService.js";
 import {
   createSession,
+  closeActiveSessionsForActivity,
   getAllSessions,
   getSessionByPin,
   getLeaderboard,
@@ -48,7 +49,6 @@ import {
 
 const router = Router();
 
-
 // ---------------------------------------------------------------------------
 // Métricas Globales del Hub
 // ---------------------------------------------------------------------------
@@ -57,7 +57,8 @@ router.get("/hub/stats", requireAuth, async (_req, res) => {
     const stats = await getHubGlobalStats();
     res.json(stats);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error al obtener métricas";
+    const message =
+      err instanceof Error ? err.message : "Error al obtener métricas";
     res.status(500).json({ error: message });
   }
 });
@@ -102,7 +103,9 @@ router.get("/activities/:id", requireAuth, async (req, res) => {
     const activityId = Number(req.params.id);
     const access = await getActivityAccess(req.user, activityId);
     if (!access) {
-      res.status(403).json({ error: "No tienes permiso para ver esta presentación" });
+      res
+        .status(403)
+        .json({ error: "No tienes permiso para ver esta presentación" });
       return;
     }
 
@@ -144,7 +147,9 @@ router.put("/activities/:id", requireAuth, async (req, res) => {
     const activityId = Number(req.params.id);
     const access = await getActivityAccess(req.user, activityId);
     if (!canEditActivity(access)) {
-      res.status(403).json({ error: "No tienes permiso para editar esta presentación" });
+      res
+        .status(403)
+        .json({ error: "No tienes permiso para editar esta presentación" });
       return;
     }
 
@@ -166,7 +171,12 @@ router.delete("/activities/:id", requireAuth, async (req, res) => {
     const activityId = Number(req.params.id);
     const access = await getActivityAccess(req.user, activityId);
     if (!canManageActivity(access)) {
-      res.status(403).json({ error: "Solo el propietario o administrador puede eliminar esta presentación" });
+      res
+        .status(403)
+        .json({
+          error:
+            "Solo el propietario o administrador puede eliminar esta presentación",
+        });
       return;
     }
 
@@ -188,7 +198,9 @@ router.post("/activities/:id/clone", requireAuth, async (req, res) => {
     const activityId = Number(req.params.id);
     const access = await getActivityAccess(req.user, activityId);
     if (!access) {
-      res.status(403).json({ error: "No tienes permiso para duplicar esta presentación" });
+      res
+        .status(403)
+        .json({ error: "No tienes permiso para duplicar esta presentación" });
       return;
     }
 
@@ -234,7 +246,12 @@ router.post("/activities/:id/collaborators", requireAuth, async (req, res) => {
     const activityId = Number(req.params.id);
     const access = await getActivityAccess(req.user, activityId);
     if (!canManageActivity(access)) {
-      res.status(403).json({ error: "Solo el propietario o administrador puede agregar colaboradores" });
+      res
+        .status(403)
+        .json({
+          error:
+            "Solo el propietario o administrador puede agregar colaboradores",
+        });
       return;
     }
 
@@ -252,7 +269,11 @@ router.post("/activities/:id/collaborators", requireAuth, async (req, res) => {
 
     const activity = await getActivityById(activityId);
     if (activity && activity.created_by_user_id === targetUser.id) {
-      res.status(400).json({ error: "El usuario ya es el propietario de esta presentación" });
+      res
+        .status(400)
+        .json({
+          error: "El usuario ya es el propietario de esta presentación",
+        });
       return;
     }
 
@@ -260,35 +281,43 @@ router.post("/activities/:id/collaborators", requireAuth, async (req, res) => {
     const updated = await listCollaborators(activityId);
     res.status(201).json({ success: true, collaborators: updated });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error al agregar colaborador";
+    const message =
+      err instanceof Error ? err.message : "Error al agregar colaborador";
     res.status(500).json({ error: message });
   }
 });
 
-router.delete("/activities/:id/collaborators/:userId", requireAuth, async (req, res) => {
-  try {
-    if (!req.user) {
-      res.status(401).json({ error: "No autenticado" });
-      return;
-    }
-    const activityId = Number(req.params.id);
-    const access = await getActivityAccess(req.user, activityId);
-    const targetUserId = Number(req.params.userId);
+router.delete(
+  "/activities/:id/collaborators/:userId",
+  requireAuth,
+  async (req, res) => {
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: "No autenticado" });
+        return;
+      }
+      const activityId = Number(req.params.id);
+      const access = await getActivityAccess(req.user, activityId);
+      const targetUserId = Number(req.params.userId);
 
-    // El dueño, el admin, o el propio colaborador pueden remover el acceso
-    const isSelfRemoval = req.user.id === targetUserId;
-    if (!canManageActivity(access) && !isSelfRemoval) {
-      res.status(403).json({ error: "No tienes permiso para remover este colaborador" });
-      return;
-    }
+      // El dueño, el admin, o el propio colaborador pueden remover el acceso
+      const isSelfRemoval = req.user.id === targetUserId;
+      if (!canManageActivity(access) && !isSelfRemoval) {
+        res
+          .status(403)
+          .json({ error: "No tienes permiso para remover este colaborador" });
+        return;
+      }
 
-    await removeCollaborator(activityId, targetUserId);
-    res.json({ success: true, message: "Colaborador removido" });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error al remover colaborador";
-    res.status(500).json({ error: message });
-  }
-});
+      await removeCollaborator(activityId, targetUserId);
+      res.json({ success: true, message: "Colaborador removido" });
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Error al remover colaborador";
+      res.status(500).json({ error: message });
+    }
+  },
+);
 
 // ---------------------------------------------------------------------------
 // Preguntas / Diapositivas
@@ -303,7 +332,9 @@ router.post("/activities/:id/questions", requireAuth, async (req, res) => {
     const activityId = Number(req.params.id);
     const access = await getActivityAccess(req.user, activityId);
     if (!canEditActivity(access)) {
-      res.status(403).json({ error: "No tienes permiso para editar esta presentación" });
+      res
+        .status(403)
+        .json({ error: "No tienes permiso para editar esta presentación" });
       return;
     }
 
@@ -332,7 +363,9 @@ router.put("/questions/:id", requireAuth, async (req, res) => {
     }
     const access = await getActivityAccess(req.user, activityId);
     if (!canEditActivity(access)) {
-      res.status(403).json({ error: "No tienes permiso para editar esta presentación" });
+      res
+        .status(403)
+        .json({ error: "No tienes permiso para editar esta presentación" });
       return;
     }
 
@@ -358,7 +391,9 @@ router.delete("/questions/:id", requireAuth, async (req, res) => {
     }
     const access = await getActivityAccess(req.user, activityId);
     if (!canEditActivity(access)) {
-      res.status(403).json({ error: "No tienes permiso para editar esta presentación" });
+      res
+        .status(403)
+        .json({ error: "No tienes permiso para editar esta presentación" });
       return;
     }
 
@@ -379,7 +414,9 @@ router.put("/activities/:id/reorder", requireAuth, async (req, res) => {
     const activityId = Number(req.params.id);
     const access = await getActivityAccess(req.user, activityId);
     if (!canEditActivity(access)) {
-      res.status(403).json({ error: "No tienes permiso para editar esta presentación" });
+      res
+        .status(403)
+        .json({ error: "No tienes permiso para editar esta presentación" });
       return;
     }
 
@@ -420,8 +457,16 @@ router.post("/sessions/create", requireAuth, async (req, res) => {
     const actId = Number(activityId || 1);
     const access = await getActivityAccess(req.user, actId);
     if (!access) {
-      res.status(403).json({ error: "No tienes permiso para presentar esta actividad" });
+      res
+        .status(403)
+        .json({ error: "No tienes permiso para presentar esta actividad" });
       return;
+    }
+
+    // 1. Cerrar cualquier sesión activa previa para esta actividad o presentador
+    const stalePins = await closeActiveSessionsForActivity(actId, req.user.id);
+    for (const oldPin of stalePins) {
+      broadcastSessionCancelled(oldPin);
     }
 
     const session = await createSession(actId, req.user.id, {
@@ -485,7 +530,8 @@ router.post("/sessions/:pin/cancel", requireAuth, async (req, res) => {
     broadcastSessionCancelled(pin);
     res.json({ success: true, message: "Sesión cancelada exitosamente" });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error al cancelar la sesión";
+    const message =
+      err instanceof Error ? err.message : "Error al cancelar la sesión";
     res.status(500).json({ error: message });
   }
 });
@@ -508,7 +554,8 @@ router.get("/users/search", requireAuth, async (_req, res) => {
       }));
     res.json(filtered);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error al buscar usuarios";
+    const message =
+      err instanceof Error ? err.message : "Error al buscar usuarios";
     res.status(500).json({ error: message });
   }
 });
@@ -523,7 +570,8 @@ router.get("/bank/folders", requireAuth, async (_req, res) => {
     const folders = await getFolders();
     res.json(folders);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error al obtener carpetas";
+    const message =
+      err instanceof Error ? err.message : "Error al obtener carpetas";
     res.status(500).json({ error: message });
   }
 });
@@ -546,7 +594,8 @@ router.post("/bank/folders", requireAuth, async (req, res) => {
     );
     res.status(201).json(folder);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error al crear carpeta";
+    const message =
+      err instanceof Error ? err.message : "Error al crear carpeta";
     res.status(500).json({ error: message });
   }
 });
@@ -557,7 +606,8 @@ router.put("/bank/folders/:id", requireAuth, async (req, res) => {
     const folder = await updateFolder(Number(req.params.id), req.body);
     res.json(folder);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error al actualizar carpeta";
+    const message =
+      err instanceof Error ? err.message : "Error al actualizar carpeta";
     res.status(500).json({ error: message });
   }
 });
@@ -568,7 +618,8 @@ router.delete("/bank/folders/:id", requireAuth, async (req, res) => {
     await deleteFolder(Number(req.params.id));
     res.json({ success: true });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error al eliminar carpeta";
+    const message =
+      err instanceof Error ? err.message : "Error al eliminar carpeta";
     res.status(500).json({ error: message });
   }
 });
@@ -576,12 +627,15 @@ router.delete("/bank/folders/:id", requireAuth, async (req, res) => {
 // Listar preguntas del banco (filtro por carpeta o todas)
 router.get("/bank/questions", requireAuth, async (req, res) => {
   try {
-    const folderId = req.query.folder_id ? Number(req.query.folder_id) : undefined;
+    const folderId = req.query.folder_id
+      ? Number(req.query.folder_id)
+      : undefined;
     const recursive = req.query.recursive === "true";
     const questions = await getBankQuestions(folderId, recursive);
     res.json(questions);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error al obtener preguntas";
+    const message =
+      err instanceof Error ? err.message : "Error al obtener preguntas";
     res.status(500).json({ error: message });
   }
 });
@@ -594,13 +648,16 @@ router.post("/bank/questions", requireAuth, async (req, res) => {
       return;
     }
     if (!req.body.folder_id) {
-      res.status(400).json({ error: "Debes especificar la carpeta de destino" });
+      res
+        .status(400)
+        .json({ error: "Debes especificar la carpeta de destino" });
       return;
     }
     const created = await createBankQuestion(req.body, req.user.id);
     res.status(201).json(created);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error al crear pregunta en banco";
+    const message =
+      err instanceof Error ? err.message : "Error al crear pregunta en banco";
     res.status(500).json({ error: message });
   }
 });
@@ -614,17 +671,28 @@ router.post("/bank/questions/import-excel", requireAuth, async (req, res) => {
     }
     const { folder_id, questions } = req.body;
     if (!folder_id) {
-      res.status(400).json({ error: "Debes seleccionar una carpeta de destino" });
+      res
+        .status(400)
+        .json({ error: "Debes seleccionar una carpeta de destino" });
       return;
     }
     if (!Array.isArray(questions) || questions.length === 0) {
-      res.status(400).json({ error: "No se proporcionaron preguntas para importar" });
+      res
+        .status(400)
+        .json({ error: "No se proporcionaron preguntas para importar" });
       return;
     }
-    const result = await importExcelToFolder(Number(folder_id), questions, req.user.id);
+    const result = await importExcelToFolder(
+      Number(folder_id),
+      questions,
+      req.user.id,
+    );
     res.status(201).json(result);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error al importar preguntas desde Excel";
+    const message =
+      err instanceof Error
+        ? err.message
+        : "Error al importar preguntas desde Excel";
     res.status(500).json({ error: message });
   }
 });
@@ -635,7 +703,8 @@ router.put("/bank/questions/:id", requireAuth, async (req, res) => {
     const updated = await updateBankQuestion(Number(req.params.id), req.body);
     res.json(updated);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error al actualizar pregunta";
+    const message =
+      err instanceof Error ? err.message : "Error al actualizar pregunta";
     res.status(500).json({ error: message });
   }
 });
@@ -646,7 +715,8 @@ router.delete("/bank/questions/:id", requireAuth, async (req, res) => {
     await deleteBankQuestion(Number(req.params.id));
     res.json({ success: true });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error al eliminar pregunta";
+    const message =
+      err instanceof Error ? err.message : "Error al eliminar pregunta";
     res.status(500).json({ error: message });
   }
 });
@@ -660,7 +730,9 @@ router.post("/bank/copy-to-presentation", requireAuth, async (req, res) => {
     }
     const { activity_id, new_activity, question_ids } = req.body;
     if (!Array.isArray(question_ids) || question_ids.length === 0) {
-      res.status(400).json({ error: "No se seleccionaron preguntas para copiar" });
+      res
+        .status(400)
+        .json({ error: "No se seleccionaron preguntas para copiar" });
       return;
     }
     const target = await copyBankQuestionsToActivity({
@@ -671,10 +743,10 @@ router.post("/bank/copy-to-presentation", requireAuth, async (req, res) => {
     });
     res.json({ success: true, activity: target });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error al transferir preguntas";
+    const message =
+      err instanceof Error ? err.message : "Error al transferir preguntas";
     res.status(500).json({ error: message });
   }
 });
 
 export default router;
-

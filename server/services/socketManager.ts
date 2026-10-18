@@ -570,6 +570,15 @@ export function setupSocketManager(io: SocketIOServer): void {
             return;
           }
 
+          // Protección contra respuestas fuera de tiempo cuando el temporizador ha finalizado
+          const activeTimer = sessionTimers.get(pin);
+          if (activeTimer && activeTimer.remainingSeconds <= 0) {
+            console.warn(
+              `[Socket submit_answer] Participante #${participantId} intentó responder fuera de tiempo en sesión ${pin}`,
+            );
+            return;
+          }
+
           // Comprobar si es encuesta / pregunta abierta sin concurso (Mentimeter mode)
           const isSurveyOrOpen =
             question.points_base === 0 ||
@@ -738,10 +747,19 @@ function startServerTimer(
   let remaining = seconds;
   const intervalId = setInterval(() => {
     remaining -= 1;
+    const entry = sessionTimers.get(pin);
+    if (entry) {
+      entry.remainingSeconds = remaining;
+    }
     io.to(`session:${pin}`).emit("timer:tick", { remaining });
 
     if (remaining <= 0) {
-      stopServerTimer(pin);
+      if (entry?.intervalId) {
+        clearInterval(entry.intervalId);
+      }
+      if (entry) {
+        entry.remainingSeconds = 0;
+      }
       io.to(`session:${pin}`).emit("timer:expired");
     }
   }, 1000);

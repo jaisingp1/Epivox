@@ -914,6 +914,21 @@ export default function PresentationPage() {
                 </span>
               </div>
             </div>
+
+            {/* Aviso cuando todos han respondido */}
+            {participants.length > 0 && totalAnswers >= participants.length && (
+              <div className="inline-flex items-center gap-2.5 bg-[#4C8C2B]/20 border-2 border-[#4C8C2B] text-white px-5 py-2.5 rounded-2xl shadow-xl animate-bounce">
+                <CheckCircle2 className="w-5 h-5 text-[#86C8BC]" />
+                <span className="text-base font-extrabold text-[#86C8BC]">
+                  ¡Todos los participantes han respondido! ({totalAnswers}/
+                  {participants.length})
+                </span>
+                <span className="text-xs text-[#ECEBE4]/80 hidden sm:inline">
+                  &bull; Puedes continuar con el tiempo o cerrar la pregunta
+                  ahora.
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Opciones en la pantalla grande - Soporte dinámico para 2 a 6 opciones o Rating */}
@@ -989,7 +1004,12 @@ export default function PresentationPage() {
                 <button
                   type="button"
                   onClick={() => handlePresenterAction("show_results")}
-                  className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-lg py-3 px-6 rounded-xl shadow-xl flex items-center space-x-2 transition active:scale-95"
+                  className={`bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-lg py-3 px-6 rounded-xl shadow-xl flex items-center space-x-2 transition active:scale-95 ${
+                    participants.length > 0 &&
+                    totalAnswers >= participants.length
+                      ? "ring-4 ring-[#86C8BC] ring-offset-2 ring-offset-[#001E32] animate-pulse"
+                      : ""
+                  }`}
                 >
                   <span>Cerrar Votación y Ver Resultados</span>
                   <ArrowRight className="w-5 h-5" />

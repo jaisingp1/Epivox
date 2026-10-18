@@ -319,6 +319,7 @@ export default function LiveParticipantPage() {
 
     socket.on("session:cancelled", () => {
       hasSubmittedRef.current = true;
+      sessionStorage.removeItem("epivox_participant");
       setSessionStatus("cancelled");
       setCurrentStep("cancelled");
       setCurrentQuestion(null);
@@ -327,6 +328,10 @@ export default function LiveParticipantPage() {
 
     socket.on("timer:tick", (data: { remaining: number }) => {
       setRemainingTime(data.remaining);
+    });
+
+    socket.on("timer:expired", () => {
+      setRemainingTime(0);
     });
 
     socket.on(
@@ -360,6 +365,7 @@ export default function LiveParticipantPage() {
       socket.off("session:state_changed");
       socket.off("session:cancelled");
       socket.off("timer:tick");
+      socket.off("timer:expired");
       socket.off("answer:accepted");
     };
   }, [pin, navigate]);
@@ -374,6 +380,7 @@ export default function LiveParticipantPage() {
     if (
       hasSubmittedRef.current ||
       hasAnswered ||
+      remainingTime <= 0 ||
       !pin ||
       !participant ||
       !currentQuestion
@@ -898,6 +905,30 @@ export default function LiveParticipantPage() {
             <p className="text-sm text-[#ECEBE4] opacity-80">
               Esperando a que el resto de los participantes terminen de
               responder...
+            </p>
+          </div>
+        ) : remainingTime <= 0 ? (
+          <div className="bg-[#193750] border-2 border-[#FFC72C] p-6 rounded-3xl text-center space-y-4 shadow-2xl">
+            <div className="w-16 h-16 bg-[#FFC72C]/20 text-[#FFC72C] rounded-full flex items-center justify-center mx-auto">
+              <Clock className="w-10 h-10" />
+            </div>
+            <h2 className="text-2xl font-bold text-white">¡Tiempo Agotado!</h2>
+            {currentQuestion?.question_text && (
+              <div className="bg-[#001E32] border border-[#425563] p-3 rounded-xl text-left">
+                <span className="text-[10px] uppercase font-bold text-[#FFC72C] tracking-wider block mb-0.5">
+                  Pregunta
+                </span>
+                <p className="text-xs text-white font-semibold">
+                  {currentQuestion.question_text}
+                </p>
+              </div>
+            )}
+            <p className="text-sm text-[#ECEBE4]">
+              El tiempo para enviar tu respuesta ha concluido.
+            </p>
+            <p className="text-xs text-[#ECEBE4]/70">
+              Espera a que el presentador revele los resultados y la
+              retroalimentación.
             </p>
           </div>
         ) : (

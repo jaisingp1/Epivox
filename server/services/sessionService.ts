@@ -243,6 +243,33 @@ export async function cancelSession(
   return true;
 }
 
+export async function closeActiveSessionsForActivity(
+  activityId: number,
+  presenterUserId?: number,
+): Promise<string[]> {
+  return withWriteLock(async () => {
+    let whereClause = `activity_id = ${Number(activityId)} AND status NOT IN ('finished', 'cancelled')`;
+    if (presenterUserId) {
+      whereClause = `(${whereClause} OR (presenter_user_id = ${Number(presenterUserId)} AND status NOT IN ('finished', 'cancelled')))`;
+    }
+
+    const activeSessions = await query<{ id: number; pin: string }>(
+      `SELECT id, pin FROM epivox_sessions WHERE ${whereClause}`,
+    );
+
+    if (activeSessions.length > 0) {
+      const ids = activeSessions.map((s) => s.id).join(",");
+      await exec(`
+        UPDATE epivox_sessions 
+        SET status = 'cancelled', current_step = 'cancelled', finished_at = CURRENT_TIMESTAMP
+        WHERE id IN (${ids})
+      `);
+    }
+
+    return activeSessions.map((s) => s.pin);
+  });
+}
+
 export async function recordAnswer(
   sessionId: number,
   questionId: number,
