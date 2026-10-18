@@ -19,6 +19,7 @@ import {
   Star,
   XCircle,
   AlertCircle,
+  Check,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import QRCode from "qrcode";
@@ -101,6 +102,10 @@ export default function PresentationPage() {
   const navigate = useNavigate();
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+
+  useEffect(() => {
+    setOverrideChartType(null);
+  }, [currentQIndex]);
 
   const handleCancelPresentation = async () => {
     if (!pin) return;
@@ -358,6 +363,33 @@ export default function PresentationPage() {
         return true;
     }
     return false;
+  };
+
+  const checkIsItemCorrect = (
+    item:
+      | {
+          id?: string;
+          text?: string;
+          isCorrect?: boolean;
+          is_correct?: boolean;
+        }
+      | string,
+  ): boolean => {
+    if (typeof item === "string") {
+      if (!currentQ?.correct_answer_value) return false;
+      const target = currentQ.correct_answer_value
+        .toString()
+        .trim()
+        .toLowerCase();
+      const val = item.toString().trim().toLowerCase();
+      if (target === val) return true;
+      if (target === "true" && (val === "true" || val.includes("verdadero")))
+        return true;
+      if (target === "false" && (val === "false" || val.includes("falso")))
+        return true;
+      return false;
+    }
+    return isOptionCorrect(item as QuestionOption);
   };
 
   const getOptionVotes = (
@@ -1194,544 +1226,744 @@ export default function PresentationPage() {
       )}
 
       {/* 3. RESULTS VIEW (GRÁFICOS EN VIVO ESTILO MENTIMETER O CALIFICACIÓN) */}
-      {currentStep === "results" && currentQ && (
-        <main className="my-auto max-w-5xl w-full mx-auto space-y-6 py-4">
-          <div className="bg-[#193750] border-2 border-[#425563] p-6 rounded-3xl text-center space-y-2">
-            <span className="text-xs uppercase tracking-widest text-[#FFC72C] font-bold">
-              {currentQ.question_type === "rating"
-                ? "Calificación de la Audiencia • Resumen Final"
-                : "Distribución de Respuestas • Modo Audiencia"}
-            </span>
-            <h2 className="text-3xl font-extrabold text-white">
-              {currentQ.question_text}
-            </h2>
-
-            {/* Barra de Alternar Gráficos en Vivo (Mentimeter Style - solo para sondeos no rating) */}
-            {currentQ.question_type !== "rating" && (
-              <div className="flex items-center justify-center gap-2 pt-3 flex-wrap">
-                {[
-                  { type: "bar", label: "Barras", icon: BarChart3 },
-                  { type: "line", label: "Líneas", icon: TrendingUp },
-                  {
-                    type: "word_cloud",
-                    label: "Nube de Palabras",
-                    icon: Cloud,
-                  },
-                  { type: "cards", label: "Muro de Ideas", icon: LayoutGrid },
-                  { type: "donut", label: "Dona", icon: PieChart },
-                ].map((item) => {
-                  const Icon = item.icon;
-                  const active =
-                    (overrideChartType ||
-                      currentQ.chart_type ||
-                      (currentQ.question_type === "word_cloud"
-                        ? "word_cloud"
-                        : "bar")) === item.type;
-                  return (
-                    <button
-                      key={item.type}
-                      type="button"
-                      onClick={() => handleChartTypeChange(item.type)}
-                      className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center space-x-1.5 transition ${
-                        active
-                          ? "bg-[#FFC72C] text-[#001E32] shadow-lg scale-105"
-                          : "bg-[#001E32] text-[#ECEBE4]/70 hover:text-white border border-[#425563]"
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      <span>{item.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Gráfico Especial: Calificación con Estrellas */}
-          {currentQ.question_type === "rating" && renderRatingVisualization()}
-
-          {/* Gráfico 1: Nube de Palabras (Word Cloud) */}
-          {(overrideChartType ||
+      {/* 3. RESULTS VIEW (GRÁFICOS EN VIVO ESTILO MENTIMETER O CALIFICACIÓN) */}
+      {currentStep === "results" &&
+        currentQ &&
+        (() => {
+          const effectiveChartType =
+            overrideChartType ||
             currentQ.chart_type ||
-            (currentQ.question_type === "word_cloud"
-              ? "word_cloud"
-              : "bar")) === "word_cloud" && (
-            <div className="bg-[#193750] border border-[#425563] p-8 rounded-3xl min-h-[300px] flex flex-wrap items-center justify-center gap-3.5 content-center">
-              {Object.keys(liveResults).length === 0 ? (
-                <div className="text-center text-[#ECEBE4]/60 space-y-2">
-                  <Cloud className="w-12 h-12 mx-auto text-[#48A9C5] opacity-50" />
-                  <p className="text-sm font-semibold">
-                    No se han recibido palabras aún.
-                  </p>
-                </div>
-              ) : (
-                Object.entries(liveResults).map(([word, count], i) => {
-                  const maxC = Math.max(...Object.values(liveResults), 1);
-                  const scale = Math.min(2.8, 1 + (count / maxC) * 1.8);
-                  const color = OPTION_COLORS[i % OPTION_COLORS.length];
-                  return (
-                    <span
-                      key={word}
-                      style={{
-                        fontSize: `${scale}rem`,
-                        color,
-                      }}
-                      className="font-black px-4 py-1.5 bg-[#001E32]/80 border border-[#425563]/80 rounded-2xl shadow-xl transition-all hover:scale-110 cursor-default select-none animate-in fade-in"
-                    >
-                      {word}{" "}
-                      <span className="text-xs opacity-70 font-bold">
-                        ({count})
-                      </span>
-                    </span>
-                  );
-                })
-              )}
-            </div>
-          )}
+            (currentQ.question_type === "word_cloud" ? "word_cloud" : "bar");
 
-          {/* Gráfico 2: Muro de Tarjetas / Feed de Ideas (Mentimeter Thoughts) */}
-          {(overrideChartType || currentQ.chart_type) === "cards" && (
-            <div className="bg-[#193750] border border-[#425563] p-6 rounded-3xl max-h-[380px] overflow-y-auto space-y-4">
-              {rawAnswers.length === 0 &&
-              Object.keys(liveResults).length === 0 ? (
-                <div className="text-center text-[#ECEBE4]/60 py-10">
-                  <LayoutGrid className="w-12 h-12 mx-auto text-[#FFC72C] opacity-50 mb-2" />
-                  <p className="text-sm">Esperando respuestas del público...</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {rawAnswers.length > 0
-                    ? rawAnswers.map((ans) => (
-                        <div
-                          key={ans.id}
-                          className="bg-[#001E32] border border-[#425563] p-4 rounded-2xl shadow space-y-2 flex flex-col justify-between"
-                        >
-                          <p className="text-base font-bold text-white leading-relaxed">
-                            "{ans.answer_payload}"
-                          </p>
-                          <div className="flex items-center justify-between text-xs text-[#ECEBE4]/60 border-t border-[#425563]/40 pt-2">
-                            <span className="font-semibold text-[#FFC72C]">
-                              {ans.nickname}
-                            </span>
-                            {ans.department && <span>{ans.department}</span>}
-                          </div>
-                        </div>
-                      ))
-                    : Object.entries(liveResults).map(([ans, count], i) => (
-                        <div
-                          key={ans}
-                          className="bg-[#001E32] border border-[#425563] p-4 rounded-2xl shadow space-y-2 flex flex-col justify-between"
-                        >
-                          <p className="text-base font-bold text-white leading-relaxed">
-                            "{ans}"
-                          </p>
-                          <div className="flex items-center justify-between text-xs text-[#ECEBE4]/60 border-t border-[#425563]/40 pt-2">
-                            <span className="font-semibold text-[#FFC72C]">
-                              Respuesta #{i + 1}
-                            </span>
-                            <span>{count} menciones</span>
-                          </div>
-                        </div>
-                      ))}
-                </div>
-              )}
-            </div>
-          )}
+          return (
+            <main className="my-auto max-w-5xl w-full mx-auto space-y-6 py-4">
+              <div className="bg-[#193750] border-2 border-[#425563] p-6 rounded-3xl text-center space-y-2">
+                <span className="text-xs uppercase tracking-widest text-[#FFC72C] font-bold">
+                  {currentQ.question_type === "rating"
+                    ? "Calificación de la Audiencia • Resumen Final"
+                    : "Distribución de Respuestas • Modo Audiencia"}
+                </span>
+                <h2 className="text-3xl font-extrabold text-white">
+                  {currentQ.question_text}
+                </h2>
 
-          {/* Gráfico 3: Líneas (Line Chart continuo) */}
-          {(overrideChartType || currentQ.chart_type) === "line" && (
-            <div className="bg-[#193750] border border-[#425563] p-8 rounded-3xl min-h-[300px] flex flex-col justify-between space-y-4">
-              {(() => {
-                const entries =
-                  parsedOptions.length > 0
-                    ? parsedOptions.map((o) => ({
-                        label: o.text,
-                        count: getOptionVotes(o, liveResults),
-                      }))
-                    : Object.entries(liveResults).map(([k, v]) => ({
-                        label: k,
-                        count: v,
-                      }));
-                const maxVal = Math.max(...entries.map((e) => e.count), 1);
-                const width = 600;
-                const height = 180;
-                const points = entries.map((e, idx) => {
-                  const x = (idx / Math.max(entries.length - 1, 1)) * width;
-                  const y = height - (e.count / maxVal) * (height - 30) - 15;
-                  return `${x},${y}`;
-                });
-                const polylineStr = points.join(" ");
-
-                return (
-                  <div className="w-full space-y-4">
-                    <svg
-                      viewBox={`-20 -20 ${width + 40} ${height + 40}`}
-                      className="w-full h-44 overflow-visible"
-                    >
-                      {/* Línea de cuadrícula base */}
-                      <line
-                        x1="0"
-                        y1={height}
-                        x2={width}
-                        y2={height}
-                        stroke="#425563"
-                        strokeWidth="2"
-                        strokeDasharray="4 4"
-                      />
-                      {/* Polilínea trazada */}
-                      {entries.length > 1 && (
-                        <polyline
-                          fill="none"
-                          stroke="#FFC72C"
-                          strokeWidth="4"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          points={polylineStr}
-                        />
-                      )}
-                      {/* Puntos circulares en cada coordenada */}
-                      {entries.map((e, idx) => {
-                        const x =
-                          (idx / Math.max(entries.length - 1, 1)) * width;
-                        const y =
-                          height - (e.count / maxVal) * (height - 30) - 15;
-                        return (
-                          <g key={e.label}>
-                            <circle
-                              cx={x}
-                              cy={y}
-                              r="7"
-                              fill="#001E32"
-                              stroke="#FFC72C"
-                              strokeWidth="4"
-                            />
-                            <text
-                              x={x}
-                              y={y - 12}
-                              textAnchor="middle"
-                              fill="#FFFFFF"
-                              fontSize="13"
-                              fontWeight="bold"
-                            >
-                              {e.count}
-                            </text>
-                          </g>
-                        );
-                      })}
-                    </svg>
-                    <div className="flex justify-between text-xs font-bold text-[#ECEBE4]/80 px-2">
-                      {entries.map((e) => (
-                        <span
-                          key={e.label}
-                          className="truncate max-w-[120px] text-center"
+                {/* Barra de Alternar Gráficos en Vivo (Mentimeter Style - solo para sondeos no rating) */}
+                {currentQ.question_type !== "rating" && (
+                  <div className="flex items-center justify-center gap-2 pt-3 flex-wrap">
+                    {[
+                      { type: "bar", label: "Barras", icon: BarChart3 },
+                      { type: "line", label: "Líneas", icon: TrendingUp },
+                      {
+                        type: "word_cloud",
+                        label: "Nube de Palabras",
+                        icon: Cloud,
+                      },
+                      {
+                        type: "cards",
+                        label: "Muro de Ideas",
+                        icon: LayoutGrid,
+                      },
+                      { type: "donut", label: "Dona", icon: PieChart },
+                    ].map((item) => {
+                      const Icon = item.icon;
+                      const active = effectiveChartType === item.type;
+                      return (
+                        <button
+                          key={item.type}
+                          type="button"
+                          onClick={() => handleChartTypeChange(item.type)}
+                          className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center space-x-1.5 transition cursor-pointer ${
+                            active
+                              ? "bg-[#FFC72C] text-[#001E32] shadow-lg scale-105 font-black"
+                              : "bg-[#001E32] text-[#ECEBE4]/70 hover:text-white border border-[#425563]"
+                          }`}
                         >
-                          {e.label}
-                        </span>
-                      ))}
-                    </div>
+                          <Icon className="w-4 h-4" />
+                          <span>{item.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
-                );
-              })()}
-            </div>
-          )}
+                )}
+              </div>
 
-          {/* Gráfico 4: Dona / Circular (Donut Chart) */}
-          {(overrideChartType || currentQ.chart_type) === "donut" && (
-            <div className="bg-[#193750] border border-[#425563] p-8 rounded-3xl min-h-[300px] flex flex-col md:flex-row items-center justify-around gap-6">
-              {(() => {
-                const entries =
-                  parsedOptions.length > 0
-                    ? parsedOptions.map((o) => ({
-                        id: o.id,
-                        label: o.text,
-                        count: getOptionVotes(o, liveResults),
-                      }))
-                    : Object.entries(liveResults).map(([k, v]) => ({
-                        id: k,
-                        label: k,
-                        count: v,
-                      }));
-                const sum = entries.reduce((a, b) => a + b.count, 0) || 1;
+              {/* Gráfico Especial: Calificación con Estrellas */}
+              {currentQ.question_type === "rating" &&
+                renderRatingVisualization()}
 
-                let cumulative = 0;
-                const gradientSegments: string[] = [];
-                const legendItems = entries.map((e, idx) => {
-                  const pct = (e.count / sum) * 100;
-                  const start = cumulative;
-                  const end = cumulative + pct;
-                  cumulative = end;
-                  const color = OPTION_COLORS[idx % OPTION_COLORS.length];
-                  gradientSegments.push(`${color} ${start}% ${end}%`);
-                  return {
-                    ...e,
-                    pct: Math.round(pct),
-                    color,
-                  };
-                });
+              {/* Gráfico 1: Nube de Palabras (Word Cloud) */}
+              {effectiveChartType === "word_cloud" && (
+                <div className="bg-[#193750] border border-[#425563] p-8 rounded-3xl min-h-[300px] flex flex-wrap items-center justify-center gap-3.5 content-center">
+                  {(() => {
+                    const entries =
+                      parsedOptions.length > 0
+                        ? parsedOptions.map((o) => ({
+                            word: o.text,
+                            count: getOptionVotes(o, liveResults),
+                            isCorrect: isOptionCorrect(o),
+                          }))
+                        : Object.entries(liveResults).map(([word, count]) => ({
+                            word,
+                            count,
+                            isCorrect: checkIsItemCorrect(word),
+                          }));
 
-                const conicBackground = `conic-gradient(${gradientSegments.join(", ")})`;
+                    if (entries.length === 0) {
+                      return (
+                        <div className="text-center text-[#ECEBE4]/60 space-y-2">
+                          <Cloud className="w-12 h-12 mx-auto text-[#48A9C5] opacity-50" />
+                          <p className="text-sm font-semibold">
+                            No se han recibido respuestas aún.
+                          </p>
+                        </div>
+                      );
+                    }
 
-                return (
-                  <>
-                    <div className="relative w-48 h-48 shrink-0 flex items-center justify-center">
-                      <div
-                        className="w-full h-full rounded-full shadow-2xl transition-all duration-700"
-                        style={{ background: conicBackground }}
-                      />
-                      <div className="absolute w-24 h-24 rounded-full bg-[#001E32] flex flex-col items-center justify-center shadow-inner">
-                        <span className="text-2xl font-black text-white">
-                          {totalAnswers}
-                        </span>
-                        <span className="block text-[10px] text-[#ECEBE4]/60 uppercase tracking-widest font-bold">
-                          Votos
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-2 max-w-sm w-full">
-                      {legendItems.map((s) => (
-                        <div
-                          key={s.id}
-                          className="flex items-center justify-between bg-[#001E32] p-2.5 rounded-xl border border-[#425563]"
+                    const maxC = Math.max(...entries.map((e) => e.count), 1);
+                    return entries.map((item, i) => {
+                      const scale = Math.min(
+                        2.8,
+                        1 + (item.count / maxC) * 1.8,
+                      );
+                      const color = item.isCorrect
+                        ? "#4C8C2B"
+                        : OPTION_COLORS[i % OPTION_COLORS.length];
+                      return (
+                        <span
+                          key={item.word}
+                          style={{
+                            fontSize: `${scale}rem`,
+                            color: item.isCorrect ? "#FFFFFF" : color,
+                          }}
+                          className={`font-black px-4 py-1.5 rounded-2xl shadow-xl transition-all hover:scale-110 cursor-default select-none animate-in fade-in inline-flex items-center gap-1.5 ${
+                            item.isCorrect
+                              ? "bg-[#4C8C2B]/40 border-2 border-[#4C8C2B] ring-2 ring-[#4C8C2B]/60 shadow-[0_0_25px_rgba(76,140,43,0.5)]"
+                              : "bg-[#001E32]/80 border border-[#425563]/80"
+                          }`}
                         >
-                          <div className="flex items-center space-x-2 truncate">
-                            <span
-                              className="w-3.5 h-3.5 rounded-full shrink-0"
-                              style={{ backgroundColor: s.color }}
-                            />
-                            <span className="text-xs font-bold text-white truncate">
-                              {s.label}
+                          {item.isCorrect && (
+                            <Check className="w-4 h-4 text-[#86C8BC] shrink-0" />
+                          )}
+                          <span>{item.word}</span>
+                          {item.isCorrect && (
+                            <span className="text-[10px] font-black uppercase tracking-wider text-[#86C8BC] bg-[#4C8C2B] px-1.5 py-0.5 rounded shadow">
+                              Correcta
                             </span>
-                          </div>
-                          <span className="text-xs font-extrabold text-[#FFC72C] pl-2 shrink-0">
-                            {s.count} ({s.pct}%)
+                          )}
+                          <span className="text-xs opacity-70 font-bold">
+                            ({item.count})
                           </span>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
-          )}
-
-          {/* Gráfico 5: Barras Tradicional (Por defecto y para opciones múltiples) */}
-          {(!overrideChartType || overrideChartType === "bar") &&
-            (currentQ.chart_type === "bar" ||
-              !["line", "word_cloud", "cards", "donut"].includes(
-                currentQ.chart_type || "",
-              )) && (
-              <div className="bg-[#193750] border-2 border-[#425563] p-6 sm:p-8 rounded-3xl space-y-6 shadow-2xl">
-                {(() => {
-                  const optionsList: QuestionOption[] =
-                    parsedOptions.length > 0
-                      ? parsedOptions
-                      : Object.keys(liveResults).map((k) => ({
-                          id: k,
-                          text: k,
-                          isCorrect: false,
-                        }));
-
-                  const totalVotes = Object.values(liveResults).reduce(
-                    (a, b) => a + b,
-                    0,
-                  );
-                  const maxVotes = Math.max(
-                    ...optionsList.map((o) => getOptionVotes(o, liveResults)),
-                    1,
-                  );
-
-                  return (
-                    <div className="space-y-4">
-                      {/* Cabecera del Gráfico con Resumen */}
-                      <div className="flex items-center justify-between text-xs text-[#ECEBE4]/80 px-2 border-b border-[#425563]/50 pb-3">
-                        <div className="flex items-center gap-2">
-                          <BarChart3 className="w-4 h-4 text-[#FFC72C]" />
-                          <span className="font-extrabold uppercase tracking-wider text-white">
-                            Distribución de Votos
-                          </span>
-                        </div>
-                        <span className="bg-[#001E32] px-3 py-1 rounded-full border border-[#425563] font-bold text-[#FFC72C]">
-                          {totalVotes}{" "}
-                          {totalVotes === 1
-                            ? "voto registrado"
-                            : "votos registrados"}
                         </span>
-                      </div>
+                      );
+                    });
+                  })()}
+                </div>
+              )}
 
-                      {/* Área Principal del Gráfico de Barras con Eje X */}
-                      <div className="flex items-end justify-around gap-3 sm:gap-6 h-72 sm:h-80 pt-6 pb-2 border-b-2 border-[#425563]">
-                        {optionsList.map((opt, idx) => {
-                          const count = getOptionVotes(opt, liveResults);
-                          const pct =
-                            totalVotes > 0
-                              ? Math.round((count / totalVotes) * 100)
-                              : 0;
-                          const isCorrect = isOptionCorrect(opt);
+              {/* Gráfico 2: Muro de Tarjetas / Feed de Ideas (Mentimeter Thoughts) */}
+              {/* Gráfico 2: Muro de Tarjetas / Feed de Ideas (Mentimeter Thoughts) */}
+              {effectiveChartType === "cards" && (
+                <div className="bg-[#193750] border border-[#425563] p-6 rounded-3xl max-h-[380px] overflow-y-auto space-y-4">
+                  {(() => {
+                    const hasOptions = parsedOptions.length > 0;
+                    const hasRaw = rawAnswers.length > 0;
+                    const hasResults = Object.keys(liveResults).length > 0;
 
-                          // Altura relativa proporcional al máximo de votos
-                          const barHeightPct =
-                            totalVotes > 0 && maxVotes > 0
-                              ? Math.round((count / maxVotes) * 100)
-                              : 0;
+                    if (!hasOptions && !hasRaw && !hasResults) {
+                      return (
+                        <div className="text-center text-[#ECEBE4]/60 py-10">
+                          <LayoutGrid className="w-12 h-12 mx-auto text-[#FFC72C] opacity-50 mb-2" />
+                          <p className="text-sm">
+                            Esperando respuestas del público...
+                          </p>
+                        </div>
+                      );
+                    }
 
-                          const barColor = isCorrect
-                            ? "#4C8C2B"
-                            : OPTION_COLORS[idx % OPTION_COLORS.length];
+                    if (hasOptions) {
+                      return (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {parsedOptions.map((opt, i) => {
+                            const isCorrect = isOptionCorrect(opt);
+                            const votes = getOptionVotes(opt, liveResults);
+                            return (
+                              <div
+                                key={opt.id || i}
+                                className={`p-4 rounded-2xl shadow space-y-2 flex flex-col justify-between transition ${
+                                  isCorrect
+                                    ? "bg-[#4C8C2B]/15 border-2 border-[#4C8C2B] shadow-[0_0_20px_rgba(76,140,43,0.35)] ring-1 ring-[#4C8C2B]"
+                                    : "bg-[#001E32] border border-[#425563]"
+                                }`}
+                              >
+                                {isCorrect && (
+                                  <div className="flex items-center gap-1.5 text-xs font-black text-[#86C8BC] bg-[#4C8C2B]/30 border border-[#4C8C2B] px-2 py-0.5 rounded-lg w-fit">
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-[#86C8BC]" />
+                                    <span>Respuesta Correcta</span>
+                                  </div>
+                                )}
+                                <p className="text-base font-bold text-white leading-relaxed">
+                                  {opt.text}
+                                </p>
+                                <div className="flex items-center justify-between text-xs text-[#ECEBE4]/60 border-t border-[#425563]/40 pt-2">
+                                  <span className="font-semibold text-[#FFC72C]">
+                                    Opción {String.fromCharCode(65 + i)}
+                                  </span>
+                                  <span className="font-mono font-bold text-[#86C8BC]">
+                                    {votes} {votes === 1 ? "voto" : "votos"}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    }
 
-                          return (
-                            <div
-                              key={opt.id}
-                              className="flex-1 flex flex-col items-center justify-end h-full max-w-[130px] sm:max-w-[160px] min-w-0"
-                            >
-                              {/* Valor y porcentaje flotando SOBRE la barra */}
-                              <div className="flex flex-col items-center justify-center mb-2 transition-all duration-500">
-                                <span
-                                  className={`text-2xl sm:text-3xl font-black leading-none ${
-                                    count > 0
-                                      ? "text-white scale-105"
-                                      : "text-[#ECEBE4]/40 text-lg sm:text-xl"
+                    return (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {hasRaw
+                          ? rawAnswers.map((ans) => {
+                              const isCorrect = checkIsItemCorrect(
+                                ans.answer_payload,
+                              );
+                              return (
+                                <div
+                                  key={ans.id}
+                                  className={`p-4 rounded-2xl shadow space-y-2 flex flex-col justify-between transition ${
+                                    isCorrect
+                                      ? "bg-[#4C8C2B]/15 border-2 border-[#4C8C2B] shadow-[0_0_20px_rgba(76,140,43,0.35)] ring-1 ring-[#4C8C2B]"
+                                      : "bg-[#001E32] border border-[#425563]"
                                   }`}
                                 >
-                                  {count}
-                                </span>
-                                {totalVotes > 0 && (
-                                  <span
-                                    className={`text-[11px] sm:text-xs font-black mt-1 px-2 py-0.5 rounded-full ${
-                                      count > 0
-                                        ? "bg-[#001E32] text-[#FFC72C] border border-[#425563]"
-                                        : "text-[#ECEBE4]/30"
+                                  {isCorrect && (
+                                    <div className="flex items-center gap-1.5 text-xs font-black text-[#86C8BC] bg-[#4C8C2B]/30 border border-[#4C8C2B] px-2 py-0.5 rounded-lg w-fit">
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-[#86C8BC]" />
+                                      <span>Respuesta Correcta</span>
+                                    </div>
+                                  )}
+                                  <p className="text-base font-bold text-white leading-relaxed">
+                                    "{ans.answer_payload}"
+                                  </p>
+                                  <div className="flex items-center justify-between text-xs text-[#ECEBE4]/60 border-t border-[#425563]/40 pt-2">
+                                    <span className="font-semibold text-[#FFC72C]">
+                                      {ans.nickname}
+                                    </span>
+                                    {ans.department && (
+                                      <span>{ans.department}</span>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })
+                          : Object.entries(liveResults).map(
+                              ([ans, count], i) => {
+                                const isCorrect = checkIsItemCorrect(ans);
+                                return (
+                                  <div
+                                    key={ans}
+                                    className={`p-4 rounded-2xl shadow space-y-2 flex flex-col justify-between transition ${
+                                      isCorrect
+                                        ? "bg-[#4C8C2B]/15 border-2 border-[#4C8C2B] shadow-[0_0_20px_rgba(76,140,43,0.35)] ring-1 ring-[#4C8C2B]"
+                                        : "bg-[#001E32] border border-[#425563]"
                                     }`}
                                   >
-                                    {pct}%
+                                    {isCorrect && (
+                                      <div className="flex items-center gap-1.5 text-xs font-black text-[#86C8BC] bg-[#4C8C2B]/30 border border-[#4C8C2B] px-2 py-0.5 rounded-lg w-fit">
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-[#86C8BC]" />
+                                        <span>Respuesta Correcta</span>
+                                      </div>
+                                    )}
+                                    <p className="text-base font-bold text-white leading-relaxed">
+                                      "{ans}"
+                                    </p>
+                                    <div className="flex items-center justify-between text-xs text-[#ECEBE4]/60 border-t border-[#425563]/40 pt-2">
+                                      <span className="font-semibold text-[#FFC72C]">
+                                        Respuesta #{i + 1}
+                                      </span>
+                                      <span>{count} menciones</span>
+                                    </div>
+                                  </div>
+                                );
+                              },
+                            )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* Gráfico 3: Líneas (Line Chart continuo) */}
+              {effectiveChartType === "line" && (
+                <div className="bg-[#193750] border border-[#425563] p-8 rounded-3xl min-h-[300px] flex flex-col justify-between space-y-4">
+                  {(() => {
+                    const entries =
+                      parsedOptions.length > 0
+                        ? parsedOptions.map((o) => ({
+                            id: o.id,
+                            label: o.text,
+                            count: getOptionVotes(o, liveResults),
+                            isCorrect: isOptionCorrect(o),
+                          }))
+                        : Object.entries(liveResults).map(([k, v]) => ({
+                            id: k,
+                            label: k,
+                            count: v,
+                            isCorrect: checkIsItemCorrect(k),
+                          }));
+                    const maxVal = Math.max(...entries.map((e) => e.count), 1);
+                    const width = 600;
+                    const height = 180;
+                    const points = entries.map((e, idx) => {
+                      const x = (idx / Math.max(entries.length - 1, 1)) * width;
+                      const y =
+                        height - (e.count / maxVal) * (height - 30) - 15;
+                      return `${x},${y}`;
+                    });
+                    const polylineStr = points.join(" ");
+
+                    return (
+                      <div className="w-full space-y-4">
+                        <svg
+                          viewBox={`-20 -20 ${width + 40} ${height + 40}`}
+                          className="w-full h-44 overflow-visible"
+                        >
+                          {/* Línea de cuadrícula base */}
+                          <line
+                            x1="0"
+                            y1={height}
+                            x2={width}
+                            y2={height}
+                            stroke="#425563"
+                            strokeWidth="2"
+                            strokeDasharray="4 4"
+                          />
+                          {/* Polilínea trazada */}
+                          {entries.length > 1 && (
+                            <polyline
+                              fill="none"
+                              stroke="#FFC72C"
+                              strokeWidth="4"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              points={polylineStr}
+                            />
+                          )}
+                          {/* Puntos circulares en cada coordenada */}
+                          {entries.map((e, idx) => {
+                            const x =
+                              (idx / Math.max(entries.length - 1, 1)) * width;
+                            const y =
+                              height - (e.count / maxVal) * (height - 30) - 15;
+                            return (
+                              <g key={e.label}>
+                                {e.isCorrect && (
+                                  <circle
+                                    cx={x}
+                                    cy={y}
+                                    r="16"
+                                    fill="none"
+                                    stroke="#4C8C2B"
+                                    strokeWidth="2.5"
+                                    strokeDasharray="3 3"
+                                    opacity="0.8"
+                                  />
+                                )}
+                                <circle
+                                  cx={x}
+                                  cy={y}
+                                  r={e.isCorrect ? "10" : "7"}
+                                  fill={e.isCorrect ? "#4C8C2B" : "#001E32"}
+                                  stroke={e.isCorrect ? "#86C8BC" : "#FFC72C"}
+                                  strokeWidth={e.isCorrect ? "3" : "4"}
+                                />
+                                {e.isCorrect && (
+                                  <text
+                                    x={x}
+                                    y={y + 3.5}
+                                    textAnchor="middle"
+                                    fill="#FFFFFF"
+                                    fontSize="10"
+                                    fontWeight="bold"
+                                  >
+                                    ✓
+                                  </text>
+                                )}
+                                <text
+                                  x={x}
+                                  y={y - (e.isCorrect ? 16 : 12)}
+                                  textAnchor="middle"
+                                  fill={e.isCorrect ? "#86C8BC" : "#FFFFFF"}
+                                  fontSize={e.isCorrect ? "14" : "13"}
+                                  fontWeight="bold"
+                                >
+                                  {e.count}
+                                </text>
+                              </g>
+                            );
+                          })}
+                        </svg>
+                        <div className="flex justify-between text-xs font-bold px-2 gap-2">
+                          {entries.map((e, idx) => (
+                            <div
+                              key={e.label}
+                              className="flex-1 flex flex-col items-center text-center min-w-0"
+                            >
+                              <div className="flex items-center justify-center gap-1 flex-wrap">
+                                <span
+                                  className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0"
+                                  style={{
+                                    backgroundColor: e.isCorrect
+                                      ? "#4C8C2B"
+                                      : "#425563",
+                                    color: "#FFFFFF",
+                                  }}
+                                >
+                                  {e.id && e.id.length <= 2 ? e.id : idx + 1}
+                                </span>
+                                {e.isCorrect && (
+                                  <span className="text-[10px] uppercase font-black tracking-wider text-[#86C8BC] bg-[#4C8C2B]/30 border border-[#4C8C2B] px-1.5 py-0.5 rounded shadow-sm">
+                                    ✓ Correcta
                                   </span>
                                 )}
                               </div>
-
-                              {/* La Barra Auténtica que crece desde el fondo */}
-                              <div className="w-full flex items-end justify-center h-44 sm:h-52">
-                                <div
-                                  className={`w-full max-w-[70px] sm:max-w-[85px] rounded-t-2xl transition-all duration-700 ease-out relative flex items-start justify-center ${
-                                    isCorrect && count > 0
-                                      ? "ring-4 ring-[#4C8C2B]/60 shadow-[0_0_25px_rgba(76,140,43,0.5)]"
-                                      : count > 0
-                                        ? "shadow-lg"
-                                        : ""
-                                  }`}
-                                  style={{
-                                    height:
-                                      count > 0
-                                        ? `${Math.max(12, Math.min(100, barHeightPct))}%`
-                                        : "6px",
-                                    backgroundColor:
-                                      count > 0 ? barColor : "#001E32",
-                                    border:
-                                      count === 0
-                                        ? "1px solid #425563"
-                                        : undefined,
-                                  }}
-                                >
-                                  {isCorrect && count > 0 && (
-                                    <div className="mt-2 bg-[#001E32]/90 text-white px-2 py-0.5 rounded-full text-xs font-black flex items-center gap-1 shadow">
-                                      <span>✓</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
+                              <span
+                                className={`truncate max-w-[120px] text-xs mt-1 ${
+                                  e.isCorrect
+                                    ? "text-[#86C8BC] font-extrabold"
+                                    : "text-[#ECEBE4]/80"
+                                }`}
+                              >
+                                {e.label}
+                              </span>
                             </div>
-                          );
-                        })}
+                          ))}
+                        </div>
                       </div>
+                    );
+                  })()}
+                </div>
+              )}
 
-                      {/* Etiquetas de las Opciones DEBAJO del Eje X */}
-                      <div className="flex items-start justify-around gap-3 sm:gap-6 pt-1">
-                        {optionsList.map((opt, idx) => {
-                          const isCorrect = isOptionCorrect(opt);
-                          const barColor = isCorrect
-                            ? "#4C8C2B"
-                            : OPTION_COLORS[idx % OPTION_COLORS.length];
+              {/* Gráfico 4: Dona / Circular (Donut Chart) */}
+              {effectiveChartType === "donut" && (
+                <div className="bg-[#193750] border border-[#425563] p-8 rounded-3xl min-h-[300px] flex flex-col md:flex-row items-center justify-around gap-6">
+                  {(() => {
+                    const entries =
+                      parsedOptions.length > 0
+                        ? parsedOptions.map((o) => ({
+                            id: o.id,
+                            label: o.text,
+                            count: getOptionVotes(o, liveResults),
+                            isCorrect: isOptionCorrect(o),
+                          }))
+                        : Object.entries(liveResults).map(([k, v]) => ({
+                            id: k,
+                            label: k,
+                            count: v,
+                            isCorrect: checkIsItemCorrect(k),
+                          }));
+                    const sum = entries.reduce((a, b) => a + b.count, 0) || 1;
 
-                          return (
+                    let cumulative = 0;
+                    const gradientSegments: string[] = [];
+                    const legendItems = entries.map((e, idx) => {
+                      const pct = (e.count / sum) * 100;
+                      const start = cumulative;
+                      const end = cumulative + pct;
+                      cumulative = end;
+                      const color = e.isCorrect
+                        ? "#4C8C2B"
+                        : OPTION_COLORS[idx % OPTION_COLORS.length];
+                      gradientSegments.push(`${color} ${start}% ${end}%`);
+                      return {
+                        ...e,
+                        pct: Math.round(pct),
+                        color,
+                      };
+                    });
+
+                    const conicBackground = `conic-gradient(${gradientSegments.join(", ")})`;
+
+                    return (
+                      <>
+                        <div className="relative w-48 h-48 shrink-0 flex items-center justify-center">
+                          <div
+                            className="w-full h-full rounded-full shadow-2xl transition-all duration-700"
+                            style={{ background: conicBackground }}
+                          />
+                          <div className="absolute w-24 h-24 rounded-full bg-[#001E32] flex flex-col items-center justify-center shadow-inner">
+                            <span className="text-2xl font-black text-white">
+                              {totalAnswers}
+                            </span>
+                            <span className="block text-[10px] text-[#ECEBE4]/60 uppercase tracking-widest font-bold">
+                              Votos
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-2 max-w-sm w-full">
+                          {legendItems.map((s) => (
                             <div
-                              key={opt.id}
-                              className="flex-1 flex flex-col items-center text-center max-w-[130px] sm:max-w-[160px] min-w-0 space-y-1.5"
+                              key={s.id}
+                              className={`flex items-center justify-between p-2.5 rounded-xl border transition ${
+                                s.isCorrect
+                                  ? "bg-[#4C8C2B]/20 border-2 border-[#4C8C2B] shadow-[0_0_15px_rgba(76,140,43,0.3)] ring-1 ring-[#4C8C2B]"
+                                  : "bg-[#001E32] border-[#425563]"
+                              }`}
                             >
-                              <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                              <div className="flex items-center space-x-2 truncate">
                                 <span
-                                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shadow shrink-0"
-                                  style={{
-                                    backgroundColor: barColor,
-                                    color:
-                                      idx === 0 && !isCorrect
-                                        ? "#001E32"
-                                        : "#FFFFFF",
-                                  }}
+                                  className="w-3.5 h-3.5 rounded-full shrink-0 shadow-sm"
+                                  style={{ backgroundColor: s.color }}
+                                />
+                                <span
+                                  className={`text-xs truncate ${
+                                    s.isCorrect
+                                      ? "font-extrabold text-white"
+                                      : "font-bold text-[#ECEBE4]"
+                                  }`}
                                 >
-                                  {opt.id && opt.id.length <= 2
-                                    ? opt.id
-                                    : idx + 1}
+                                  {s.label}
                                 </span>
-                                {isCorrect && (
-                                  <span className="text-[10px] uppercase font-black tracking-wider text-[#86C8BC] bg-[#4C8C2B]/30 border border-[#4C8C2B] px-1.5 py-0.5 rounded shadow-sm">
+                                {s.isCorrect && (
+                                  <span className="text-[10px] uppercase font-black tracking-wider text-[#86C8BC] bg-[#4C8C2B]/40 border border-[#4C8C2B] px-1.5 py-0.5 rounded shadow-sm inline-flex items-center gap-1 shrink-0">
+                                    <Check className="w-3 h-3 text-[#86C8BC]" />
                                     Correcta
                                   </span>
                                 )}
                               </div>
-                              <span className="text-xs sm:text-sm font-bold text-white line-clamp-3 leading-snug break-words">
-                                {opt.text}
+                              <span
+                                className={`text-xs font-mono font-extrabold pl-2 shrink-0 ${
+                                  s.isCorrect
+                                    ? "text-[#86C8BC]"
+                                    : "text-[#FFC72C]"
+                                }`}
+                              >
+                                {s.count} ({s.pct}%)
                               </span>
                             </div>
-                          );
-                        })}
+                          ))}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* Gráfico 5: Barras Tradicional */}
+              {effectiveChartType === "bar" && (
+                <div className="bg-[#193750] border-2 border-[#425563] p-6 sm:p-8 rounded-3xl space-y-6 shadow-2xl">
+                  {(() => {
+                    const optionsList: QuestionOption[] =
+                      parsedOptions.length > 0
+                        ? parsedOptions
+                        : Object.keys(liveResults).map((k) => ({
+                            id: k,
+                            text: k,
+                            isCorrect: checkIsItemCorrect(k),
+                          }));
+
+                    const totalVotes = Object.values(liveResults).reduce(
+                      (a, b) => a + b,
+                      0,
+                    );
+                    const maxVotes = Math.max(
+                      ...optionsList.map((o) => getOptionVotes(o, liveResults)),
+                      1,
+                    );
+
+                    return (
+                      <div className="space-y-4">
+                        {/* Cabecera del Gráfico con Resumen */}
+                        <div className="flex items-center justify-between text-xs text-[#ECEBE4]/80 px-2 border-b border-[#425563]/50 pb-3">
+                          <div className="flex items-center gap-2">
+                            <BarChart3 className="w-4 h-4 text-[#FFC72C]" />
+                            <span className="font-extrabold uppercase tracking-wider text-white">
+                              Distribución de Votos
+                            </span>
+                          </div>
+                          <span className="bg-[#001E32] px-3 py-1 rounded-full border border-[#425563] font-bold text-[#FFC72C]">
+                            {totalVotes}{" "}
+                            {totalVotes === 1
+                              ? "voto registrado"
+                              : "votos registrados"}
+                          </span>
+                        </div>
+
+                        {/* Área Principal del Gráfico de Barras con Eje X */}
+                        <div className="flex items-end justify-around gap-3 sm:gap-6 h-72 sm:h-80 pt-6 pb-2 border-b-2 border-[#425563]">
+                          {optionsList.map((opt, idx) => {
+                            const count = getOptionVotes(opt, liveResults);
+                            const pct =
+                              totalVotes > 0
+                                ? Math.round((count / totalVotes) * 100)
+                                : 0;
+                            const isCorrect = isOptionCorrect(opt);
+
+                            // Altura relativa proporcional al máximo de votos
+                            const barHeightPct =
+                              totalVotes > 0 && maxVotes > 0
+                                ? Math.round((count / maxVotes) * 100)
+                                : 0;
+
+                            const barColor = isCorrect
+                              ? "#4C8C2B"
+                              : OPTION_COLORS[idx % OPTION_COLORS.length];
+
+                            return (
+                              <div
+                                key={opt.id}
+                                className="flex-1 flex flex-col items-center justify-end h-full max-w-[130px] sm:max-w-[160px] min-w-0"
+                              >
+                                {/* Valor y porcentaje flotando SOBRE la barra */}
+                                <div className="flex flex-col items-center justify-center mb-2 transition-all duration-500">
+                                  <span
+                                    className={`text-2xl sm:text-3xl font-black leading-none ${
+                                      count > 0
+                                        ? "text-white scale-105"
+                                        : "text-[#ECEBE4]/40 text-lg sm:text-xl"
+                                    }`}
+                                  >
+                                    {count}
+                                  </span>
+                                  {totalVotes > 0 && (
+                                    <span
+                                      className={`text-[11px] sm:text-xs font-black mt-1 px-2 py-0.5 rounded-full ${
+                                        count > 0
+                                          ? "bg-[#001E32] text-[#FFC72C] border border-[#425563]"
+                                          : "text-[#ECEBE4]/30"
+                                      }`}
+                                    >
+                                      {pct}%
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* La Barra Auténtica que crece desde el fondo */}
+                                <div className="w-full flex items-end justify-center h-44 sm:h-52">
+                                  <div
+                                    className={`w-full max-w-[70px] sm:max-w-[85px] rounded-t-2xl transition-all duration-700 ease-out relative flex items-start justify-center ${
+                                      isCorrect && count > 0
+                                        ? "ring-4 ring-[#4C8C2B]/60 shadow-[0_0_25px_rgba(76,140,43,0.5)]"
+                                        : count > 0
+                                          ? "shadow-lg"
+                                          : ""
+                                    }`}
+                                    style={{
+                                      height:
+                                        count > 0
+                                          ? `${Math.max(12, Math.min(100, barHeightPct))}%`
+                                          : "6px",
+                                      backgroundColor:
+                                        count > 0 ? barColor : "#001E32",
+                                      border:
+                                        count === 0
+                                          ? "1px solid #425563"
+                                          : undefined,
+                                    }}
+                                  >
+                                    {isCorrect && count > 0 && (
+                                      <div className="mt-2 bg-[#001E32]/90 text-white px-2 py-0.5 rounded-full text-xs font-black flex items-center gap-1 shadow">
+                                        <span>✓</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Etiquetas de las Opciones DEBAJO del Eje X */}
+                        <div className="flex items-start justify-around gap-3 sm:gap-6 pt-1">
+                          {optionsList.map((opt, idx) => {
+                            const isCorrect = isOptionCorrect(opt);
+                            const barColor = isCorrect
+                              ? "#4C8C2B"
+                              : OPTION_COLORS[idx % OPTION_COLORS.length];
+
+                            return (
+                              <div
+                                key={opt.id}
+                                className="flex-1 flex flex-col items-center text-center max-w-[130px] sm:max-w-[160px] min-w-0 space-y-1.5"
+                              >
+                                <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                                  <span
+                                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shadow shrink-0"
+                                    style={{
+                                      backgroundColor: barColor,
+                                      color:
+                                        idx === 0 && !isCorrect
+                                          ? "#001E32"
+                                          : "#FFFFFF",
+                                    }}
+                                  >
+                                    {opt.id && opt.id.length <= 2
+                                      ? opt.id
+                                      : idx + 1}
+                                  </span>
+                                  {isCorrect && (
+                                    <span className="text-[10px] uppercase font-black tracking-wider text-[#86C8BC] bg-[#4C8C2B]/30 border border-[#4C8C2B] px-1.5 py-0.5 rounded shadow-sm">
+                                      Correcta
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-xs sm:text-sm font-bold text-white line-clamp-3 leading-snug break-words">
+                                  {opt.text}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })()}
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* Explicación si aplica */}
+              {currentQ.explanation_text && (
+                <div className="bg-[#48A9C5]/10 border border-[#48A9C5] p-4 rounded-2xl text-sm text-[#ECEBE4]">
+                  <strong className="text-[#48A9C5]">Explicación:</strong>{" "}
+                  {currentQ.explanation_text}
+                </div>
+              )}
+
+              <div className="flex justify-end pt-2">
+                {isOpenQuestion ? (
+                  currentQIndex + 1 < questions.length ? (
+                    <button
+                      type="button"
+                      onClick={() => handlePresenterAction("next_question")}
+                      className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-lg py-3 px-6 rounded-xl shadow-xl flex items-center space-x-2 transition active:scale-95"
+                    >
+                      <span>Siguiente Pregunta</span>
+                      <ArrowRight className="w-5 h-5" />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handlePresenterAction("finish_session")}
+                      className="bg-[#4C8C2B] hover:bg-[#3D7022] text-white font-black text-lg py-3 px-6 rounded-xl shadow-xl flex items-center space-x-2 transition active:scale-95"
+                    >
+                      <span>Finalizar Sondeo</span>
+                      <CheckCircle2 className="w-5 h-5" />
+                    </button>
+                  )
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handlePresenterAction("show_leaderboard")}
+                    className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-lg py-3 px-6 rounded-xl shadow-xl flex items-center space-x-2 transition"
+                  >
+                    <span>Ver Tabla de Posiciones</span>
+                    <Trophy className="w-5 h-5" />
+                  </button>
+                )}
               </div>
-            )}
-
-          {/* Explicación si aplica */}
-          {currentQ.explanation_text && (
-            <div className="bg-[#48A9C5]/10 border border-[#48A9C5] p-4 rounded-2xl text-sm text-[#ECEBE4]">
-              <strong className="text-[#48A9C5]">Explicación:</strong>{" "}
-              {currentQ.explanation_text}
-            </div>
-          )}
-
-          <div className="flex justify-end pt-2">
-            {isOpenQuestion ? (
-              currentQIndex + 1 < questions.length ? (
-                <button
-                  type="button"
-                  onClick={() => handlePresenterAction("next_question")}
-                  className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-lg py-3 px-6 rounded-xl shadow-xl flex items-center space-x-2 transition active:scale-95"
-                >
-                  <span>Siguiente Pregunta</span>
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => handlePresenterAction("finish_session")}
-                  className="bg-[#4C8C2B] hover:bg-[#3D7022] text-white font-black text-lg py-3 px-6 rounded-xl shadow-xl flex items-center space-x-2 transition active:scale-95"
-                >
-                  <span>Finalizar Sondeo</span>
-                  <CheckCircle2 className="w-5 h-5" />
-                </button>
-              )
-            ) : (
-              <button
-                type="button"
-                onClick={() => handlePresenterAction("show_leaderboard")}
-                className="bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-lg py-3 px-6 rounded-xl shadow-xl flex items-center space-x-2 transition"
-              >
-                <span>Ver Tabla de Posiciones</span>
-                <Trophy className="w-5 h-5" />
-              </button>
-            )}
-          </div>
-        </main>
-      )}
+            </main>
+          );
+        })()}
 
       {/* 4. LEADERBOARD VIEW (SOLO PARA CUESTIONARIOS GAMIFICADOS) */}
       {!isOpenQuestion && currentStep === "leaderboard" && (

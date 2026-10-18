@@ -23,13 +23,15 @@ import {
   Download,
   AlertCircle,
   RotateCcw,
+  TrendingUp,
+  Cloud,
+  LayoutGrid,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import PageHeader from "../components/PageHeader";
 import Modal from "../components/Modal";
 import QuestionBankPickerModal from "../components/QuestionBankPickerModal";
 import EpirocOptionIcon from "../components/EpirocOptionIcon";
-
 
 interface OptionItem {
   id: string;
@@ -530,7 +532,9 @@ export default function ActivityEditorPage() {
         const rows: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1 });
 
         if (rows.length < 2) {
-          setExcelError("El archivo Excel no contiene filas de preguntas para importar.");
+          setExcelError(
+            "El archivo Excel no contiene filas de preguntas para importar.",
+          );
           return;
         }
 
@@ -558,7 +562,10 @@ export default function ActivityEditorPage() {
             questionType = "word_cloud";
           } else if (rawType.includes("open") || rawType.includes("abierta")) {
             questionType = "open_ended";
-          } else if (rawType.includes("true") || rawType.includes("verdadero")) {
+          } else if (
+            rawType.includes("true") ||
+            rawType.includes("verdadero")
+          ) {
             questionType = "true_false";
           } else if (
             rawType.includes("rating") ||
@@ -586,9 +593,9 @@ export default function ActivityEditorPage() {
             !isNaN(parseInt(String(row[8]), 10))
               ? parseInt(String(row[8]), 10)
               : questionType === "rating" ||
-                questionType === "word_cloud" ||
-                questionType === "open_ended" ||
-                questionType === "likert"
+                  questionType === "word_cloud" ||
+                  questionType === "open_ended" ||
+                  questionType === "likert"
                 ? 0
                 : 1000;
           const explanation = row[9] ? String(row[9]).trim() : "";
@@ -667,7 +674,9 @@ export default function ActivityEditorPage() {
         setParsedExcelQuestions(parsed);
       } catch (err) {
         console.error("Error al procesar archivo Excel:", err);
-        setExcelError("Error al procesar el archivo Excel. Asegúrate de usar un formato válido .xlsx o .csv.");
+        setExcelError(
+          "Error al procesar el archivo Excel. Asegúrate de usar un formato válido .xlsx o .csv.",
+        );
       }
     };
     reader.readAsBinaryString(file);
@@ -702,7 +711,9 @@ export default function ActivityEditorPage() {
         reveal_step_count: 1,
         chart_type: q.questionType === "word_cloud" ? "word_cloud" : "bar",
         options_json: JSON.stringify(q.options),
-        correct_answer_value: correctOpt ? correctOpt.id : (q.options[0]?.id ?? null),
+        correct_answer_value: correctOpt
+          ? correctOpt.id
+          : (q.options[0]?.id ?? null),
         explanation_text: q.explanation,
       };
     });
@@ -712,8 +723,7 @@ export default function ActivityEditorPage() {
 
     setQuestions(updatedQuestions);
 
-    const newSelectedIndex =
-      importMode === "replace" ? 0 : questions.length;
+    const newSelectedIndex = importMode === "replace" ? 0 : questions.length;
     setSelectedQuestionIndex(newSelectedIndex);
 
     if (newItems.length > 0) {
@@ -1044,8 +1054,10 @@ export default function ActivityEditorPage() {
                       Calificación con Estrellas (Escala 1 a 5 ⭐)
                     </h3>
                     <p className="text-xs text-[var(--text-subtle)] max-w-md mx-auto leading-relaxed">
-                      Los asistentes evaluarán la pregunta asignando de 1 a 5 estrellas desde sus teléfonos móviles.
-                      En la pantalla grande se calculará automáticamente el promedio en vivo y el desglose de votos.
+                      Los asistentes evaluarán la pregunta asignando de 1 a 5
+                      estrellas desde sus teléfonos móviles. En la pantalla
+                      grande se calculará automáticamente el promedio en vivo y
+                      el desglose de votos.
                     </p>
                   </div>
                 </div>
@@ -1200,38 +1212,40 @@ export default function ActivityEditorPage() {
           <div className="space-y-2">
             <label className="text-xs font-bold text-[var(--text-subtle)] flex items-center gap-1.5">
               <BarChart3 className="w-3.5 h-3.5 text-[#4C8C2B]" />
-              Tipo de Gráfico
+              Tipo de Gráfico Predeterminado
             </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() =>
-                  handleUpdateCurrentQuestion({ chart_type: "bar" })
-                }
-                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-                  currentQuestion?.chart_type === "bar"
-                    ? "bg-[#4C8C2B] text-white shadow-sm"
-                    : "bg-[var(--surface-subtle)] text-[var(--text-subtle)] hover:bg-[var(--surface-hover)] border border-[var(--border-subtle)]"
-                }`}
-              >
-                <BarChart3 className="w-4 h-4" />
-                <span>Barras</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  handleUpdateCurrentQuestion({ chart_type: "donut" })
-                }
-                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-                  currentQuestion?.chart_type === "donut"
-                    ? "bg-[#4C8C2B] text-white shadow-sm"
-                    : "bg-[var(--surface-subtle)] text-[var(--text-subtle)] hover:bg-[var(--surface-hover)] border border-[var(--border-subtle)]"
-                }`}
-              >
-                <PieChart className="w-4 h-4" />
-                <span>Donut</span>
-              </button>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {[
+                { type: "bar", label: "Barras", icon: BarChart3 },
+                { type: "donut", label: "Dona", icon: PieChart },
+                { type: "line", label: "Líneas", icon: TrendingUp },
+                { type: "cards", label: "Muro", icon: LayoutGrid },
+                { type: "word_cloud", label: "Nube", icon: Cloud },
+              ].map((item) => {
+                const Icon = item.icon;
+                const isSelected =
+                  (currentQuestion?.chart_type ||
+                    (currentQuestion?.question_type === "word_cloud"
+                      ? "word_cloud"
+                      : "bar")) === item.type;
+                return (
+                  <button
+                    key={item.type}
+                    type="button"
+                    onClick={() =>
+                      handleUpdateCurrentQuestion({ chart_type: item.type })
+                    }
+                    className={`flex items-center justify-center gap-2 py-2 px-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                      isSelected
+                        ? "bg-[#4C8C2B] text-white shadow-sm font-black scale-102"
+                        : "bg-[var(--surface-subtle)] text-[var(--text-subtle)] hover:bg-[var(--surface-hover)] border border-[var(--border-subtle)]"
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5 shrink-0" />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -1354,7 +1368,8 @@ export default function ActivityEditorPage() {
                 Paso 1: Plantilla Modelo Oficial
               </span>
               <p className="text-xs text-[var(--text-subtle)]">
-                Descarga el formato Excel (.xlsx) con ejemplos y la hoja de guía de tipos de pregunta.
+                Descarga el formato Excel (.xlsx) con ejemplos y la hoja de guía
+                de tipos de pregunta.
               </p>
             </div>
             <button
@@ -1409,7 +1424,9 @@ export default function ActivityEditorPage() {
               >
                 <Upload
                   className={`w-8 h-8 mb-2 transition ${
-                    isDraggingExcel ? "text-[#FFC72C] animate-bounce" : "text-[#48A9C5]"
+                    isDraggingExcel
+                      ? "text-[#FFC72C] animate-bounce"
+                      : "text-[#48A9C5]"
                   }`}
                 />
                 <span className="text-xs font-bold text-[var(--text-main)] text-center">
@@ -1508,7 +1525,8 @@ export default function ActivityEditorPage() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#4C8C2B] flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-[#4C8C2B]" />
-                  {parsedExcelQuestions.length} Preguntas Detectadas Listas para Importar
+                  {parsedExcelQuestions.length} Preguntas Detectadas Listas para
+                  Importar
                 </span>
               </div>
 
@@ -1523,7 +1541,8 @@ export default function ActivityEditorPage() {
                         #{idx + 1} {q.questionText}
                       </span>
                       <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-[var(--surface-subtle)] border border-[var(--border-subtle)] text-[var(--text-subtle)]">
-                        {q.questionType} &bull; {q.timeLimit}s &bull; {q.pointsBase} pts
+                        {q.questionType} &bull; {q.timeLimit}s &bull;{" "}
+                        {q.pointsBase} pts
                       </span>
                     </div>
                     {q.options.length > 0 && (
@@ -1595,11 +1614,13 @@ export default function ActivityEditorPage() {
               }
             }
           } catch (err) {
-            console.error("Error recargando preguntas tras importar desde banco:", err);
+            console.error(
+              "Error recargando preguntas tras importar desde banco:",
+              err,
+            );
           }
         }}
       />
     </div>
   );
 }
-
