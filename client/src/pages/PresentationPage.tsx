@@ -25,6 +25,7 @@ import QRCode from "qrcode";
 import { getSocket } from "../services/socket";
 import EpirocOptionIcon from "../components/EpirocOptionIcon";
 import Modal from "../components/Modal";
+import AnimatedPodium from "../components/AnimatedPodium";
 
 interface QuestionOption {
   id: string;
@@ -1832,67 +1833,17 @@ export default function PresentationPage() {
           </main>
         ) : (
           <main className="my-auto max-w-4xl w-full mx-auto space-y-8 py-6 text-center">
-            <div className="space-y-2">
-              <h2 className="text-5xl font-black text-white">
-                🏆 Podio de Ganadores
-              </h2>
-              <p className="text-lg text-[#FFC72C] font-bold">
-                ¡Felicitaciones a los mejores puntajes de Epiroc!
-              </p>
-            </div>
+            <AnimatedPodium
+              users={leaderboard.map((p) => ({
+                id: p.id,
+                name: p.nickname,
+                score: p.score,
+                avatar_seed: p.avatar_seed,
+                streak: p.current_streak,
+              }))}
+            />
 
-            {/* Podio 3D/2D */}
-            <div className="flex justify-center items-end space-x-4 h-72 pt-8">
-              {/* 2do Lugar */}
-              {leaderboard[1] && (
-                <div className="flex flex-col items-center w-48 space-y-2">
-                  <span className="font-bold text-lg text-white truncate max-w-[180px]">
-                    {leaderboard[1].nickname}
-                  </span>
-                  <span className="font-mono text-sm text-[#FFC72C]">
-                    {leaderboard[1].score} pts
-                  </span>
-                  <div className="w-full bg-gray-400 text-black font-black text-4xl h-40 rounded-t-3xl flex items-center justify-center shadow-2xl border-2 border-white">
-                    2
-                  </div>
-                </div>
-              )}
-
-              {/* 1er Lugar (Más Alto) */}
-              {leaderboard[0] && (
-                <div className="flex flex-col items-center w-52 space-y-2">
-                  <div className="p-2 bg-[#FFC72C] text-[#001E32] rounded-full shadow-xl">
-                    <Trophy className="w-8 h-8" />
-                  </div>
-                  <span className="font-extrabold text-xl text-white truncate max-w-[200px]">
-                    {leaderboard[0].nickname}
-                  </span>
-                  <span className="font-mono text-base text-[#FFC72C] font-black">
-                    {leaderboard[0].score} pts
-                  </span>
-                  <div className="w-full bg-[#FFC72C] text-[#001E32] font-black text-5xl h-56 rounded-t-3xl flex items-center justify-center shadow-2xl border-4 border-white">
-                    1
-                  </div>
-                </div>
-              )}
-
-              {/* 3er Lugar */}
-              {leaderboard[2] && (
-                <div className="flex flex-col items-center w-48 space-y-2">
-                  <span className="font-bold text-lg text-white truncate max-w-[180px]">
-                    {leaderboard[2].nickname}
-                  </span>
-                  <span className="font-mono text-sm text-[#FFC72C]">
-                    {leaderboard[2].score} pts
-                  </span>
-                  <div className="w-full bg-amber-700 text-white font-black text-4xl h-28 rounded-t-3xl flex items-center justify-center shadow-2xl border-2 border-amber-500">
-                    3
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="pt-8">
+            <div className="pt-4">
               <Link
                 to="/"
                 className="inline-flex items-center space-x-2 bg-[#193750] hover:bg-[#254F72] border border-[#FFC72C] text-white font-bold py-3 px-8 rounded-xl shadow-xl transition"

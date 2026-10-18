@@ -147,3 +147,88 @@ body {
 .animate-pulse-subtle {
   animation: pulse-subtle 2s infinite ease-in-out;
 }
+
+/* =========================================================================
+   EPIROC ANIMATED PODIUM (Keyframes & Staggered Micro-animations)
+   ========================================================================= */
+@keyframes fadeInDrop {
+  0% {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUpText {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes growBar {
+  0% {
+    transform: scaleY(0);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+/* Staggered Column Drops */
+.podium-col-pos-1 {
+  animation: fadeInDrop 0.8s ease-out 0.4s forwards;
+  opacity: 0;
+}
+.podium-col-pos-2 {
+  animation: fadeInDrop 0.8s ease-out 0.2s forwards;
+  opacity: 0;
+}
+.podium-col-pos-3 {
+  animation: fadeInDrop 0.8s ease-out 0.6s forwards;
+  opacity: 0;
+}
+
+/* Staggered Text Slide-up */
+.podium-info-pos-1 {
+  animation: slideUpText 0.6s ease-out 0.5s forwards;
+  opacity: 0;
+}
+.podium-info-pos-2 {
+  animation: slideUpText 0.6s ease-out 0.3s forwards;
+  opacity: 0;
+}
+.podium-info-pos-3 {
+  animation: slideUpText 0.6s ease-out 0.7s forwards;
+  opacity: 0;
+}
+
+/* Staggered Podium Bars with Bounce Cubic-Bezier */
+.podium-bar-pos-1 {
+  transform-origin: bottom;
+  animation: growBar 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.4s forwards;
+  transform: scaleY(0);
+  background: linear-gradient(135deg, rgb(255, 199, 44), rgb(230, 179, 39));
+  height: 220px;
+}
+.podium-bar-pos-2 {
+  transform-origin: bottom;
+  animation: growBar 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s forwards;
+  transform: scaleY(0);
+  background: linear-gradient(135deg, rgb(236, 235, 228), rgb(180, 180, 170));
+  height: 160px;
+}
+.podium-bar-pos-3 {
+  transform-origin: bottom;
+  animation: growBar 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.6s forwards;
+  transform: scaleY(0);
+  background: linear-gradient(135deg, rgb(216, 96, 24), rgb(163, 40, 35));
+  height: 110px;
+}
