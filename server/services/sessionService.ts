@@ -126,6 +126,7 @@ export async function getAllSessions(): Promise<Session[]> {
     FROM epivox_sessions s
     LEFT JOIN epivox_activities a ON a.id = s.activity_id
     LEFT JOIN epivox_participants p ON p.session_id = s.id
+    WHERE (a.activity_type IS NULL OR a.activity_type != 'open_poll')
     GROUP BY s.id, s.pin, s.activity_id, s.presenter_user_id, s.status, 
              s.current_question_index, s.current_step, s.session_mode, 
              s.anonymous_mode, s.max_participants, s.started_at, s.finished_at, 

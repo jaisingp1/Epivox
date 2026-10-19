@@ -89,9 +89,7 @@ export default function PresentationsPage() {
       if (modeFilter === "quiz") {
         matchMode = act.activity_type === "quiz";
       } else if (modeFilter === "presentation") {
-        matchMode =
-          act.activity_type === "interactive_presentation" ||
-          act.activity_type === "open_poll";
+        matchMode = act.activity_type === "interactive_presentation";
       }
 
       return matchSearch && matchMode;
@@ -105,9 +103,7 @@ export default function PresentationsPage() {
       (p) => p.activity_type === "quiz",
     ).length;
     const presentationCount = presentations.filter(
-      (p) =>
-        p.activity_type === "interactive_presentation" ||
-        p.activity_type === "open_poll",
+      (p) => p.activity_type === "interactive_presentation",
     ).length;
     return { total, triviaCount, presentationCount };
   }, [presentations]);

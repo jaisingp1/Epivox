@@ -91,7 +91,7 @@ export async function getActivityAccess(
   return null;
 }
 
-/** Presentaciones propias + compartidas conmigo (admin: todas). */
+/** Presentaciones propias + compartidas conmigo (admin: todas). Excluye sondeos abiertos espontáneos. */
 export async function getActivities(user: AuthUser): Promise<Activity[]> {
   const isAdmin = user.role === "admin";
   const sql = `
@@ -103,9 +103,10 @@ export async function getActivities(user: AuthUser): Promise<Activity[]> {
     FROM epivox_activities a
     JOIN users u ON u.id = a.created_by_user_id
     LEFT JOIN epivox_questions q ON q.activity_id = a.id
-    WHERE ? OR a.created_by_user_id = ?
-       OR EXISTS (SELECT 1 FROM epivox_collaborators c
-                  WHERE c.activity_id = a.id AND c.user_id = ?)
+    WHERE (a.activity_type IS NULL OR a.activity_type != 'open_poll')
+      AND (? OR a.created_by_user_id = ?
+           OR EXISTS (SELECT 1 FROM epivox_collaborators c
+                      WHERE c.activity_id = a.id AND c.user_id = ?))
     GROUP BY ALL
     ORDER BY a.updated_at DESC
   `;
@@ -204,10 +205,10 @@ export async function updateActivity(
     values.push(data[col] === "" && col === "description" ? null : data[col]);
   }
   sets.push("updated_at = CURRENT_TIMESTAMP");
-  await query(
-    `UPDATE epivox_activities SET ${sets.join(", ")} WHERE id = ?`,
-    [...values, id],
-  );
+  await query(`UPDATE epivox_activities SET ${sets.join(", ")} WHERE id = ?`, [
+    ...values,
+    id,
+  ]);
   const updated = await getActivityById(id);
   if (!updated) throw new Error("Actividad no encontrada para actualizar");
   return updated;

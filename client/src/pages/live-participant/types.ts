@@ -94,6 +94,7 @@ export function getSelectedAnswerDisplay(
   q: QuestionData | null,
 ): string | null {
   if (!selectedId || !q) return null;
+  if (q.question_type === "ranking") return selectedId;
   try {
     const options: QuestionOption[] = JSON.parse(q.options_json || "[]");
     const found = options.find(

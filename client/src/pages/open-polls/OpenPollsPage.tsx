@@ -52,6 +52,9 @@ export const OpenPollsPage: React.FC = () => {
 
   const [copiedLink, setCopiedLink] = useState(false);
   const [qrModalUrl, setQrModalUrl] = useState<string | null>(null);
+  const [ephemeralActivityId, setEphemeralActivityId] = useState<number | null>(
+    null,
+  );
 
   // Manejo de preguntas en borrador
   const handleAddQuestion = () => {
@@ -103,6 +106,9 @@ export const OpenPollsPage: React.FC = () => {
         }),
       });
       const activity = await actRes.json();
+      if (activity?.id) {
+        setEphemeralActivityId(activity.id);
+      }
 
       // 2. Crear cada una de las preguntas abiertas del set
       const createdQuestions: SessionQuestion[] = [];
@@ -243,6 +249,12 @@ export const OpenPollsPage: React.FC = () => {
   };
 
   const handleResetSession = () => {
+    if (ephemeralActivityId) {
+      fetch(`/api/epivox/activities/${ephemeralActivityId}`, {
+        method: "DELETE",
+      }).catch((err) => console.error("Error al limpiar sondeo efímero:", err));
+      setEphemeralActivityId(null);
+    }
     clearSession();
   };
 

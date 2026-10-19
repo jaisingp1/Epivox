@@ -73,6 +73,7 @@ export default function LiveChartsVisualizer({
         <WordCloudChart
           parsedOptions={parsedOptions}
           liveResults={liveResults}
+          rawAnswers={rawAnswers}
           showCorrectAnswers={showCorrectAnswers}
           currentQ={currentQ}
         />

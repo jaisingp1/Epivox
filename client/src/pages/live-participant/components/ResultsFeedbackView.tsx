@@ -65,7 +65,10 @@ export const ResultsFeedbackView: React.FC<ResultsFeedbackViewProps> = ({
               lastFeedback.isPoll ||
               currentQuestion?.question_type === "word_cloud" ||
               currentQuestion?.question_type === "open_ended" ||
-              currentQuestion?.question_type === "rating";
+              currentQuestion?.question_type === "rating" ||
+              currentQuestion?.question_type === "ranking" ||
+              currentQuestion?.question_type === "likert" ||
+              currentQuestion?.question_type === "likert_scale";
 
             if (isPollOrOpen) {
               return (

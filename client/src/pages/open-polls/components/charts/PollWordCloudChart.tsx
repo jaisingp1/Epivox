@@ -1,17 +1,26 @@
 import React from "react";
 import { Cloud } from "lucide-react";
-import { OPTION_COLORS } from "../../types";
+import { OPTION_COLORS, RawAnswerItem } from "../../types";
+import {
+  extractWordFrequencies,
+  centerWeightedOrder,
+  calculateWordScale,
+} from "../../../../utils/wordCloudHelper";
 
 interface PollWordCloudChartProps {
   liveResults: Record<string, number>;
+  rawAnswers?: RawAnswerItem[];
   pin: string;
 }
 
 export const PollWordCloudChart: React.FC<PollWordCloudChartProps> = ({
   liveResults,
+  rawAnswers,
   pin,
 }) => {
-  if (Object.keys(liveResults).length === 0) {
+  const entries = extractWordFrequencies(rawAnswers, liveResults);
+
+  if (entries.length === 0 || entries.every((e) => e.count === 0)) {
     return (
       <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] p-8 rounded-2xl min-h-[340px] flex flex-wrap items-center justify-center gap-4 content-center">
         <div className="text-center text-[var(--text-muted)] space-y-2 py-10">
@@ -27,21 +36,29 @@ export const PollWordCloudChart: React.FC<PollWordCloudChartProps> = ({
     );
   }
 
-  const maxCount = Math.max(...Object.values(liveResults), 1);
+  const maxCount = Math.max(...entries.map((e) => e.count), 1);
+  const minCount = Math.min(...entries.map((e) => e.count), 1);
+  const orderedEntries = centerWeightedOrder(entries);
 
   return (
     <div className="bg-[var(--surface-subtle)] border border-[var(--border-subtle)] p-8 rounded-2xl min-h-[340px] flex flex-wrap items-center justify-center gap-4 content-center">
-      {Object.entries(liveResults).map(([word, count], i) => {
-        const scale = Math.min(3.2, 1.2 + (count / maxCount) * 2.0);
+      {orderedEntries.map((item, i) => {
+        const scale = calculateWordScale(item.count, maxCount, minCount);
         const color = OPTION_COLORS[i % OPTION_COLORS.length];
+        const isHighFrequency = item.count >= maxCount * 0.7 && maxCount > 1;
+
         return (
           <span
-            key={word}
+            key={item.word}
             style={{ fontSize: `${scale}rem`, color }}
-            className="font-black px-4 py-2 bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-2xl shadow-sm transition hover:scale-110 cursor-default select-none animate-in fade-in"
+            className={`px-4 py-2 bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-2xl shadow-sm transition hover:scale-110 cursor-default select-none animate-in fade-in ${
+              isHighFrequency ? "font-black" : "font-bold"
+            }`}
           >
-            {word}{" "}
-            <span className="text-xs opacity-75 font-bold">({count})</span>
+            {item.word}{" "}
+            <span className="text-xs opacity-75 font-semibold">
+              ({item.count})
+            </span>
           </span>
         );
       })}

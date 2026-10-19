@@ -57,13 +57,16 @@ export default function QuestionCanvas({
         </div>
 
         {/* Type-Specific Options Canvas */}
-        {currentQuestion.question_type === "multiple_choice" && (
+        {(currentQuestion.question_type === "multiple_choice" ||
+          currentQuestion.question_type === "ranking") && (
           <div className="space-y-3">
             <div className="flex items-center justify-between text-xs font-bold text-[var(--text-subtle)]">
               <span>
-                Opciones de Respuesta (Marca el check verde en la correcta)
+                {currentQuestion.question_type === "ranking"
+                  ? "Opciones a Ordenar / Priorizar por la Audiencia"
+                  : "Opciones de Respuesta (Marca el check verde en la correcta)"}
               </span>
-              <span>4 Opciones Estándar</span>
+              <span>{currentOptions.length} Opciones</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -75,9 +78,11 @@ export default function QuestionCanvas({
                   <div
                     key={opt.id || idx}
                     className={`relative flex items-center bg-[var(--surface-card)] border-2 rounded-2xl p-3 transition shadow-sm ${
-                      isCorrect
-                        ? "border-[#4C8C2B] ring-2 ring-[#4C8C2B]/30"
-                        : "border-[var(--border-subtle)]"
+                      currentQuestion.question_type === "ranking"
+                        ? "border-[var(--border-subtle)]"
+                        : isCorrect
+                          ? "border-[#4C8C2B] ring-2 ring-[#4C8C2B]/30"
+                          : "border-[var(--border-subtle)]"
                     }`}
                   >
                     <div className="mr-3 shrink-0">
@@ -88,22 +93,28 @@ export default function QuestionCanvas({
                       type="text"
                       value={opt.text}
                       onChange={(e) => onOptionChange(idx, e.target.value)}
-                      placeholder={`Opción ${opt.id}`}
+                      placeholder={`Opción ${opt.id || idx + 1}`}
                       className="flex-1 bg-transparent text-sm font-semibold text-[var(--text-main)] focus:outline-none placeholder-[var(--text-muted)]"
                     />
 
-                    <button
-                      type="button"
-                      onClick={() => onSetCorrectOption(opt.id)}
-                      title="Marcar como respuesta correcta"
-                      className={`p-2 rounded-xl transition cursor-pointer ${
-                        isCorrect
-                          ? "text-[#4C8C2B] bg-[#4C8C2B]/15 font-bold"
-                          : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
-                      }`}
-                    >
-                      <CheckCircle2 className="w-5 h-5" />
-                    </button>
+                    {currentQuestion.question_type === "multiple_choice" ? (
+                      <button
+                        type="button"
+                        onClick={() => onSetCorrectOption(opt.id)}
+                        title="Marcar como respuesta correcta"
+                        className={`p-2 rounded-xl transition cursor-pointer ${
+                          isCorrect
+                            ? "text-[#4C8C2B] bg-[#4C8C2B]/15 font-bold"
+                            : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
+                        }`}
+                      >
+                        <CheckCircle2 className="w-5 h-5" />
+                      </button>
+                    ) : (
+                      <span className="text-xs font-black text-[#FFC72C] bg-[#FFC72C]/10 px-2 py-1 rounded-lg border border-[#FFC72C]/30">
+                        #{idx + 1}
+                      </span>
+                    )}
                   </div>
                 );
               })}

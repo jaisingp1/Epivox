@@ -1,15 +1,22 @@
 import { Cloud, Check } from "lucide-react";
-import type { QuestionData, QuestionOption } from "../../types";
+import type { QuestionData, QuestionOption, RawAnswerItem } from "../../types";
 import { OPTION_COLORS } from "../../types";
 import {
   getOptionVotes,
   isOptionCorrect,
   checkIsItemCorrect,
 } from "../../utils/presentationHelpers";
+import {
+  extractWordFrequencies,
+  centerWeightedOrder,
+  calculateWordScale,
+  type WordCloudItem,
+} from "../../../../utils/wordCloudHelper";
 
 interface WordCloudChartProps {
   parsedOptions: QuestionOption[];
   liveResults: Record<string, number>;
+  rawAnswers?: RawAnswerItem[];
   showCorrectAnswers?: boolean;
   currentQ?: QuestionData;
 }
@@ -17,21 +24,24 @@ interface WordCloudChartProps {
 export default function WordCloudChart({
   parsedOptions,
   liveResults,
+  rawAnswers,
   showCorrectAnswers = false,
   currentQ,
 }: WordCloudChartProps) {
-  const entries =
-    parsedOptions.length > 0
-      ? parsedOptions.map((o) => ({
-          word: o.text,
-          count: getOptionVotes(o, liveResults),
-          isCorrect: showCorrectAnswers && isOptionCorrect(o, currentQ),
-        }))
-      : Object.entries(liveResults).map(([word, count]) => ({
-          word,
-          count,
-          isCorrect: showCorrectAnswers && checkIsItemCorrect(word, currentQ),
-        }));
+  const isPredefinedOptions =
+    parsedOptions.length > 0 && currentQ?.question_type !== "word_cloud";
+
+  const entries: WordCloudItem[] = isPredefinedOptions
+    ? parsedOptions.map((o) => ({
+        word: o.text,
+        count: getOptionVotes(o, liveResults),
+        isCorrect: showCorrectAnswers && isOptionCorrect(o, currentQ),
+      }))
+    : extractWordFrequencies(rawAnswers, liveResults).map((item) => ({
+        ...item,
+        isCorrect:
+          showCorrectAnswers && checkIsItemCorrect(item.word, currentQ),
+      }));
 
   if (entries.length === 0 || entries.every((e) => e.count === 0)) {
     return (
@@ -42,8 +52,8 @@ export default function WordCloudChart({
             Esperando que el público envíe sus respuestas...
           </p>
           <p className="text-xs text-[#ECEBE4]/60">
-            Las palabras aparecerán y crecerán dinámicamente aquí en tiempo
-            real.
+            Las palabras más frecuentes aparecerán y crecerán dinámicamente aquí
+            en tiempo real.
           </p>
         </div>
       </div>
@@ -51,13 +61,18 @@ export default function WordCloudChart({
   }
 
   const maxC = Math.max(...entries.map((e) => e.count), 1);
+  const minC = Math.min(...entries.map((e) => e.count), 1);
+  const orderedEntries = centerWeightedOrder(entries);
+
   return (
     <div className="bg-[#193750] border-2 border-[#425563] p-8 rounded-3xl min-h-[320px] flex flex-wrap items-center justify-center gap-3.5 content-center">
-      {entries.map((item, i) => {
-        const scale = Math.min(3.2, 1.2 + (item.count / maxC) * 2.0);
+      {orderedEntries.map((item, i) => {
+        const scale = calculateWordScale(item.count, maxC, minC);
         const color = item.isCorrect
           ? "#4C8C2B"
           : OPTION_COLORS[i % OPTION_COLORS.length];
+        const isHighFrequency = item.count >= maxC * 0.7 && maxC > 1;
+
         return (
           <span
             key={item.word}
@@ -65,7 +80,9 @@ export default function WordCloudChart({
               fontSize: `${scale}rem`,
               color: item.isCorrect ? "#FFFFFF" : color,
             }}
-            className={`font-black px-4 py-1.5 rounded-2xl shadow-xl transition-all hover:scale-110 cursor-default select-none animate-in fade-in inline-flex items-center gap-1.5 ${
+            className={`px-4 py-1.5 rounded-2xl shadow-xl transition-all hover:scale-110 cursor-default select-none animate-in fade-in inline-flex items-center gap-1.5 ${
+              isHighFrequency ? "font-black" : "font-bold"
+            } ${
               item.isCorrect
                 ? "bg-[#4C8C2B]/40 border-2 border-[#4C8C2B] ring-2 ring-[#4C8C2B]/60 shadow-[0_0_25px_rgba(76,140,43,0.5)]"
                 : "bg-[#001E32]/80 border border-[#425563]/80"
@@ -80,7 +97,9 @@ export default function WordCloudChart({
                 Correcta
               </span>
             )}
-            <span className="text-xs opacity-75 font-bold">({item.count})</span>
+            <span className="text-xs opacity-75 font-semibold">
+              ({item.count})
+            </span>
           </span>
         );
       })}

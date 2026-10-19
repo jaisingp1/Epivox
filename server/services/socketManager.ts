@@ -584,7 +584,8 @@ export function setupSocketManager(io: SocketIOServer): void {
             question.points_base === 0 ||
             question.question_type === "word_cloud" ||
             question.question_type === "open_ended" ||
-            question.question_type === "likert";
+            question.question_type === "likert" ||
+            question.question_type === "ranking";
 
           // Comprobar acierto
           let isCorrect = false;

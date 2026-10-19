@@ -82,6 +82,30 @@ export const getOptionVotes = (
       continue;
     }
 
+    // Manejo de respuestas compuestas de Ranking (Borda count: 1. Item A • 2. Item B...)
+    if (k.includes("•")) {
+      const segments = k.split("•").map((s) => s.trim());
+      const segCount = segments.length;
+      let rankingFound = false;
+      segments.forEach((seg, index) => {
+        const cleanSeg = seg
+          .replace(/^\d+[\.\)\-:]\s*/, "")
+          .trim()
+          .toLowerCase();
+        if (
+          (optTextLower && cleanSeg === optTextLower) ||
+          (optIdLower && cleanSeg === optIdLower)
+        ) {
+          // Borda score: posición 1 (index 0) = segCount puntos, posición 2 = segCount - 1, etc.
+          const weight = Math.max(segCount - index, 1);
+          total += weight * (Number(v) || 1);
+          matched = true;
+          rankingFound = true;
+        }
+      });
+      if (rankingFound) continue;
+    }
+
     // Mapeo especial Verdadero / Falso
     if (optIdLower === "true" || optTextLower.includes("verdadero")) {
       if (

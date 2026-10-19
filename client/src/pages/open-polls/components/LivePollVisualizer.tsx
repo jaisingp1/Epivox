@@ -75,7 +75,11 @@ export const LivePollVisualizer: React.FC<LivePollVisualizerProps> = ({
 
       {/* RENDERIZADOR 1: Nube de Palabras */}
       {activeChartType === "word_cloud" && (
-        <PollWordCloudChart liveResults={liveResults} pin={pin} />
+        <PollWordCloudChart
+          liveResults={liveResults}
+          rawAnswers={rawAnswers}
+          pin={pin}
+        />
       )}
 
       {/* RENDERIZADOR 2: Barras */}

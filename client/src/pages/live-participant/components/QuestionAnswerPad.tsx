@@ -1,5 +1,13 @@
-import React from "react";
-import { Clock, CheckCircle2, XCircle, Star } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import {
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Star,
+  ChevronUp,
+  ChevronDown,
+  ListOrdered,
+} from "lucide-react";
 import EpirocOptionIcon, {
   EPIROC_OPTION_CONFIGS,
 } from "../../../components/EpirocOptionIcon";
@@ -50,6 +58,54 @@ export const QuestionAnswerPad: React.FC<QuestionAnswerPadProps> = ({
   } catch {
     parsedOptions = [];
   }
+
+  const [rankingItems, setRankingItems] = useState<QuestionOption[]>(() => {
+    if (currentQuestion?.question_type === "ranking") {
+      try {
+        return currentQuestion.options_json
+          ? JSON.parse(currentQuestion.options_json)
+          : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    if (currentQuestion?.question_type === "ranking") {
+      try {
+        const opts = currentQuestion.options_json
+          ? JSON.parse(currentQuestion.options_json)
+          : [];
+        setRankingItems(opts);
+      } catch {
+        setRankingItems([]);
+      }
+    }
+  }, [
+    currentQuestion?.id,
+    currentQuestion?.options_json,
+    currentQuestion?.question_type,
+  ]);
+
+  const handleMoveRankItem = (index: number, direction: "up" | "down") => {
+    if (hasAnswered || hasSubmitted) return;
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= rankingItems.length) return;
+    const updated = [...rankingItems];
+    const [moved] = updated.splice(index, 1);
+    updated.splice(targetIndex, 0, moved);
+    setRankingItems(updated);
+  };
+
+  const handleRankingSubmit = () => {
+    if (rankingItems.length === 0 || hasAnswered || hasSubmitted) return;
+    const formattedRanking = rankingItems
+      .map((opt, i) => `${i + 1}. ${opt.text || opt.id}`)
+      .join(" • ");
+    handleAnswerSubmit(formattedRanking);
+  };
 
   return (
     <div className="min-h-screen bg-[#001E32] text-white flex flex-col justify-between p-4">
@@ -245,10 +301,92 @@ export const QuestionAnswerPad: React.FC<QuestionAnswerPadProps> = ({
               </div>
             )}
 
+            {/* Pregunta tipo: Ranking / Ordenar */}
+            {currentQuestion?.question_type === "ranking" && (
+              <div className="bg-[#193750] border-2 border-[#425563] p-4 sm:p-5 rounded-3xl space-y-4 shadow-2xl">
+                <div className="flex items-center justify-between border-b border-[#425563]/60 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <ListOrdered className="w-5 h-5 text-[#FFC72C]" />
+                    <span className="text-xs font-black uppercase tracking-wider text-[#FFC72C]">
+                      Orden de Prioridad
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-bold text-[#ECEBE4]/70">
+                    Usa las flechas para ordenar
+                  </span>
+                </div>
+
+                <p className="text-xs text-[#ECEBE4]/90 text-center font-medium">
+                  Organiza las opciones de mayor importancia (#1 arriba) a menor
+                  importancia.
+                </p>
+
+                <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
+                  {rankingItems.map((item, idx) => {
+                    const isFirst = idx === 0;
+                    const isLast = idx === rankingItems.length - 1;
+                    return (
+                      <div
+                        key={item.id || idx}
+                        className="bg-[#001E32] border border-[#425563] rounded-2xl p-2.5 sm:p-3 flex items-center gap-2.5 shadow-md transition"
+                      >
+                        {/* Indicador de posición #1, #2... */}
+                        <div className="w-8 h-8 rounded-xl bg-[#FFC72C] text-[#001E32] font-black text-sm flex items-center justify-center shrink-0 shadow">
+                          #{idx + 1}
+                        </div>
+
+                        {/* Texto del ítem */}
+                        <div className="flex-1 min-w-0">
+                          <span className="text-xs sm:text-sm font-bold text-white block line-clamp-2 leading-snug">
+                            {item.text || item.id}
+                          </span>
+                        </div>
+
+                        {/* Botones de subir / bajar */}
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            disabled={isFirst || hasAnswered || hasSubmitted}
+                            onClick={() => handleMoveRankItem(idx, "up")}
+                            title="Mover arriba"
+                            className="p-2 rounded-xl bg-[#193750] hover:bg-[#FFC72C] hover:text-[#001E32] text-white disabled:opacity-20 active:scale-90 transition cursor-pointer"
+                          >
+                            <ChevronUp className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={isLast || hasAnswered || hasSubmitted}
+                            onClick={() => handleMoveRankItem(idx, "down")}
+                            title="Mover abajo"
+                            className="p-2 rounded-xl bg-[#193750] hover:bg-[#FFC72C] hover:text-[#001E32] text-white disabled:opacity-20 active:scale-90 transition cursor-pointer"
+                          >
+                            <ChevronDown className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <button
+                  type="button"
+                  disabled={
+                    rankingItems.length === 0 || hasAnswered || hasSubmitted
+                  }
+                  onClick={handleRankingSubmit}
+                  className="w-full bg-[#FFC72C] hover:bg-[#E6B327] text-[#001E32] font-black text-base py-3.5 rounded-xl transition shadow-xl disabled:opacity-40 active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <CheckCircle2 className="w-5 h-5 fill-[#001E32] text-white" />
+                  <span>Confirmar Orden de Prioridad</span>
+                </button>
+              </div>
+            )}
+
             {/* Pregunta tipo: Selección Múltiple */}
             {(currentQuestion?.question_type === "multiple_choice" ||
               (!currentQuestion?.question_type &&
-                currentQuestion?.question_type !== "rating")) && (
+                currentQuestion?.question_type !== "rating" &&
+                currentQuestion?.question_type !== "ranking")) && (
               <div className="grid grid-cols-2 gap-2.5 max-h-[56vh] overflow-y-auto p-1">
                 {parsedOptions.map((opt, idx) => {
                   const cfg =
@@ -308,7 +446,8 @@ export const QuestionAnswerPad: React.FC<QuestionAnswerPadProps> = ({
             )}
 
             {/* Pregunta tipo: Likert / Escala */}
-            {currentQuestion?.question_type === "likert" && (
+            {(currentQuestion?.question_type === "likert" ||
+              currentQuestion?.question_type === "likert_scale") && (
               <div className="bg-[#193750] border border-[#425563] p-6 rounded-2xl space-y-4 text-center">
                 <span className="block text-sm text-[#ECEBE4] font-bold">
                   Selecciona tu nivel de acuerdo (1 al 5):
