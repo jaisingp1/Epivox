@@ -94,7 +94,9 @@ export default function QuestionStepView({
       {/* Opciones en la pantalla grande - Soporte dinámico para 2 a 6 opciones o Rating */}
       {currentQ.question_type === "rating" ? (
         <RatingVisualizer liveResults={liveResults} />
-      ) : parsedOptions.length > 0 ? (
+      ) : currentQ.question_type !== "word_cloud" &&
+        currentQ.question_type !== "open_ended" &&
+        parsedOptions.length > 0 ? (
         <div
           className={`grid gap-3 w-full ${
             parsedOptions.length >= 5
